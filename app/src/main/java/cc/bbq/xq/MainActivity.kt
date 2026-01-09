@@ -125,8 +125,9 @@ class MainActivity : ComponentActivity() {
                         Surface(
                             modifier = Modifier
                                 .fillMaxSize()
-                                .roundScreenPadding()  // 新增：圆屏 padding
-                                .padding(innerPadding),
+                                .windowInsetsPadding(WindowInsets.systemBars)  // 使用系统栏 WindowInsets
+                                .roundScreenPadding(),  // 新增：圆屏 padding
+//移除重复的padding                                .padding(innerPadding),
                             color = MaterialTheme.colorScheme.background
                         ) {
                             MainComposeApp(snackbarHostState = snackbarHostState)
