@@ -943,7 +943,7 @@ fun InfoRow(label: String, value: String?) {
                 color = MaterialTheme.colorScheme.onSurface
             )
         }
-        Divider(modifier = Modifier.padding(vertical = 2.dp))
+        HorizontalDivider(modifier = Modifier.padding(vertical = 2.dp))
     }
 }
 

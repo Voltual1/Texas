@@ -105,7 +105,7 @@ fun AccountProfileScreen(
                 val sineShopCredentials = AuthManager.getSineMarketToken(context)
                 val token = sineShopCredentials
                 
-                if (token != null) {
+//                if (token != null) {
                     val userInfoResult = SineShopClient.getUserInfo()
                     
                     if (userInfoResult.isSuccess) {
@@ -116,7 +116,7 @@ fun AccountProfileScreen(
                             avatarUrl = userInfo.userAvatar ?: ""
                         }
                     }
-                }
+//                }
             }
             else -> {
                 // 其他平台不需要加载
@@ -396,7 +396,7 @@ suspend fun uploadAvatar(
                 val sineShopCredentials = AuthManager.getSineMarketToken(context)
                 val token = sineShopCredentials
                 
-                if (token != null) {
+//                if (token != null) {
                     val uploadResult = SineShopClient.uploadAvatar(
                         imageData = bytes,
                         filename = file.name
@@ -418,7 +418,7 @@ suspend fun uploadAvatar(
                             onError("头像上传失败: ${uploadResult.exceptionOrNull()?.message ?: "未知错误"}")
                         }
                     }
-                } else {
+/*                }*/ else {
                     withContext(Dispatchers.Main) {
                         onError("未登录")
                     }
@@ -533,7 +533,7 @@ suspend fun saveChanges(
                 val sineShopCredentials = AuthManager.getSineMarketToken(context)
                 val token = sineShopCredentials
                 
-                if (token != null) {
+//                if (token != null) {
                     if (displayName.isNotEmpty() || description.isNotEmpty()) {
                         val editResult = SineShopClient.editUserInfo(
                             displayName = displayName,
@@ -569,7 +569,7 @@ suspend fun saveChanges(
                             }
                         }
                     }
-                } else {
+                /*}*/ else {
                     coroutineScope.launch {
                         snackbarHostState.showSnackbar(
                             message = context.getString(R.string.not_logged_in),

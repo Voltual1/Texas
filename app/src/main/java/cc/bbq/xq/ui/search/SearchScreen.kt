@@ -378,7 +378,7 @@ private fun SearchHeader(
                             enabled = false
                         )
                         
-                        Divider()
+                        HorizontalDivider()
                         
                         // 当前激活的用户（如果有）
                         if (isUserFilterMode && activeNickname != null && activeUserId != null) {
@@ -410,7 +410,7 @@ private fun SearchHeader(
                                     showFilterMenu = false
                                 }
                             )
-                            Divider()
+                            HorizontalDivider()
                         }
                         
                         // 其他用户列表
@@ -448,7 +448,7 @@ private fun SearchHeader(
                             )
                         }
                         
-                        Divider()
+                        HorizontalDivider()
                         
                         // 操作菜单项
                         DropdownMenuItem(
