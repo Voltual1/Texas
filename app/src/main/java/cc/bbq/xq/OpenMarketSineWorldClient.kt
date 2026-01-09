@@ -33,7 +33,8 @@ import java.io.File
 import java.io.IOException
 
 object OpenMarketSineWorldClient {
-    private const val BASE_URL = "https://open.market.sineworld.cn"
+    private const val BASE_URL = "https://open.sineshop.xin"
+    //从"https://open.market.sineworld.cn"改为https://open.sineshop.xin
     private const val MAX_RETRIES = 3
     private const val RETRY_DELAY = 1000L
     private const val REQUEST_TIMEOUT = 60000L // 上传文件可能需要更长时间

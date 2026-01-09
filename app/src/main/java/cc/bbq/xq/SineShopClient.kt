@@ -31,7 +31,8 @@ import kotlinx.serialization.json.Json
 import java.io.IOException
 
 object SineShopClient {
-    private const val BASE_URL = "https://api.market.sineworld.cn"
+    private const val BASE_URL = "https://api.sineshop.xin"
+    //从https://api.market.sineworld.cn"改为https://api.sineshop.xin
     private const val MAX_RETRIES = 3
     private const val RETRY_DELAY = 1000L
     private const val REQUEST_TIMEOUT = 30000L
