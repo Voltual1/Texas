@@ -94,7 +94,6 @@ abstract class AppDatabase : RoomDatabase() {
                         MIGRATION_4_5,
                         MIGRATION_5_6  // 添加新的迁移脚本
                     )
-                    .fallbackToDestructiveMigration() // 添加这个以防万一，在开发阶段可以添加
                     .build()
                 INSTANCE = instance
                 instance
