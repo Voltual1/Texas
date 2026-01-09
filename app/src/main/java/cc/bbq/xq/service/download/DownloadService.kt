@@ -284,21 +284,13 @@ private fun cleanFileName(fileName: String): String {
                 when (status) {
                     is DownloadStatus.Success, is DownloadStatus.Error -> {
                         // 延迟清理，让用户看到最终状态
-serviceScope.launch {
-    delay(5000)
-    if (downloader.status.value is DownloadStatus.Idle || 
-        downloader.status.value is DownloadStatus.Error || 
-        downloader.status.value is DownloadStatus.Success) {
-        
-        // 修复弃用的 stopForeground 调用
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            stopForeground(STOP_FOREGROUND_REMOVE)
-        } else {
-            @Suppress("DEPRECATION")
-            stopForeground(false)
-        }
-    }
-}
+                        serviceScope.launch {
+                            delay(5000)
+                            if (downloader.status.value is DownloadStatus.Idle || downloader.status.value is DownloadStatus.Error || downloader.status.value is DownloadStatus.Success) {
+                                stopForeground(false)
+                            }
+                        }
+                    }
                     else -> {
                         // 下载中，保持前台服务
                         if (status is DownloadStatus.Downloading || status is DownloadStatus.Pending) {
