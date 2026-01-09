@@ -193,7 +193,16 @@ fun SineShopClient.SineShopUserInfo.toUnifiedUser(): UnifiedUser {
     )
 }
 
-// 修正 KtorClient (小趣空间) 映射中的类型错误
+/**
+ * 将小趣空间用户数据转换为统一用户详情
+ * 
+ * 注意：数据字段映射已修正（2026年1月9日18点）
+ * - followerscount → followersCount: 用户关注的人数（该用户关注了多少人）
+ * - fanscount → fansCount: 用户的粉丝数（有多少人关注了该用户）
+ * 
+ * 此前版本因映射错误导致UI显示相反，现已修复
+ */
+
 fun KtorClient.UserInformationData.toUnifiedUserDetail(): UnifiedUserDetail {
     return UnifiedUserDetail(
         id = this.id,
@@ -202,8 +211,8 @@ fun KtorClient.UserInformationData.toUnifiedUserDetail(): UnifiedUserDetail {
         avatarUrl = this.usertx,
         description = null, // 小趣空间无此字段
         hierarchy = this.hierarchy,
-        followersCount = this.fanscount,
-        fansCount = this.followerscount,
+        followersCount = this.followerscount,
+        fansCount = this.fanscount,
         postCount = this.postcount,
         likeCount = this.likecount,
         money = this.money, // Int 类型，正确
