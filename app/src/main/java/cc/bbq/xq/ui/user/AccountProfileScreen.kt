@@ -417,8 +417,7 @@ suspend fun uploadAvatar(
                         withContext(Dispatchers.Main) {
                             onError("头像上传失败: ${uploadResult.exceptionOrNull()?.message ?: "未知错误"}")
                         }
-                    }
-                } else {
+                    } else {
                     withContext(Dispatchers.Main) {
                         onError("未登录")
                     }

@@ -47,13 +47,11 @@ object FileActionUtil {
                        mimeType == "application/vnd.android.package-archive"
         
         if (isApkFile) {
-            // APK文件：使用安装意图
-            intent = Intent(Intent.ACTION_INSTALL_PACKAGE)
+            // APK文件：使用 VIEW 意图进行安装
+            intent = Intent(Intent.ACTION_VIEW)
+            // 对于安装APK的特殊处理
             intent.putExtra(Intent.EXTRA_NOT_UNKNOWN_SOURCE, true)
             intent.putExtra(Intent.EXTRA_RETURN_RESULT, true)
-            
-            // Android 7.0+ 需要添加此标志
-            intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
         } else {
             // 其他文件：使用查看意图
             intent = Intent(Intent.ACTION_VIEW)
@@ -72,19 +70,24 @@ object FileActionUtil {
         // 设置Intent的数据和类型
         intent.setDataAndType(uri, mimeType)
         
-        // 如果是安装APK，设置安装后是否返回结果
-        if (isApkFile && Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            intent.putExtra(Intent.EXTRA_NOT_UNKNOWN_SOURCE, true)
+        // 如果是安装APK，设置相关标志
+        if (isApkFile) {
+            intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+            
+            // Android 8.0+ 需要额外的权限检查
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                if (!context.packageManager.canRequestPackageInstalls()) {
+                    throw SecurityException("需要允许安装来自此来源的应用")
+                }
+            }
+            
+            // Android 6.0+ 需要允许安装未知来源（已废弃，但对于兼容性保留）
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                intent.putExtra(Intent.EXTRA_NOT_UNKNOWN_SOURCE, true)
+            }
         }
         
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-        
-        // 如果是APK安装，需要在Android 8.0+处理未知来源安装权限
-        if (isApkFile && Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            if (!context.packageManager.canRequestPackageInstalls()) {
-                throw SecurityException("需要允许安装来自此来源的应用")
-            }
-        }
 
         context.startActivity(intent)
     }
