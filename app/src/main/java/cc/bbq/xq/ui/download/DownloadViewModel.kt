@@ -136,13 +136,14 @@ class DownloadViewModel(
      * 使用浏览器打开链接
      */
     fun openUrlInBrowser(url: String) {
-        val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
-        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK // 确保在新的任务栈中打开
-        try {
-            ContextCompat.startActivity(getApplication(), intent, null)
-        } catch (e: Exception) {
-            // 处理无法打开链接的情况，例如没有浏览器应用
-            // 可以显示一个 Toast 提示用户
-        }
+    val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
+    intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
+    
+    try {
+        // 直接使用 startActivity，这在整个 Android 5.0+ 都是可用的
+        getApplication<Application>().startActivity(intent)
+    } catch (e: Exception) {
+        Log.e("DownloadViewModel", "Failed to open URL in browser", e)
     }
+}
 }
