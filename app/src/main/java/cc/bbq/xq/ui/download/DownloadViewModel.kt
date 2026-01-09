@@ -143,7 +143,7 @@ class DownloadViewModel(
         // 直接使用 startActivity，这在整个 Android 5.0+ 都是可用的
         getApplication<Application>().startActivity(intent)
     } catch (e: Exception) {
-        Log.e("DownloadViewModel", "Failed to open URL in browser", e)
+//        Log.e("DownloadViewModel", "Failed to open URL in browser", e)
     }
 }
 }
