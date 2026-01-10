@@ -6,58 +6,49 @@
 //
 // 你应该已经收到了一份 GNU 通用公共许可证的副本
 // 如果没有，请查阅 <http://www.gnu.org/licenses/>.
-@file:Suppress("DEPRECATION")
 package cc.bbq.xq
 
 import android.content.Context
 import android.util.Base64
-import androidx.security.crypto.EncryptedFile
-import androidx.security.crypto.MasterKey
+import androidx.datastore.core.DataStore
+import androidx.datastore.dataStore
 import cc.bbq.xq.data.proto.UserCredentials
 import cc.bbq.xq.data.proto.UserCredentialsSerializer
+import com.google.crypto.tink.Aead
+import com.google.crypto.tink.KeyTemplates
+import com.google.crypto.tink.aead.AeadConfig
+import com.google.crypto.tink.integration.android.AndroidKeysetManager
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
-import java.io.File
-import java.io.FileNotFoundException
 
-private const val ENCRYPTED_FILE_NAME = "user_credentials_encrypted.pb"
+// 定义扩展属性，将 Serializer 与 Tink 绑定
+private val Context.credentialsStore: DataStore<UserCredentials> by dataStore(
+    fileName = "user_credentials_v2.pb", // 建议换个文件名以区分旧的 EncryptedFile
+    serializer = UserCredentialsSerializer(AuthManager.getAead())
+)
 
 object AuthManager {
+    private lateinit var aead: Aead
+    private const val KEYSET_NAME = "master_keyset"
+    private const val PREF_FILE_NAME = "tink_auth_prefs"
+    private const val MASTER_KEY_URI = "android-keystore://auth_master_key"
 
-    private lateinit var masterKey: MasterKey
-    private var encryptedFile: EncryptedFile? = null
-    private lateinit var dataStoreFile: File
+    fun getAead(): Aead = aead
 
-    // --- 初始化加密 ---
+    // --- 1. 初始化 (必须在 Application 调用) ---
     fun initialize(context: Context) {
-        masterKey = MasterKey.Builder(context)
-            .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
+        AeadConfig.register()
+        aead = AndroidKeysetManager.Builder()
+            .withSharedPref(context, KEYSET_NAME, PREF_FILE_NAME)
+            .withKeyTemplate(KeyTemplates.get("AES256_GCM"))
+            .withMasterKeyUri(MASTER_KEY_URI)
             .build()
-
-        // 使用新的文件名
-        dataStoreFile = File(context.filesDir, ENCRYPTED_FILE_NAME)
-        
-        // 只有在文件不存在时才创建 EncryptedFile 实例
-        // 如果文件已存在，我们将在需要时再创建 EncryptedFile
+            .keysetHandle
+            .getPrimitive(Aead::class.java)
     }
 
-    // --- 获取或创建 EncryptedFile ---
-    private fun getOrCreateEncryptedFile(context: Context): EncryptedFile {
-        return encryptedFile ?: run {
-            val file = EncryptedFile.Builder(
-                context,
-                dataStoreFile,
-                masterKey,
-                EncryptedFile.FileEncryptionScheme.AES256_GCM_HKDF_4KB
-            ).build()
-            encryptedFile = file
-            file
-        }
-    }
-
-
-    // --- 保存凭证 ---
+    // --- 2. 保存逻辑 (保持原方法签名) ---
     suspend fun saveCredentials(
         context: Context,
         username: String,
@@ -65,155 +56,48 @@ object AuthManager {
         token: String,
         userId: Long
     ) {
-        val currentCredentials = readCredentials(context)
-        val newCredentials = UserCredentials.newBuilder()
-            .setUsername(username)
-            .setPassword(password)
-            .setToken(token)
-            .setUserId(userId)
-            .setDeviceId(currentCredentials?.deviceId?.ifEmpty { generateDeviceId() } ?: generateDeviceId())
-            .setSineMarketToken(currentCredentials?.sineMarketToken ?: "") // 保留现有的弦应用商店token
-            .setSineOpenMarketToken(currentCredentials?.sineOpenMarketToken ?: "") // 保留现有的弦应用商店开放平台token
-            .build()
-        
-        writeCredentials(context, newCredentials)
+        context.credentialsStore.updateData { current ->
+            current.toBuilder()
+                .setUsername(username)
+                .setPassword(password)
+                .setToken(token)
+                .setUserId(userId)
+                .setDeviceId(current.deviceId.ifEmpty { generateDeviceId() })
+                .build()
+        }
     }
 
-    // --- 新增：保存弦应用商店token（api.market.sineworld.cn）---
     suspend fun saveSineMarketToken(context: Context, token: String) {
-        val currentCredentials = readCredentials(context) ?: UserCredentials.getDefaultInstance()
-        val newCredentials = currentCredentials.toBuilder()
-            .setSineMarketToken(token)
-            .build()
-        
-        writeCredentials(context, newCredentials)
+        context.credentialsStore.updateData { it.toBuilder().setSineMarketToken(token).build() }
     }
 
-    // --- 新增：保存弦应用商店开放平台token（open.market.sineworld.cn）---
     suspend fun saveSineOpenMarketToken(context: Context, token: String) {
-        val currentCredentials = readCredentials(context) ?: UserCredentials.getDefaultInstance()
-        val newCredentials = currentCredentials.toBuilder()
-            .setSineOpenMarketToken(token)
-            .build()
-        
-        writeCredentials(context, newCredentials)
+        context.credentialsStore.updateData { it.toBuilder().setSineOpenMarketToken(token).build() }
     }
 
-    // --- 获取凭证 ---
-    fun getCredentials(context: Context): Flow<UserCredentials?> {
-        return flow {
-            emit(readCredentials(context))
-        }
-    }
+    // --- 3. 获取逻辑 (Flow 保持一致) ---
+    fun getCredentials(context: Context): Flow<UserCredentials?> = context.credentialsStore.data
 
-    // 获取弦应用商店token（api.market.sineworld.cn）
-    fun getSineMarketToken(context: Context): Flow<String> {
-        return getCredentials(context).map { userCredentials ->
-            userCredentials?.sineMarketToken ?: ""
-        }
-    }
+    fun getSineMarketToken(context: Context): Flow<String> = 
+        getCredentials(context).map { it?.sineMarketToken ?: "" }
 
-    // 新增方法：获取弦应用商店开放平台token（open.market.sineworld.cn）
-    fun getSineOpenMarketToken(context: Context): Flow<String> {
-        return getCredentials(context).map { userCredentials ->
-            userCredentials?.sineOpenMarketToken ?: ""
-        }
-    }
+    fun getSineOpenMarketToken(context: Context): Flow<String> = 
+        getCredentials(context).map { it?.sineOpenMarketToken ?: "" }
 
-    // 新增方法：单独获取userid
-    fun getUserId(context: Context): Flow<Long> {
-        return getCredentials(context).map { userCredentials ->
-            userCredentials?.userId ?: -1L
-        }
-    }
+    fun getUserId(context: Context): Flow<Long> = 
+        getCredentials(context).map { it?.userId ?: -1L }
 
-    // --- 清除凭证 ---
+    fun getDeviceId(context: Context): Flow<String> = 
+        getCredentials(context).map { it?.deviceId ?: generateDeviceId() }
+
+    // --- 4. 其他操作 ---
     suspend fun clearCredentials(context: Context) {
-        writeCredentials(context, UserCredentials.getDefaultInstance())
+        context.credentialsStore.updateData { UserCredentials.getDefaultInstance() }
     }
 
-    // --- 获取设备ID ---
-    fun getDeviceId(context: Context): Flow<String> {
-        return getCredentials(context).map { userCredentials ->
-            userCredentials?.deviceId ?: generateDeviceId()
-        }
-    }
+    private fun generateDeviceId(): String = (1..15).map { (0..9).random() }.joinToString("")
 
-    // --- 私有方法：读取凭证 ---
-    private suspend fun readCredentials(context: Context): UserCredentials? {
-        return try {
-            if (!::masterKey.isInitialized) {
-                return null
-            }
-            
-            // 检查文件是否存在
-            if (!dataStoreFile.exists()) {
-                return null
-            }
-            
-            val encryptedFile = getOrCreateEncryptedFile(context)
-            encryptedFile.openFileInput().use { inputStream ->
-                UserCredentialsSerializer.readFrom(inputStream)
-            }
-        } catch (e: FileNotFoundException) {
-            // 文件不存在，返回null
-            null
-        } catch (e: Exception) {
-            e.printStackTrace()
-            // 如果读取失败，尝试删除损坏的文件并返回null
-            try {
-                if (dataStoreFile.exists()) {
-                    dataStoreFile.delete()
-                }
-                // 重置 encryptedFile 引用
-                encryptedFile = null
-            } catch (deleteException: Exception) {
-                deleteException.printStackTrace()
-            }
-            null
-        }
-    }
-
-    // --- 私有方法：写入凭证 ---
-    private suspend fun writeCredentials(context: Context, credentials: UserCredentials) {
-        if (!::masterKey.isInitialized) {
-            throw IllegalStateException("AuthManager not initialized. Call initialize() first.")
-        }
-        
-        try {
-            // 如果文件已存在，先删除它
-            if (dataStoreFile.exists()) {
-                dataStoreFile.delete()
-                // 重置 encryptedFile 引用，因为文件已被删除
-                encryptedFile = null
-            }
-            
-            val encryptedFile = getOrCreateEncryptedFile(context)
-            encryptedFile.openFileOutput().use { outputStream ->
-                UserCredentialsSerializer.writeTo(credentials, outputStream)
-            }
-        } catch (e: Exception) {
-            e.printStackTrace()
-            // 如果写入失败，尝试删除损坏的文件
-            try {
-                if (dataStoreFile.exists()) {
-                    dataStoreFile.delete()
-                }
-                // 重置 encryptedFile 引用
-                encryptedFile = null
-            } catch (deleteException: Exception) {
-                deleteException.printStackTrace()
-            }
-            throw e // 重新抛出异常
-        }
-    }
-
-    // --- 生成设备ID ---
-    private fun generateDeviceId(): String {
-        return (1..15).joinToString("") { (0..9).random().toString() }
-    }
-
-    // --- 迁移 SharedPreferences 到加密存储 ---
+    // 迁移逻辑保持类似，只需将写入改为 updateData
     suspend fun migrateFromSharedPreferences(context: Context) {
         val sharedPrefs = context.getSharedPreferences("bbq_auth", Context.MODE_PRIVATE)
 
@@ -247,30 +131,6 @@ object AuthManager {
             if (oldDataStoreFile.exists()) {
                 oldDataStoreFile.delete()
             }
-        }
-    }
-
-    // --- 新增：检查文件是否损坏 ---
-    suspend fun isFileCorrupted(context: Context): Boolean {
-        return try {
-            val credentials = readCredentials(context)
-            // 如果文件存在但无法读取有效数据，则认为文件损坏
-            dataStoreFile.exists() && credentials == null
-        } catch (e: Exception) {
-            true
-        }
-    }
-
-    // --- 新增：重置加密文件 ---
-    suspend fun resetEncryptedFile(context: Context) {
-        try {
-            if (dataStoreFile.exists()) {
-                dataStoreFile.delete()
-            }
-            // 重置 encryptedFile 引用
-            encryptedFile = null
-        } catch (e: Exception) {
-            e.printStackTrace()
         }
     }
 }

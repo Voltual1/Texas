@@ -10,22 +10,45 @@ package cc.bbq.xq.data.proto
 
 import androidx.datastore.core.CorruptionException
 import androidx.datastore.core.Serializer
+import com.google.crypto.tink.Aead
 import com.google.protobuf.InvalidProtocolBufferException
 import java.io.InputStream
 import java.io.OutputStream
+import java.security.GeneralSecurityException
 
-object UserCredentialsSerializer : Serializer<UserCredentials> {
+/**
+ * 使用 Tink AEAD 加密保护的 Protobuf 序列化器
+ */
+class UserCredentialsSerializer(private val aead: Aead) : Serializer<UserCredentials> {
+    
     override val defaultValue: UserCredentials = UserCredentials.getDefaultInstance()
 
     override suspend fun readFrom(input: InputStream): UserCredentials {
-        try {
-            return UserCredentials.parseFrom(input)
-        } catch (exception: InvalidProtocolBufferException) {
-            throw CorruptionException("Cannot read proto.", exception)
+        return try {
+            val encryptedData = input.readBytes()
+            if (encryptedData.isEmpty()) {
+                return defaultValue
+            }
+            
+            // 使用 Tink 解密
+            val decryptedData = aead.decrypt(encryptedData, null)
+            
+            // 使用 Full Protobuf 的解析方式
+            UserCredentials.parseFrom(decryptedData)
+        } catch (exception: Exception) {
+            when (exception) {
+                is InvalidProtocolBufferException, is GeneralSecurityException -> {
+                    throw CorruptionException("解密失败或数据格式错误", exception)
+                }
+                else -> throw exception
+            }
         }
     }
 
     override suspend fun writeTo(t: UserCredentials, output: OutputStream) {
-        t.writeTo(output)
+        // 转换成字节数组 -> 加密 -> 写入
+        val rawBytes = t.toByteArray()
+        val encryptedData = aead.encrypt(rawBytes, null)
+        output.write(encryptedData)
     }
 }
