@@ -439,7 +439,6 @@ fun BBQSnackbarHost(
         BBQSnackbar(snackbarData)
     }
 ) {
-    // 直接应用圆屏内边距修饰符
     SnackbarHost(
         hostState = hostState,
         modifier = modifier, 
@@ -465,6 +464,7 @@ fun AppStoreDropdownMenu(
     var expanded by remember { mutableStateOf(false) }
     ExposedDropdownMenuBox(
         expanded = expanded,
+        modifier = modifier.background(MaterialTheme.colorScheme.surfaceVariant),
         onExpandedChange = { expanded = it }
     ) {
         OutlinedTextField(
