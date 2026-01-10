@@ -1,4 +1,3 @@
-// /app/src/main/java/cc/bbq/xq/ui/theme/Components.kt
 //Copyright (C) 2025 Voltual
 // 本程序是自由软件：你可以根据自由软件基金会发布的 GNU 通用公共许可证第3版
 //（或任意更新的版本）的条款重新分发和/或修改它。
@@ -16,12 +15,14 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -81,25 +82,25 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import cc.bbq.xq.AppStore
-import cc.bbq.xq.data.unified.UnifiedAppItem
-import cc.bbq.xq.data.unified.UnifiedDownloadSource
+import androidx.compose.ui.unit.DpOffset
+import androidx.compose.ui.window.PopupProperties
 import coil3.compose.AsyncImage
 import coil3.compose.SubcomposeAsyncImage
 import coil3.compose.rememberAsyncImagePainter
 import coil3.request.ImageRequest
+import cc.bbq.xq.AppStore
+import cc.bbq.xq.data.unified.UnifiedAppItem
+import cc.bbq.xq.data.unified.UnifiedDownloadSource
+import cc.bbq.xq.data.unified.UnifiedComment
+import cc.bbq.xq.ui.compose.LinkifyText
 import kotlinx.coroutines.launch
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material3.*
-import androidx.compose.ui.unit.dp
-import coil3.compose.AsyncImage
-import cc.bbq.xq.data.unified.UnifiedComment
+import androidx.compose.ui.Modifier
 import androidx.navigation.NavController
-import cc.bbq.xq.ui.compose.LinkifyText
 
 // 基础按钮组件
 @Composable
@@ -819,4 +820,68 @@ fun UnifiedCommentItem(
             }
         }
     }
+}
+
+/**
+ * 自定义基础 DropdownMenu
+ * 参数与原版完全一致，默认添加了 surfaceVariant 背景色
+ */
+@Composable
+fun CustomDropdownMenu(
+    expanded: Boolean,
+    onDismissRequest: () -> Unit,
+    modifier: Modifier = Modifier,
+    offset: DpOffset = DpOffset(0.dp, 0.dp),
+    scrollState: ScrollState = rememberScrollState(),
+    properties: PopupProperties = PopupProperties(focusable = true),
+    content: @Composable ColumnScope.() -> Unit
+) {
+    DropdownMenu(
+        expanded = expanded,
+        onDismissRequest = onDismissRequest,
+        offset = offset,
+        scrollState = scrollState,
+        properties = properties,
+        modifier = modifier.background(MaterialTheme.colorScheme.surfaceVariant),
+        content = content
+    )
+}
+
+/**
+ * 自定义 ExposedDropdownMenu
+ * 必须在 ExposedDropdownMenuBoxScope 下使用
+ */
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun ExposedDropdownMenuBoxScope.CustomExposedDropdownMenu(
+    expanded: Boolean,
+    onDismissRequest: () -> Unit,
+    modifier: Modifier = Modifier,
+    scrollState: ScrollState = rememberScrollState(),
+    content: @Composable ColumnScope.() -> Unit
+) {
+    ExposedDropdownMenu(
+        expanded = expanded,
+        onDismissRequest = onDismissRequest,
+        scrollState = scrollState,
+        modifier = modifier.background(MaterialTheme.colorScheme.surfaceVariant),
+        content = content
+    )
+}
+
+// 为了方便调用，同时提供一个 Box 的包装（虽然它只是透明转发）
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun CustomExposedDropdownMenuBox(
+    expanded: Boolean,
+    onExpandedChange: (Boolean) -> Unit,
+    modifier: Modifier = Modifier,
+    content: @Composable ExposedDropdownMenuBoxScope.() -> Unit
+) {
+    ExposedDropdownMenuBox(
+        expanded = expanded,
+        onExpandedChange = onExpandedChange,
+        modifier = modifier,
+        content = content
+    )
 }
