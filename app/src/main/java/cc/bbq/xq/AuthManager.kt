@@ -97,39 +97,46 @@ object AuthManager {
 
     private fun generateDeviceId(): String = (1..15).map { (0..9).random() }.joinToString("")
 
-    // 迁移逻辑保持类似，只需将写入改为 updateData
+    // --- 迁移 SharedPreferences 到加密存储 ---
     suspend fun migrateFromSharedPreferences(context: Context) {
         val sharedPrefs = context.getSharedPreferences("bbq_auth", Context.MODE_PRIVATE)
 
+        // 检查是否存在旧数据
         val encodedUser = sharedPrefs.getString("username", null)
         val encodedPass = sharedPrefs.getString("password", null)
         val token = sharedPrefs.getString("usertoken", null)
         val userId = sharedPrefs.getLong("userid", -1)
-        val deviceId = sharedPrefs.getString("device_id", null) ?: generateDeviceId()
-
+        
         if (encodedUser != null && encodedPass != null && token != null && userId != -1L) {
             val username = String(Base64.decode(encodedUser, Base64.DEFAULT))
             val password = String(Base64.decode(encodedPass, Base64.DEFAULT))
+            val deviceId = sharedPrefs.getString("device_id", null) ?: generateDeviceId()
 
-            val credentials = UserCredentials.newBuilder()
-                .setUsername(username)
-                .setPassword(password)
-                .setToken(token)
-                .setUserId(userId)
-                .setDeviceId(deviceId)
-                .setSineMarketToken("")
-                .setSineOpenMarketToken("")
-                .build()
-            
-            writeCredentials(context, credentials)
+            // 使用 DataStore 的 updateData 一次性写入
+            context.credentialsStore.updateData { current ->
+                current.toBuilder()
+                    .setUsername(username)
+                    .setPassword(password)
+                    .setToken(token)
+                    .setUserId(userId)
+                    .setDeviceId(deviceId)
+                    // 迁移时，如果是从老版本过来，这两个 token 通常为空
+                    .setSineMarketToken("")
+                    .setSineOpenMarketToken("")
+                    .build()
+            }
 
-            // 清除 SharedPreferences 中的数据
+            // 迁移成功后清除旧的 SharedPreferences 数据
             sharedPrefs.edit().clear().apply()
             
-            // 删除旧的未加密 DataStore 文件（如果存在）
-            val oldDataStoreFile = File(context.filesDir.parent, "datastore/auth_preferences.pb")
-            if (oldDataStoreFile.exists()) {
-                oldDataStoreFile.delete()
+            // 顺便清理掉之前 androidx.security 遗留的物理文件（如果存在）
+            try {
+                val oldEncryptedFile = File(context.filesDir, "user_credentials_encrypted.pb")
+                if (oldEncryptedFile.exists()) {
+                    oldEncryptedFile.delete()
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
             }
         }
     }
