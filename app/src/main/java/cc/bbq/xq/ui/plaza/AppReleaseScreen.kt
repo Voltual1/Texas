@@ -1,4 +1,11 @@
-// /app/src/main/java/cc/bbq/xq/ui/plaza/AppReleaseScreen.kt
+//Copyright (C) 2025 Voltual
+// 本程序是自由软件：你可以根据自由软件基金会发布的 GNU 通用公共许可证第3版
+//（或任意更新的版本）的条款重新分发和/或修改它。
+//本程序是基于希望它有用而分发的，但没有任何担保；甚至没有适销性或特定用途适用性的隐含担保。
+// 有关更多细节，请参阅 GNU 通用公共许可证。
+//
+// 你应该已经收到了一份 GNU 通用公共许可证的副本
+// 如果没有，请查阅 <http://www.gnu.org/licenses/>.
 //Copyright (C) 2025 Voltual
 package cc.bbq.xq.ui.plaza
 
@@ -42,6 +49,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
 import cc.bbq.xq.ui.theme.AppStoreDropdownMenu
 import androidx.compose.ui.text.style.TextAlign
+import cc.bbq.xq.ui.theme.BBQExposedDropdownMenuBox
+import cc.bbq.xq.ui.theme.BBQExposedDropdownMenu
 import androidx.compose.ui.unit.DpOffset
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -349,7 +358,7 @@ fun CategoryDropdown(viewModel: AppReleaseViewModel) {
     Column {
         Text("应用分类", style = MaterialTheme.typography.titleMedium)
         Spacer(modifier = Modifier.height(8.dp))
-        ExposedDropdownMenuBox(
+        BBQExposedDropdownMenuBox(
             expanded = expanded,
             onExpandedChange = { expanded = !expanded }
         ) {
@@ -366,7 +375,7 @@ fun CategoryDropdown(viewModel: AppReleaseViewModel) {
                         enabled = true
                     )
             )
-            ExposedDropdownMenu(
+            BBQExposedDropdownMenu(
                 expanded = expanded,
                 onDismissRequest = { expanded = false }
             ) {
@@ -394,7 +403,7 @@ fun AppTypeDropdown(viewModel: AppReleaseViewModel) {
     Column {
         Text("应用类型", style = MaterialTheme.typography.titleMedium)
         Spacer(modifier = Modifier.height(8.dp))
-        ExposedDropdownMenuBox(
+        BBQExposedDropdownMenuBox(
             expanded = expanded,
             onExpandedChange = { expanded = !expanded }
         ) {
@@ -413,7 +422,7 @@ fun AppTypeDropdown(viewModel: AppReleaseViewModel) {
                         enabled = true
                     )
             )
-            ExposedDropdownMenu(
+            BBQExposedDropdownMenu(
                 expanded = expanded,
                 onDismissRequest = { expanded = false }
             ) {
@@ -442,7 +451,7 @@ fun VersionTypeDropdown(viewModel: AppReleaseViewModel) {
     Column {
         Text("版本类型", style = MaterialTheme.typography.titleMedium)
         Spacer(modifier = Modifier.height(8.dp))
-        ExposedDropdownMenuBox(
+        BBQExposedDropdownMenuBox(
             expanded = expanded,
             onExpandedChange = { expanded = !expanded }
         ) {
@@ -461,7 +470,7 @@ fun VersionTypeDropdown(viewModel: AppReleaseViewModel) {
                         enabled = true
                     )
             )
-            ExposedDropdownMenu(
+            BBQExposedDropdownMenu(
                 expanded = expanded,
                 onDismissRequest = { expanded = false }
             ) {
@@ -490,7 +499,7 @@ fun TagDropdown(viewModel: AppReleaseViewModel) {
     Column {
         Text("应用标签", style = MaterialTheme.typography.titleMedium)
         Spacer(modifier = Modifier.height(8.dp))
-        ExposedDropdownMenuBox(
+        BBQExposedDropdownMenuBox(
             expanded = expanded,
             onExpandedChange = { expanded = !expanded }
         ) {
@@ -509,7 +518,7 @@ fun TagDropdown(viewModel: AppReleaseViewModel) {
                         enabled = true
                     )
             )
-            ExposedDropdownMenu(
+            BBQExposedDropdownMenu(
                 expanded = expanded,
                 onDismissRequest = { expanded = false }
             ) {
@@ -538,7 +547,7 @@ fun ApkUploadServiceDropdown(viewModel: AppReleaseViewModel) {
     Column {
         Text("APK 上传服务", style = MaterialTheme.typography.titleMedium)
         Spacer(modifier = Modifier.height(8.dp))
-        ExposedDropdownMenuBox(
+        BBQExposedDropdownMenuBox(
             expanded = expanded,
             onExpandedChange = { expanded = !expanded }
         ) {
@@ -555,7 +564,7 @@ fun ApkUploadServiceDropdown(viewModel: AppReleaseViewModel) {
                         enabled = true
                     )
             )
-            ExposedDropdownMenu(
+            BBQExposedDropdownMenu(
                 expanded = expanded,
                 onDismissRequest = { expanded = false }
             ) {
