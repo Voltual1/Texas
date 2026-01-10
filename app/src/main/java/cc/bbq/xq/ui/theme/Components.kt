@@ -73,7 +73,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
@@ -91,6 +90,7 @@ import coil3.request.ImageRequest
 import cc.bbq.xq.AppStore
 import cc.bbq.xq.data.unified.UnifiedAppItem
 import cc.bbq.xq.data.unified.UnifiedDownloadSource
+import androidx.compose.foundation.ScrollState
 import cc.bbq.xq.data.unified.UnifiedComment
 import cc.bbq.xq.ui.compose.LinkifyText
 import kotlinx.coroutines.launch
@@ -827,7 +827,7 @@ fun UnifiedCommentItem(
  * 参数与原版完全一致，默认添加了 surfaceVariant 背景色
  */
 @Composable
-fun CustomDropdownMenu(
+fun BBQDropdownMenu(
     expanded: Boolean,
     onDismissRequest: () -> Unit,
     modifier: Modifier = Modifier,
@@ -853,7 +853,7 @@ fun CustomDropdownMenu(
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ExposedDropdownMenuBoxScope.CustomExposedDropdownMenu(
+fun ExposedDropdownMenuBoxScope.BBQExposedDropdownMenu(
     expanded: Boolean,
     onDismissRequest: () -> Unit,
     modifier: Modifier = Modifier,
@@ -872,7 +872,7 @@ fun ExposedDropdownMenuBoxScope.CustomExposedDropdownMenu(
 // 为了方便调用，同时提供一个 Box 的包装（虽然它只是透明转发）
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun CustomExposedDropdownMenuBox(
+fun BBQExposedDropdownMenuBox(
     expanded: Boolean,
     onExpandedChange: (Boolean) -> Unit,
     modifier: Modifier = Modifier,
