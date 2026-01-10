@@ -74,7 +74,7 @@ class UserDetailViewModel(application: Application) : AndroidViewModel(applicati
     // 提供手动刷新方法
     fun refresh() {
     if (_currentUserId != -1L) {
-        _isLoading.value = true
+        _isLoading.value = false
         loadData()
     }
 }
