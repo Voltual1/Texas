@@ -81,8 +81,7 @@ android {
 
 dependencies {
     // ===== 基础依赖 =====
-    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.0.3")
-    implementation("androidx.datastore:datastore-preferences:1.1.7")
+    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.0.3")   
     implementation("com.google.android.material:material:1.9.0")
     implementation("com.squareup.okhttp3:okhttp:5.3.2")
     implementation("com.github.chrisbanes:PhotoView:2.3.0")
@@ -117,6 +116,11 @@ dependencies {
     implementation("androidx.room:room-ktx:$room_version")
     ksp("androidx.room:room-compiler:$room_version")
     
+    //  ===== datastore =====
+    val datastore_version = "1.1.7"
+    implementation("androidx.datastore:datastore-preferences:$datastore_version")
+    implementation("androidx.datastore:datastore:$datastore_version")
+    
 // 添加 Koin Annotations 相关的依赖：
 val koin_version = "4.1.1"
 implementation("io.insert-koin:koin-androidx-compose:$koin_version")
@@ -137,6 +141,7 @@ ksp("io.insert-koin:koin-ksp-compiler:$koin_annotations_version") // 添加 KSP 
 
     // ===== kotlinx.serialization =====
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.9.0")
+    implementation("com.google.crypto.tink:tink-android:1.20.0")    
 
     // ===== protobuf 依赖 =====
     implementation("com.google.protobuf:protobuf-kotlin:4.32.1")//永远不要用lite!
