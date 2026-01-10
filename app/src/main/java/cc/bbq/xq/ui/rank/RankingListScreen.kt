@@ -46,9 +46,8 @@ fun RankingListScreen(
 Box(
     modifier = Modifier
         .fillMaxWidth()
-        .wrapContentHeight()
-        .background(MaterialTheme.colorScheme.surfaceVariant)
-        .padding(horizontal = 16.dp, vertical = 8.dp)
+        .background(MaterialTheme.colorScheme.surfaceVariant) // 这是你设置的背景色
+        .padding(horizontal = 16.dp, vertical = 12.dp) // 增加垂直间距让视觉更平衡
 ) {
     BBQExposedDropdownMenuBox(
         expanded = expanded,
@@ -59,10 +58,20 @@ Box(
             onValueChange = {},
             readOnly = true,
             trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
+            // --- 核心优化部分 ---
+            colors = TextFieldDefaults.colors(
+                focusedContainerColor = MaterialTheme.colorScheme.surface, // 展开时的颜色
+                unfocusedContainerColor = MaterialTheme.colorScheme.surface, // 平时的颜色
+                disabledContainerColor = MaterialTheme.colorScheme.surface,
+                focusedIndicatorColor = androidx.compose.ui.graphics.Color.Transparent, // 移除底部横线
+                unfocusedIndicatorColor = androidx.compose.ui.graphics.Color.Transparent
+            ),
+            shape = MaterialTheme.shapes.medium, // 让边角圆润一点，避免直角的生硬感
+            // ------------------
             modifier = Modifier
                 .fillMaxWidth()
-                .menuAnchor( // 添加这行
-                    type = ExposedDropdownMenuAnchorType.PrimaryNotEditable, // 使用正确的类型
+                .menuAnchor(
+                    type = ExposedDropdownMenuAnchorType.PrimaryNotEditable,
                     enabled = true
                 )
         )
@@ -82,6 +91,7 @@ Box(
             }
         }
     }
+}
 }
 
         Box(
