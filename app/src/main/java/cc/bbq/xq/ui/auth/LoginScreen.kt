@@ -88,10 +88,14 @@ fun LoginContent(
 
     Scaffold(snackbarHost = { BBQSnackbarHost(hostState = snackbarHostState) }) { padding ->
         Column(
-            modifier = Modifier.padding(padding).fillMaxSize().padding(24.dp.verticalScroll(scrollState)),
-            verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
+    modifier = Modifier
+        .padding(padding)
+        .fillMaxSize()
+        .verticalScroll(scrollState)  
+        .padding(24.dp),             
+    verticalArrangement = Arrangement.Center,
+    horizontalAlignment = Alignment.CenterHorizontally
+) {
             // 商店选择下拉菜单
             AppStoreDropdownMenu(
                 selectedStore = selectedStore,
@@ -184,10 +188,14 @@ fun RegisterContent(
 
     Scaffold(snackbarHost = { BBQSnackbarHost(hostState = snackbarHostState) }) { padding ->
         Column(
-            modifier = Modifier.padding(padding).fillMaxSize().padding(24.dp.verticalScroll(scrollState)),
-            verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
+    modifier = Modifier
+        .padding(padding)
+        .fillMaxSize()
+        .verticalScroll(scrollState)
+        .padding(24.dp),
+    verticalArrangement = Arrangement.Center,
+    horizontalAlignment = Alignment.CenterHorizontally
+) {
             OutlinedTextField(
                 value = username,
                 onValueChange = { viewModel.onUsernameChange(it) },
