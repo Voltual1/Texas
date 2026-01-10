@@ -90,33 +90,66 @@ data class ColorSet(
         }
     }
 
-    companion object {
-        fun defaultLight() = ColorSet(
-            primary = Color(0xFFFB7299), onPrimary = Color(0xFFFFFFFF), primaryContainer = Color(0xFFFFD9E2),
-            onPrimaryContainer = Color(0xFF3F0019), secondary = Color(0xFFFF8A9F), onSecondary = Color(0xFFFFFFFF),
-            secondaryContainer = Color(0xFFFFD9E2), onSecondaryContainer = Color(0xFF3F0019), surface = Color(0xFFFFFBFE),
-            onSurface = Color(0xFF1C1B1F), surfaceVariant = Color(0xFFE7E0EC), onSurfaceVariant = Color(0xFF49454F),
-            outline = Color(0xFF79747E), error = Color(0xFFB3261E), onError = Color(0xFFFFFFFF),
-            background = Color(0xFFFFFBFE), onBackground = Color(0xFF1C1B1F), messageLikeBg = Color(0xFFE8F5E9),
-            messageCommentBg = Color(0xFFE3F2FD), messageDefaultBg = Color(0xFFFFF9C4), billingIncome = Color(0xFF4CAF50),
-            billingExpense = Color(0xFFF44336)
-        )
+companion object {
+    fun defaultLight() = ColorSet(
+        primary = md_primary,
+        onPrimary = md_onPrimary,
+        primaryContainer = md_primaryContainer,
+        onPrimaryContainer = md_onPrimaryContainer,
+        secondary = md_secondary,
+        onSecondary = md_onSecondary,
+        secondaryContainer = md_secondaryContainer,
+        onSecondaryContainer = md_onSecondaryContainer,
+        surface = md_surface,
+        onSurface = md_onSurface,
+        surfaceVariant = md_surfaceVariant,
+        onSurfaceVariant = md_onSurfaceVariant,
+        outline = md_outline,
+        error = md_error,
+        onError = md_onError,
+        background = md_background,
+        onBackground = md_onBackground,
+        messageLikeBg = message_like_bg,
+        messageCommentBg = message_comment_bg,
+        messageDefaultBg = message_default_bg,
+        billingIncome = billing_income,
+        billingExpense = billing_expense
+    )
 
-        fun defaultDark() = ColorSet(
-            primary = Color(0xFFFFB1C8), onPrimary = Color(0xFF5E1133), primaryContainer = Color(0xFF7D2949),
-            onPrimaryContainer = Color(0xFFFFD9E2), secondary = Color(0xFFFFB2C7), onSecondary = Color(0xFF633747),
-            secondaryContainer = Color(0xFF7A4F5F), onSecondaryContainer = Color(0xFFFFD9E2), surface = Color(0xFF1C1B1F),
-            onSurface = Color(0xFFE6E1E5), surfaceVariant = Color(0xFF49454F), onSurfaceVariant = Color(0xFFCAC4D0),
-            outline = Color(0xFF938F99), error = Color(0xFFF2B8B5), onError = Color(0xFF601410),
-            background = Color(0xFF1C1B1F), onBackground = Color(0xFFE6E1E5), messageLikeBg = Color(0xFF1E3A2F),
-            messageCommentBg = Color(0xFF1A2D40), messageDefaultBg = Color(0xFF3E2E23), billingIncome = Color(0xFF81C784),
-            billingExpense = Color(0xFFE57373)
-        )
-    }
+    fun defaultDark() = ColorSet(
+        primary = md_primary_dark,
+        onPrimary = md_onPrimary_dark,
+        primaryContainer = md_primaryContainer_dark,
+        onPrimaryContainer = md_onPrimaryContainer_dark,
+        secondary = md_secondary_dark,
+        onSecondary = md_onSecondary_dark,
+        secondaryContainer = md_secondaryContainer_dark,
+        onSecondaryContainer = md_onSecondaryContainer_dark,
+        surface = md_surface_dark,
+        onSurface = md_onSurface_dark,
+        surfaceVariant = md_surfaceVariant_dark,
+        onSurfaceVariant = md_onSurfaceVariant_dark,
+        outline = md_outline_dark,
+        error = md_error_dark,
+        onError = md_onError_dark,
+        background = md_background_dark,
+        onBackground = md_onBackground_dark,
+        messageLikeBg = message_like_bg_dark,
+        messageCommentBg = message_comment_bg_dark,
+        messageDefaultBg = message_default_bg_dark,
+        billingIncome = billing_income_dark,
+        billingExpense = billing_expense_dark
+    )
+}
 }
 
 object ThemeColorStore {
-    val DEFAULT_COLORS = CustomColorSet()
+    object ThemeColorStore {
+    // 直接使用默认函数创建默认颜色集
+    val DEFAULT_COLORS = CustomColorSet(
+        lightSet = ColorSet.defaultLight(),
+        darkSet = ColorSet.defaultDark()
+    )    
 
     private val LIGHT_COLOR_KEYS = listOf(
         "light_primary", "light_onPrimary", "light_primaryContainer", "light_onPrimaryContainer", "light_secondary",

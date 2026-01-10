@@ -294,7 +294,6 @@ private fun SearchHeader(
                 
                 BBQDropdownMenu(
                     expanded = showModeMenu, 
-                    modifier = Modifier.background(MaterialTheme.colorScheme.surfaceVariant),
                     onDismissRequest = { showModeMenu = false }
                 ) {
                     DropdownMenuItem(
