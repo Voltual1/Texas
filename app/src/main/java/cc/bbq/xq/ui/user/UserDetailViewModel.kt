@@ -71,12 +71,12 @@ class UserDetailViewModel(application: Application) : AndroidViewModel(applicati
         }
     }
 
-/*    // 提供手动刷新方法
+    // 提供手动刷新方法
     fun refresh() {
     if (_currentUserId != -1L) {
-        _isInitialized = false  // 添加这行，重置初始化状态
+        _isLoading.value = true
         loadData()
-    }*/
+    }
 }
         
     // 新增：关注用户
@@ -99,7 +99,8 @@ class UserDetailViewModel(application: Application) : AndroidViewModel(applicati
                     is KtorClient.BaseResponse -> {
                         if (response.code == 1) {
                             // 关注成功，刷新用户数据
-//                            refresh()
+                            refresh()
+                            // 这里可以使用 Snackbar 提示，需要在 UI 层处理
                         } else {
                             _errorMessage.value = "关注失败: ${response.msg}"
                         }
