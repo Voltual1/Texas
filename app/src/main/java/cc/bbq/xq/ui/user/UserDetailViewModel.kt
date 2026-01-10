@@ -100,7 +100,6 @@ class UserDetailViewModel(application: Application) : AndroidViewModel(applicati
                         if (response.code == 1) {
                             // 关注成功，刷新用户数据
 //                            refresh()
-                            // 这里可以使用 Snackbar 提示，需要在 UI 层处理
                         } else {
                             _errorMessage.value = "关注失败: ${response.msg}"
                         }
