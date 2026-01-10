@@ -30,6 +30,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import cc.bbq.xq.R
 import cc.bbq.xq.KtorClient
+import cc.bbq.xq.ui.theme.BBQDropdownMenu
 import cc.bbq.xq.AuthManager
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.pullrefresh.PullRefreshIndicator
@@ -179,7 +180,7 @@ fun BaseComposeListScreen(
                             }
                             
                             // 下拉菜单
-                            DropdownMenu(
+                            BBQDropdownMenu(
                                 expanded = expanded,
                                 onDismissRequest = { expanded = false },
                                 modifier = Modifier.width(200.dp)

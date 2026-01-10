@@ -35,6 +35,7 @@ import androidx.compose.material.icons.automirrored.filled.Comment
 import androidx.compose.material.icons.filled.Download
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Share
+import cc.bbq.xq.ui.theme.BBQDropdownMenu
 import cc.bbq.xq.ui.compose.LinkifyText
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.*
@@ -425,7 +426,7 @@ var showMoreMenu by remember { mutableStateOf(false) }
                             }
                             
                             // 下拉菜单直接与按钮关联
-                            DropdownMenu(
+                            BBQDropdownMenu(
                                 expanded = showMoreMenu,
                                 onDismissRequest = { showMoreMenu = false },
                                 modifier = Modifier.width(180.dp)

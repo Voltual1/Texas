@@ -21,6 +21,7 @@ import androidx.compose.foundation.background
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
+import cc.bbq.xq.ui.theme.BBQDropdownMenu
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
@@ -291,7 +292,7 @@ private fun SearchHeader(
                     )
                 )
                 
-                DropdownMenu(
+                BBQDropdownMenu(
                     expanded = showModeMenu, 
                     modifier = Modifier.background(MaterialTheme.colorScheme.surfaceVariant),
                     onDismissRequest = { showModeMenu = false }
@@ -364,7 +365,7 @@ private fun SearchHeader(
                     )
                     
                     // 用户筛选菜单
-                    DropdownMenu(
+                    BBQDropdownMenu(
                         expanded = showFilterMenu, 
                         onDismissRequest = { showFilterMenu = false }
                     ) {

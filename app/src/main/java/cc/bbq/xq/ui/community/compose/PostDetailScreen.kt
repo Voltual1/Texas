@@ -22,6 +22,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import cc.bbq.xq.ui.theme.BBQDropdownMenu
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
@@ -225,7 +226,7 @@ fun PostDetailScreen(
                                             Icon(Icons.Default.MoreVert, "更多")
                                         }
                                         
-                                        DropdownMenu(
+                                        BBQDropdownMenu(
                                             expanded = showMoreOptions,
                                             onDismissRequest = { showMoreOptions = false }
                                         ) {
