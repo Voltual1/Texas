@@ -420,12 +420,12 @@ private fun ActionButtonsRow(
                     BBQButton(
                         onClick = {
                             coroutineScope.launch {
-                                viewModel.followUser(userData.id)
-                                snackbarHostState.showSnackbar(
+                            snackbarHostState.showSnackbar(
                                     message = "已关注 ${userData.displayName}",
                                     actionLabel = "确定",
                                     duration = SnackbarDuration.Short
                                 )
+                                viewModel.followUser(userData.id)                                
                             }
                         },
                         modifier = Modifier.weight(1f),
@@ -447,12 +447,12 @@ private fun ActionButtonsRow(
                     BBQOutlinedButton(
                         onClick = {
                             coroutineScope.launch {
-                                viewModel.unfollowUser(userData.id)
-                                snackbarHostState.showSnackbar(
+                            snackbarHostState.showSnackbar(
                                     message = "已取消关注 ${userData.displayName}",
                                     actionLabel = "确定",
                                     duration = SnackbarDuration.Short
                                 )
+                                viewModel.unfollowUser(userData.id)                                
                             }
                         },
                         modifier = Modifier.weight(1f),
@@ -474,12 +474,12 @@ private fun ActionButtonsRow(
                     BBQButton(
                         onClick = {
                             coroutineScope.launch {
-                                viewModel.followUser(userData.id)
-                                snackbarHostState.showSnackbar(
+                            snackbarHostState.showSnackbar(
                                     message = "已回关 ${userData.displayName}，现在你们互相关注了",
                                     actionLabel = "确定",
                                     duration = SnackbarDuration.Short
                                 )
+                                viewModel.followUser(userData.id)                                
                             }
                         },
                         modifier = Modifier.weight(1f),
@@ -501,12 +501,13 @@ private fun ActionButtonsRow(
                     BBQOutlinedButton(
                         onClick = {
                             coroutineScope.launch {
-                                viewModel.unfollowUser(userData.id)
-                                snackbarHostState.showSnackbar(
+                                                            snackbarHostState.showSnackbar(
                                     message = "已取消关注 ${userData.displayName}",
                                     actionLabel = "确定",
                                     duration = SnackbarDuration.Short
                                 )
+
+                                viewModel.unfollowUser(userData.id)
                             }
                         },
                         modifier = Modifier.weight(1f),

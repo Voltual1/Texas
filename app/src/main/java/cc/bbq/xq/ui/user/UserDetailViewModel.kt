@@ -73,10 +73,11 @@ class UserDetailViewModel(application: Application) : AndroidViewModel(applicati
 
     // 提供手动刷新方法
     fun refresh() {
-        if (_currentUserId != -1L) {
-            loadData()
-        }
+    if (_currentUserId != -1L) {
+        _isInitialized = false  // 添加这行，重置初始化状态
+        loadData()
     }
+}
         
     // 新增：关注用户
     fun followUser(targetUserId: Long) {
