@@ -287,25 +287,29 @@ composable(route = UserDetail(0).route, arguments = UserDetail.arguments) { back
         }
     }
     
-    
-    val userData by viewModel.userData.collectAsStateWithLifecycle()
-    val isLoading by viewModel.isLoading.collectAsStateWithLifecycle()
-    val errorMessage by viewModel.errorMessage.collectAsStateWithLifecycle()
-    
+    // 使用新的 UserDetailScreen 函数，它接收 viewModel 而不是分开的参数
     UserDetailScreen(
-        userData = userData,
-        isLoading = isLoading,
-        snackbarHostState = snackbarHostState,
-        errorMessage = errorMessage,
-        onPostsClick = { navController.navigate(MyPosts(userId).createRoute()) },
-        onResourcesClick = { uid, store ->
+        viewModel = viewModel,
+        onPostsClick = { 
+            // 修复：传入用户的昵称作为默认值
+            val userData = viewModel.userData.value
+            val nickname = userData?.displayName ?: "用户"
+            navController.navigate(MyPosts(userId, nickname).createRoute()) 
+        },
+        onResourcesClick = { uid, targetStore ->
             // 接收 store 参数
-            navController.navigate(ResourcePlaza(isMyResource = false, userId = uid, mode = "public", storeName = store.name).createRoute())
+            navController.navigate(ResourcePlaza(
+                isMyResource = false, 
+                userId = uid, 
+                mode = "public", 
+                storeName = targetStore.name
+            ).createRoute())
         },
         onImagePreview = { imageUrl ->
             navController.navigate(ImagePreview(imageUrl).createRoute())
         },
         modifier = Modifier.fillMaxSize(),
+        snackbarHostState = snackbarHostState,
         navController = navController // 传递 navController
     )
 }
