@@ -109,64 +109,77 @@ fun UserDetailScreen(
             contentColor = MaterialTheme.colorScheme.primary,
             backgroundColor = MaterialTheme.colorScheme.surface
         )
+        // 使用 BBQSnackbarHost 显示通知
+        BBQSnackbarHost(
+            hostState = snackbarHostState,
+            modifier = Modifier
+                .align(Alignment.BottomCenter)
+                .padding(16.dp)
+        )
     }
 }
 
 @Composable
-private fun ScreenContent(
-    modifier: Modifier = Modifier,
-    userData: UnifiedUserDetail?, // 使用 UnifiedUserDetail
-    isLoading: Boolean,
-    errorMessage: String?,
+@Composable
+fun UserDetailScreen(
+    viewModel: UserDetailViewModel,  // 新增：接收 ViewModel
     onPostsClick: () -> Unit,
-    onResourcesClick: (Long, AppStore) -> Unit, // 修改：增加 AppStore 参数
+    onResourcesClick: (Long, AppStore) -> Unit,
     onImagePreview: (String) -> Unit,
+    modifier: Modifier = Modifier,
     snackbarHostState: SnackbarHostState,
-    navController: NavController // 添加 navController 参数
+    navController: NavController
 ) {
+    // 从 ViewModel 获取状态
+    val userData by viewModel.userData.collectAsState()
+    val isLoading by viewModel.isLoading.collectAsState()
+    val errorMessage by viewModel.errorMessage.collectAsState()
+    
+    // 下拉刷新状态
+    var refreshing by remember { mutableStateOf(false) }
+    val pullRefreshState = rememberPullRefreshState(refreshing, onRefresh = {
+        refreshing = true
+        viewModel.refresh()
+        refreshing = false
+    })
+    
     Box(
         modifier = modifier
             .fillMaxSize()
-            .background(MaterialTheme.colorScheme.surface)
+            .pullRefresh(pullRefreshState)
     ) {
-        when {
-            isLoading -> LoadingState(Modifier.align(Alignment.Center))
-            !errorMessage.isNullOrEmpty() -> ErrorState(message = errorMessage, modifier = Modifier.align(Alignment.Center))
-            userData == null -> EmptyState(modifier = Modifier.align(Alignment.Center))
-            else -> {
-                // 根据 store 选择不同的 UI
-                when (userData.store) {
-                    AppStore.XIAOQU_SPACE -> XiaoQuProfileContent(
-                        // 使用 UnifiedUserDetail
-                        userData = userData,
-                        onPostsClick = onPostsClick,
-                        onResourcesClick = onResourcesClick,
-                        onImagePreview = onImagePreview,
-                        snackbarHostState = snackbarHostState,
-                        navController = navController // 传递 navController
-                    )
-                    AppStore.SIENE_SHOP -> SieneShopProfileContent(
-                        userData = userData,
-                        onResourcesClick = onResourcesClick,
-                        onImagePreview = onImagePreview,
-                        snackbarHostState = snackbarHostState
-                    )
-                    else -> Text("不支持的应用商店")
-                }
-            }
-        }
+        ScreenContent(
+            modifier = Modifier.fillMaxSize(),
+            userData = userData,
+            isLoading = isLoading,
+            errorMessage = errorMessage,
+            onPostsClick = onPostsClick,
+            onResourcesClick = onResourcesClick,
+            onImagePreview = onImagePreview,
+            snackbarHostState = snackbarHostState,
+            navController = navController,
+            viewModel = viewModel  // 新增：传递 ViewModel
+        )
+        
+        PullRefreshIndicator(
+            refreshing = refreshing,
+            state = pullRefreshState,
+            modifier = Modifier.align(Alignment.TopCenter),
+            contentColor = MaterialTheme.colorScheme.primary,
+            backgroundColor = MaterialTheme.colorScheme.surface
+        )
     }
 }
 
 @Composable
 private fun XiaoQuProfileContent(
-    // 使用 UnifiedUserDetail
     userData: UnifiedUserDetail,
     onPostsClick: () -> Unit,
-    onResourcesClick: (Long, AppStore) -> Unit, // 修改：增加 AppStore 参数
+    onResourcesClick: (Long, AppStore) -> Unit,
     onImagePreview: (String) -> Unit,
     snackbarHostState: SnackbarHostState,
-    navController: NavController // 添加 navController 参数
+    navController: NavController,
+    viewModel: UserDetailViewModel  // 新增：传递 ViewModel
 ) {
     Column(
         modifier = Modifier
@@ -184,19 +197,20 @@ private fun XiaoQuProfileContent(
             }
         )
         
-        // 修复传递给 ActionButtonsRow 的 onResourcesClick
+        // 更新：传递 ViewModel
         ActionButtonsRow(
             userData = userData,
             onResourcesClick = { userId ->
                 onResourcesClick(userId, userData.store)
-            }, // 传递完整的 lambda
-            snackbarHostState = snackbarHostState
+            },
+            snackbarHostState = snackbarHostState,
+            viewModel = viewModel
         )
         
         StatsCard(
             userData = userData,
             onPostsClick = onPostsClick,
-            navController = navController // 传递 navController
+            navController = navController
         )
         
         DetailsCard(userData = userData)
@@ -402,27 +416,141 @@ private fun UserBasicInfo(userData: UnifiedUserDetail) { // 使用 UnifiedUserDe
 
 @Composable
 private fun ActionButtonsRow(
-    userData: UnifiedUserDetail, // 使用 UnifiedUserDetail
+    userData: UnifiedUserDetail,
     onResourcesClick: (Long) -> Unit,
-    snackbarHostState: SnackbarHostState
+    snackbarHostState: SnackbarHostState,
+    viewModel: UserDetailViewModel  // 新增：传递 ViewModel
 ) {
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
-    //val isFollowing = remember { mutableStateOf(userData.follow_status == "2") }
-    //val apiService = KtorClient.ApiServiceImpl
-
+    
+    // 根据关注状态显示不同的按钮
+    val followStatus = userData.followStatus
+    val isProcessing = viewModel.isLoading.collectAsState().value
+    
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        if (userData.store == AppStore.XIAOQU_SPACE) {
-            BBQButton(
-                onClick = {
-                   //TODO
-                },
-                modifier = Modifier.weight(1f),
-                text = { Text("关注") }
-            )
+        // 只有小趣空间才显示关注按钮
+        if (userData.store == AppStore.XIAOQU_SPACE && followStatus != null) {
+            when (followStatus) {
+                FollowStatus.NotFollowed -> {
+                    // 未关注 - 显示关注按钮
+                    BBQButton(
+                        onClick = {
+                            coroutineScope.launch {
+                                viewModel.followUser(userData.id)
+                                // 显示成功提示
+                                snackbarHostState.showSnackbar(
+                                    message = "已关注 ${userData.displayName}",
+                                    actionLabel = "确定",
+                                    duration = SnackbarDuration.Short
+                                )
+                            }
+                        },
+                        modifier = Modifier.weight(1f),
+                        text = { 
+                            if (isProcessing) {
+                                CircularProgressIndicator(
+                                    modifier = Modifier.size(16.dp),
+                                    strokeWidth = 2.dp
+                                )
+                            } else {
+                                Text("关注")
+                            }
+                        },
+                        enabled = !isProcessing
+                    )
+                }
+                
+                FollowStatus.YouFollowed -> {
+                    // 已关注 - 显示已关注按钮（可取消）
+                    BBQOutlinedButton(
+                        onClick = {
+                            coroutineScope.launch {
+                                viewModel.unfollowUser(userData.id)
+                                // 显示取消关注提示
+                                snackbarHostState.showSnackbar(
+                                    message = "已取消关注 ${userData.displayName}",
+                                    actionLabel = "确定",
+                                    duration = SnackbarDuration.Short
+                                )
+                            }
+                        },
+                        modifier = Modifier.weight(1f),
+                        text = { 
+                            if (isProcessing) {
+                                CircularProgressIndicator(
+                                    modifier = Modifier.size(16.dp),
+                                    strokeWidth = 2.dp
+                                )
+                            } else {
+                                Text("已关注")
+                            }
+                        },
+                        enabled = !isProcessing
+                    )
+                }
+                
+                FollowStatus.FollowedYou -> {
+                    // 关注了你 - 显示回关按钮
+                    BBQButton(
+                        onClick = {
+                            coroutineScope.launch {
+                                viewModel.followUser(userData.id)
+                                // 显示回关成功提示
+                                snackbarHostState.showSnackbar(
+                                    message = "已回关 ${userData.displayName}，现在你们互相关注了",
+                                    actionLabel = "确定",
+                                    duration = SnackbarDuration.Short
+                                )
+                            }
+                        },
+                        modifier = Modifier.weight(1f),
+                        text = { 
+                            if (isProcessing) {
+                                CircularProgressIndicator(
+                                    modifier = Modifier.size(16.dp),
+                                    strokeWidth = 2.dp
+                                )
+                            } else {
+                                Text("回关")
+                            }
+                        },
+                        enabled = !isProcessing
+                    )
+                }
+                
+                FollowStatus.MutualFollow -> {
+                    // 已互关 - 显示互相关注按钮（可取消）
+                    BBQOutlinedButton(
+                        onClick = {
+                            coroutineScope.launch {
+                                viewModel.unfollowUser(userData.id)
+                                // 显示取消关注提示
+                                snackbarHostState.showSnackbar(
+                                    message = "已取消关注 ${userData.displayName}",
+                                    actionLabel = "确定",
+                                    duration = SnackbarDuration.Short
+                                )
+                            }
+                        },
+                        modifier = Modifier.weight(1f),
+                        text = { 
+                            if (isProcessing) {
+                                CircularProgressIndicator(
+                                    modifier = Modifier.size(16.dp),
+                                    strokeWidth = 2.dp
+                                )
+                            } else {
+                                Text("互相关注")
+                            }
+                        },
+                        enabled = !isProcessing
+                    )
+                }
+            }
         }
 
         BBQOutlinedButton(

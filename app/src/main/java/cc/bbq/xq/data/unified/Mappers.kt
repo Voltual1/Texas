@@ -211,6 +211,9 @@ fun SineShopClient.SineShopUserInfo.toUnifiedUser(): UnifiedUser {
  */
 
 fun KtorClient.UserInformationData.toUnifiedUserDetail(): UnifiedUserDetail {
+// 解析关注状态（注意：响应中的 follow_status 是 String 类型）
+    val followStatusValue = this.follow_status.toIntOrNull() ?: 3
+    val followStatus = FollowStatus.fromValue(followStatusValue)
     return UnifiedUserDetail(
         id = this.id,
         username = this.username,
@@ -220,6 +223,7 @@ fun KtorClient.UserInformationData.toUnifiedUserDetail(): UnifiedUserDetail {
         hierarchy = this.hierarchy,
         followersCount = this.followerscount,
         fansCount = this.fanscount,
+        followStatus = followStatus,  // 添加关注状态
         postCount = this.postcount,
         likeCount = this.likecount,
         money = this.money, // Int 类型，正确

@@ -77,13 +77,65 @@ class UserDetailViewModel(application: Application) : AndroidViewModel(applicati
             loadData()
         }
     }
+        
+    // 新增：关注用户
+    fun followUser(targetUserId: Long) {
+        viewModelScope.launch {
+            _isLoading.value = true
+            try {
+                val token = getToken()
+                if (token.isEmpty()) {
+                    _errorMessage.value = "请先登录"
+                    return@launch
+                }
+                
+                val result = apiService.followUser(
+                    token = token,
+                    followedId = targetUserId
+                )
+                
+                when (val response = result.getOrNull()) {
+                    is KtorClient.BaseResponse -> {
+                        if (response.code == 1) {
+                            // 关注成功，刷新用户数据
+                            refresh()
+                            // 这里可以使用 Snackbar 提示，需要在 UI 层处理
+                        } else {
+                            _errorMessage.value = "关注失败: ${response.msg}"
+                        }
+                    }
+                    else -> {
+                        _errorMessage.value = "网络错误"
+                    }
+                }
+            } catch (e: Exception) {
+                _errorMessage.value = "关注失败: ${e.message}"
+            } finally {
+                _isLoading.value = false
+            }
+        }
+    }
+    
+    // 新增：取消关注用户（使用相同的 API）
+    fun unfollowUser(targetUserId: Long) {
+        // 注意：根据接口文档，关注和取消关注使用同一个 API
+        followUser(targetUserId)
+    }
+    
+    // 获取 Token 的辅助函数
+    private suspend fun getToken(): String {
+        val context = getApplication<Application>()
+        val userCredentialsFlow = AuthManager.getCredentials(context)
+        val userCredentials = userCredentialsFlow.first()
+        return userCredentials?.token ?: ""
+    }
 
     private fun loadData() {
         viewModelScope.launch {
             val context = getApplication<Application>()
-            val userCredentialsFlow = AuthManager.getCredentials(context)
-            val userCredentials = userCredentialsFlow.first()
-            val token = userCredentials?.token ?: ""
+/*            val userCredentialsFlow = AuthManager.getCredentials(context)
+            val userCredentials = userCredentialsFlow.first()*/
+            val token = getToken()
 
             // 检查是否已经在加载
             if (_isLoading.value) return@launch

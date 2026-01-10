@@ -106,6 +106,7 @@ data class UnifiedUserDetail(
     val fansCount: String? = null,
     val postCount: String? = null,
     val likeCount: String? = null,
+    val followStatus: FollowStatus? = null, // 新增：关注状态
     val money: Int? = null,
     val commentCount: Int? = null,
     val seriesDays: Int? = null,  // 连续签到天数
@@ -176,3 +177,23 @@ data class UnifiedAppReleaseParams(
     val abi: Int? = null,
     val screenshots: List<File>? = null // 本地截图文件列表
 )
+
+// 添加小趣空间关注状态密封类
+sealed class FollowStatus(val value: Int) {
+    data object MutualFollow : FollowStatus(0)      // 已互关
+    data object FollowedYou : FollowStatus(1)       // 关注了你
+    data object YouFollowed : FollowStatus(2)       // 已关注
+    data object NotFollowed : FollowStatus(3)       // 未关注
+    
+    companion object {
+        fun fromValue(value: Int): FollowStatus {
+            return when (value) {
+                0 -> MutualFollow
+                1 -> FollowedYou
+                2 -> YouFollowed
+                3 -> NotFollowed
+                else -> NotFollowed
+            }
+        }
+    }
+}
