@@ -19,6 +19,7 @@ import com.google.crypto.tink.KeyTemplates
 import com.google.crypto.tink.aead.AeadConfig
 import com.google.crypto.tink.integration.android.AndroidKeysetManager
 import kotlinx.coroutines.flow.Flow
+import java.io.File
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 
@@ -112,7 +113,7 @@ object AuthManager {
             val password = String(Base64.decode(encodedPass, Base64.DEFAULT))
             val deviceId = sharedPrefs.getString("device_id", null) ?: generateDeviceId()
 
-            // 使用 DataStore 的 updateData 一次性写入
+            // 写入新的 DataStore
             context.credentialsStore.updateData { current ->
                 current.toBuilder()
                     .setUsername(username)
@@ -120,22 +121,27 @@ object AuthManager {
                     .setToken(token)
                     .setUserId(userId)
                     .setDeviceId(deviceId)
-                    // 迁移时，如果是从老版本过来，这两个 token 通常为空
-                    .setSineMarketToken("")
-                    .setSineOpenMarketToken("")
                     .build()
             }
 
-            // 迁移成功后清除旧的 SharedPreferences 数据
+            // 清除旧的 SharedPreferences
             sharedPrefs.edit().clear().apply()
             
-            // 顺便清理掉之前 androidx.security 遗留的物理文件（如果存在）
+            // --- 关键修正：清理旧的 androidx.security 遗留物理文件 ---
+            // 注意：这里需要 import java.io.File
             try {
                 val oldEncryptedFile = File(context.filesDir, "user_credentials_encrypted.pb")
                 if (oldEncryptedFile.exists()) {
                     oldEncryptedFile.delete()
                 }
+                
+                // 同时清理可能存在的旧 DataStore 备份（如果之前有用过 DataStore Preferences）
+                val oldDataStoreFile = File(context.filesDir, "datastore/auth_preferences.pb")
+                if (oldDataStoreFile.exists()) {
+                    oldDataStoreFile.delete()
+                }
             } catch (e: Exception) {
+                // 仅记录日志，不影响主流程
                 e.printStackTrace()
             }
         }
