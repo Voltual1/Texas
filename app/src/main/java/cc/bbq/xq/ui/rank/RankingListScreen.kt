@@ -57,7 +57,7 @@ Box(
             onValueChange = {},
             readOnly = true,
             trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
-            modifier = Modifier
+            modifier = Modifier.background(MaterialTheme.colorScheme.surfaceVariant)
                 .fillMaxWidth()
                 .menuAnchor( // 添加这行
                     type = ExposedDropdownMenuAnchorType.PrimaryNotEditable, // 使用正确的类型
