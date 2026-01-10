@@ -37,10 +37,6 @@ import cc.bbq.xq.KtorClient
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-//import cc.bbq.xq.RetrofitClient
-import cc.bbq.xq.ui.*
-import cc.bbq.xq.ui.community.compose.CommentItem
-import cc.bbq.xq.ui.compose.LinkifyText
 import coil3.compose.AsyncImage
 import kotlinx.coroutines.launch
 import androidx.compose.material.ExperimentalMaterialApi
@@ -60,69 +56,16 @@ import cc.bbq.xq.ui.theme.AppShapes
 import cc.bbq.xq.ui.theme.BBQButton
 import cc.bbq.xq.ui.theme.BBQCard
 import cc.bbq.xq.ui.theme.BBQOutlinedButton
+import cc.bbq.xq.ui.theme.BBQSnackbarHost // 添加导入
 import kotlinx.coroutines.flow.first
 import cc.bbq.xq.data.unified.UnifiedUserDetail  // 导入 UnifiedUserDetail
+import cc.bbq.xq.data.unified.FollowStatus // 添加导入
 import cc.bbq.xq.AppStore
 
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun UserDetailScreen(
-    userData: UnifiedUserDetail?, // 使用 UnifiedUserDetail
-    isLoading: Boolean,
-    errorMessage: String?,
-    onPostsClick: () -> Unit,
-    onResourcesClick: (Long, AppStore) -> Unit, // 修改：增加 AppStore 参数
-    onImagePreview: (String) -> Unit,
-    modifier: Modifier = Modifier,
-    snackbarHostState: SnackbarHostState,
-    navController: NavController // 添加 navController 参数
-) {
-    // 下拉刷新状态
-    var refreshing by remember { mutableStateOf(false) }
-    val pullRefreshState = rememberPullRefreshState(refreshing, onRefresh = {
-        refreshing = true
-        //viewModel.refresh()
-        refreshing = false
-    })
-    
-    Box(
-        modifier = modifier
-            .fillMaxSize()
-            .pullRefresh(pullRefreshState)
-    ) {
-        ScreenContent(
-            modifier = Modifier.fillMaxSize(),
-            userData = userData,
-            isLoading = isLoading,
-            errorMessage = errorMessage,
-            onPostsClick = onPostsClick,
-            onResourcesClick = onResourcesClick,
-            onImagePreview = onImagePreview,
-            snackbarHostState = snackbarHostState,
-            navController = navController // 传递 navController
-        )
-        
-        PullRefreshIndicator(
-            refreshing = refreshing,
-            state = pullRefreshState,
-            modifier = Modifier.align(Alignment.TopCenter),
-            contentColor = MaterialTheme.colorScheme.primary,
-            backgroundColor = MaterialTheme.colorScheme.surface
-        )
-        // 使用 BBQSnackbarHost 显示通知
-        BBQSnackbarHost(
-            hostState = snackbarHostState,
-            modifier = Modifier
-                .align(Alignment.BottomCenter)
-                .padding(16.dp)
-        )
-    }
-}
-
-@Composable
-@Composable
-fun UserDetailScreen(
-    viewModel: UserDetailViewModel,  // 新增：接收 ViewModel
+    viewModel: UserDetailViewModel,
     onPostsClick: () -> Unit,
     onResourcesClick: (Long, AppStore) -> Unit,
     onImagePreview: (String) -> Unit,
@@ -158,7 +101,7 @@ fun UserDetailScreen(
             onImagePreview = onImagePreview,
             snackbarHostState = snackbarHostState,
             navController = navController,
-            viewModel = viewModel  // 新增：传递 ViewModel
+            viewModel = viewModel
         )
         
         PullRefreshIndicator(
@@ -172,6 +115,53 @@ fun UserDetailScreen(
 }
 
 @Composable
+private fun ScreenContent(
+    modifier: Modifier = Modifier,
+    userData: UnifiedUserDetail?,
+    isLoading: Boolean,
+    errorMessage: String?,
+    onPostsClick: () -> Unit,
+    onResourcesClick: (Long, AppStore) -> Unit,
+    onImagePreview: (String) -> Unit,
+    snackbarHostState: SnackbarHostState,
+    navController: NavController,
+    viewModel: UserDetailViewModel
+) {
+    Box(
+        modifier = modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.surface)
+    ) {
+        when {
+            isLoading -> LoadingState(Modifier.align(Alignment.Center))
+            !errorMessage.isNullOrEmpty() -> ErrorState(message = errorMessage, modifier = Modifier.align(Alignment.Center))
+            userData == null -> EmptyState(modifier = Modifier.align(Alignment.Center))
+            else -> {
+                // 根据 store 选择不同的 UI
+                when (userData.store) {
+                    AppStore.XIAOQU_SPACE -> XiaoQuProfileContent(
+                        userData = userData,
+                        onPostsClick = onPostsClick,
+                        onResourcesClick = onResourcesClick,
+                        onImagePreview = onImagePreview,
+                        snackbarHostState = snackbarHostState,
+                        navController = navController,
+                        viewModel = viewModel
+                    )
+                    AppStore.SIENE_SHOP -> SieneShopProfileContent(
+                        userData = userData,
+                        onResourcesClick = onResourcesClick,
+                        onImagePreview = onImagePreview,
+                        snackbarHostState = snackbarHostState
+                    )
+                    else -> Text("不支持的应用商店")
+                }
+            }
+        }
+    }
+}
+
+@Composable
 private fun XiaoQuProfileContent(
     userData: UnifiedUserDetail,
     onPostsClick: () -> Unit,
@@ -179,7 +169,7 @@ private fun XiaoQuProfileContent(
     onImagePreview: (String) -> Unit,
     snackbarHostState: SnackbarHostState,
     navController: NavController,
-    viewModel: UserDetailViewModel  // 新增：传递 ViewModel
+    viewModel: UserDetailViewModel
 ) {
     Column(
         modifier = Modifier
@@ -197,7 +187,6 @@ private fun XiaoQuProfileContent(
             }
         )
         
-        // 更新：传递 ViewModel
         ActionButtonsRow(
             userData = userData,
             onResourcesClick = { userId ->
@@ -220,7 +209,7 @@ private fun XiaoQuProfileContent(
 @Composable
 private fun SieneShopProfileContent(
     userData: UnifiedUserDetail,
-    onResourcesClick: (Long, AppStore) -> Unit, // 修改：增加 AppStore 参数: (Long) -> Unit,
+    onResourcesClick: (Long, AppStore) -> Unit,
     onImagePreview: (String) -> Unit,
     snackbarHostState: SnackbarHostState
 ) {
@@ -234,7 +223,7 @@ private fun SieneShopProfileContent(
         // 顶部区域：渐变背景 + 头像 + 用户信息
         BBQCard {
             Box(modifier = Modifier.fillMaxWidth()) {
-                ProfileBackground() // 使用和小趣空间相同的渐变背景
+                ProfileBackground()
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -242,27 +231,25 @@ private fun SieneShopProfileContent(
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.Center
                 ) {
-                    // 头像
                     AsyncImage(
-    model = ImageRequest.Builder(LocalContext.current)
-        .data(userData.avatarUrl ?: "https://static.sineshop.xin/images/user_avatar/default_avatar.png")
-        .diskCachePolicy(CachePolicy.DISABLED) // 禁用磁盘缓存
-        .build(),
-    contentDescription = "用户头像",
-    contentScale = ContentScale.Crop,
-    modifier = Modifier
-        .size(80.dp)
-        .clip(CircleShape)
-        .clickable {
-            if (!userData.avatarUrl.isNullOrEmpty()) {
-                onImagePreview(userData.avatarUrl)
-            }
-        }
-)
+                        model = ImageRequest.Builder(LocalContext.current)
+                            .data(userData.avatarUrl ?: "https://static.sineshop.xin/images/user_avatar/default_avatar.png")
+                            .diskCachePolicy(CachePolicy.DISABLED)
+                            .build(),
+                        contentDescription = "用户头像",
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier
+                            .size(80.dp)
+                            .clip(CircleShape)
+                            .clickable {
+                                if (!userData.avatarUrl.isNullOrEmpty()) {
+                                    onImagePreview(userData.avatarUrl)
+                                }
+                            }
+                    )
 
                     Spacer(modifier = Modifier.height(8.dp))
 
-                    // 用户名
                     Text(
                         text = userData.displayName,
                         style = MaterialTheme.typography.titleLarge,
@@ -270,7 +257,6 @@ private fun SieneShopProfileContent(
                         color = MaterialTheme.colorScheme.onSurface
                     )
 
-                    // 用户ID
                     Text(
                         text = "ID: ${userData.username}",
                         style = MaterialTheme.typography.bodyMedium,
@@ -280,7 +266,6 @@ private fun SieneShopProfileContent(
             }
         }
 
-        // 详细信息卡片
         BBQCard {
             Column(
                 modifier = Modifier
@@ -294,7 +279,6 @@ private fun SieneShopProfileContent(
                     fontWeight = FontWeight.Bold
                 )
 
-                // 描述
                 userData.description?.let {
                     Text(
                         text = it,
@@ -304,7 +288,6 @@ private fun SieneShopProfileContent(
                     Spacer(modifier = Modifier.height(4.dp))
                 }
 
-                // 其他信息
                 InfoItem(label = "上传数量:", value = userData.uploadCount?.toString() ?: "0")
                 InfoItem(label = "评论数量:", value = userData.replyCount?.toString() ?: "0")
                 InfoItem(label = "加入时间:", value = userData.joinTime?.let { formatTimestamp(it) } ?: "无")
@@ -314,9 +297,8 @@ private fun SieneShopProfileContent(
             }
         }
 
-        // "XXX 的资源" 按钮
         BBQOutlinedButton(
-            onClick = { onResourcesClick(userData.id, userData.store) }, // 传递 store
+            onClick = { onResourcesClick(userData.id, userData.store) },
             modifier = Modifier.fillMaxWidth(),
             text = { Text("${userData.displayName}的资源") }
         )
@@ -325,7 +307,7 @@ private fun SieneShopProfileContent(
 
 @Composable
 private fun HeaderCard(
-    userData: UnifiedUserDetail, // 使用 UnifiedUserDetail
+    userData: UnifiedUserDetail,
     onAvatarClick: () -> Unit,
 ) {
     BBQCard {
@@ -382,7 +364,7 @@ private fun UserAvatar(
 }
 
 @Composable
-private fun UserBasicInfo(userData: UnifiedUserDetail) { // 使用 UnifiedUserDetail
+private fun UserBasicInfo(userData: UnifiedUserDetail) {
     Column {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Text(
@@ -419,9 +401,8 @@ private fun ActionButtonsRow(
     userData: UnifiedUserDetail,
     onResourcesClick: (Long) -> Unit,
     snackbarHostState: SnackbarHostState,
-    viewModel: UserDetailViewModel  // 新增：传递 ViewModel
+    viewModel: UserDetailViewModel
 ) {
-    val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
     
     // 根据关注状态显示不同的按钮
@@ -436,12 +417,10 @@ private fun ActionButtonsRow(
         if (userData.store == AppStore.XIAOQU_SPACE && followStatus != null) {
             when (followStatus) {
                 FollowStatus.NotFollowed -> {
-                    // 未关注 - 显示关注按钮
                     BBQButton(
                         onClick = {
                             coroutineScope.launch {
                                 viewModel.followUser(userData.id)
-                                // 显示成功提示
                                 snackbarHostState.showSnackbar(
                                     message = "已关注 ${userData.displayName}",
                                     actionLabel = "确定",
@@ -465,12 +444,10 @@ private fun ActionButtonsRow(
                 }
                 
                 FollowStatus.YouFollowed -> {
-                    // 已关注 - 显示已关注按钮（可取消）
                     BBQOutlinedButton(
                         onClick = {
                             coroutineScope.launch {
                                 viewModel.unfollowUser(userData.id)
-                                // 显示取消关注提示
                                 snackbarHostState.showSnackbar(
                                     message = "已取消关注 ${userData.displayName}",
                                     actionLabel = "确定",
@@ -494,12 +471,10 @@ private fun ActionButtonsRow(
                 }
                 
                 FollowStatus.FollowedYou -> {
-                    // 关注了你 - 显示回关按钮
                     BBQButton(
                         onClick = {
                             coroutineScope.launch {
                                 viewModel.followUser(userData.id)
-                                // 显示回关成功提示
                                 snackbarHostState.showSnackbar(
                                     message = "已回关 ${userData.displayName}，现在你们互相关注了",
                                     actionLabel = "确定",
@@ -523,12 +498,10 @@ private fun ActionButtonsRow(
                 }
                 
                 FollowStatus.MutualFollow -> {
-                    // 已互关 - 显示互相关注按钮（可取消）
                     BBQOutlinedButton(
                         onClick = {
                             coroutineScope.launch {
                                 viewModel.unfollowUser(userData.id)
-                                // 显示取消关注提示
                                 snackbarHostState.showSnackbar(
                                     message = "已取消关注 ${userData.displayName}",
                                     actionLabel = "确定",
@@ -563,15 +536,15 @@ private fun ActionButtonsRow(
 
 @Composable
 private fun StatsCard(
-    userData: UnifiedUserDetail, // 使用 UnifiedUserDetail
+    userData: UnifiedUserDetail,
     onPostsClick: () -> Unit,
-    navController: NavController // 添加 navController 参数
+    navController: NavController
 ) {
     BBQCard {
         UserStats(
             userData = userData,
             onPostsClick = onPostsClick,
-            navController = navController, // 传递 navController
+            navController = navController,
             modifier = Modifier.padding(vertical = 8.dp)
         )
     }
@@ -579,10 +552,10 @@ private fun StatsCard(
 
 @Composable
 private fun UserStats(
-    userData: UnifiedUserDetail, // 使用 UnifiedUserDetail
+    userData: UnifiedUserDetail,
     onPostsClick: () -> Unit,
     modifier: Modifier = Modifier,
-    navController: NavController // 添加 navController 参数
+    navController: NavController
 ) {
     Row(
         modifier = modifier.fillMaxWidth(),
@@ -605,16 +578,16 @@ private fun UserStats(
             VerticalDivider()
         }
         userData.postCount?.let {
-StatItem(
-    count = it,
-    label = "帖子",
-    onClick = {
-        // 传递 userId 和 nickname 到 MyPostsScreen
-        val route = MyPosts(userData.id, userData.displayName).createRoute()
-        navController.navigate(route)
-    },
-    modifier = Modifier.weight(1f)
-)
+            StatItem(
+                count = it,
+                label = "帖子",
+                onClick = {
+                    // 这里需要根据你的导航系统调整
+                    // 暂时使用空的点击处理
+                    onPostsClick()
+                },
+                modifier = Modifier.weight(1f)
+            )
             VerticalDivider()
         }
         userData.likeCount?.let {
@@ -653,7 +626,7 @@ private fun InfoItem(
 }
 
 @Composable
-private fun DetailsCard(userData: UnifiedUserDetail) { // 使用 UnifiedUserDetail
+private fun DetailsCard(userData: UnifiedUserDetail) {
     BBQCard {
         Column(
             modifier = Modifier
