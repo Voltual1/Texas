@@ -144,7 +144,6 @@ companion object {
 }
 
 object ThemeColorStore {
-    object ThemeColorStore {
     // 直接使用默认函数创建默认颜色集
     val DEFAULT_COLORS = CustomColorSet(
         lightSet = ColorSet.defaultLight(),
