@@ -19,6 +19,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import cc.bbq.xq.ui.theme.BBQExposedDropdownMenuBox
 import cc.bbq.xq.ui.theme.BBQExposedDropdownMenu
+import androidx.compose.foundation.background
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
