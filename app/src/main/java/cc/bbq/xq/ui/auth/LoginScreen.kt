@@ -26,6 +26,8 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import cc.bbq.xq.AppStore
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import cc.bbq.xq.ui.theme.AppStoreDropdownMenu
 import coil3.compose.rememberAsyncImagePainter
 import kotlinx.coroutines.launch
@@ -76,6 +78,7 @@ fun LoginContent(
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
     val selectedStore by viewModel.selectedStore.collectAsState()
+    val scrollState = rememberScrollState()
 
     LaunchedEffect(errorMessage) {
         errorMessage?.let {
@@ -85,7 +88,7 @@ fun LoginContent(
 
     Scaffold(snackbarHost = { BBQSnackbarHost(hostState = snackbarHostState) }) { padding ->
         Column(
-            modifier = Modifier.padding(padding).fillMaxSize().padding(24.dp),
+            modifier = Modifier.padding(padding).fillMaxSize().padding(24.dp.verticalScroll(scrollState)),
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
@@ -167,6 +170,7 @@ fun RegisterContent(
     var passwordVisible by remember { mutableStateOf(false) }
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
+    val scrollState = rememberScrollState()
 
     LaunchedEffect(Unit) {
         viewModel.loadVerificationCode()
@@ -180,7 +184,7 @@ fun RegisterContent(
 
     Scaffold(snackbarHost = { BBQSnackbarHost(hostState = snackbarHostState) }) { padding ->
         Column(
-            modifier = Modifier.padding(padding).fillMaxSize().padding(24.dp),
+            modifier = Modifier.padding(padding).fillMaxSize().padding(24.dp.verticalScroll(scrollState)),
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
