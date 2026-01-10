@@ -421,8 +421,8 @@ private fun ActionButtonsRow(
                         onClick = {
                             coroutineScope.launch {
                             snackbarHostState.showSnackbar(
-                                    message = "已关注 ${userData.displayName}",
-                                    actionLabel = "确定",
+                                    message = "已关注 ${userData.displayName}，稍后将会刷新数据",
+//                                    actionLabel = "确定",
                                     duration = SnackbarDuration.Short
                                 )
                                 viewModel.followUser(userData.id)                                
@@ -448,8 +448,8 @@ private fun ActionButtonsRow(
                         onClick = {
                             coroutineScope.launch {
                             snackbarHostState.showSnackbar(
-                                    message = "已取消关注 ${userData.displayName}",
-                                    actionLabel = "确定",
+                                    message = "已取消关注 ${userData.displayName}，稍后将会刷新数据",
+//                                    actionLabel = "确定",
                                     duration = SnackbarDuration.Short
                                 )
                                 viewModel.unfollowUser(userData.id)                                
@@ -475,8 +475,8 @@ private fun ActionButtonsRow(
                         onClick = {
                             coroutineScope.launch {
                             snackbarHostState.showSnackbar(
-                                    message = "已回关 ${userData.displayName}，现在你们互相关注了",
-                                    actionLabel = "确定",
+                                    message = "已回关 ${userData.displayName}，稍后将会刷新数据",
+//                                    actionLabel = "确定",
                                     duration = SnackbarDuration.Short
                                 )
                                 viewModel.followUser(userData.id)                                
@@ -502,8 +502,8 @@ private fun ActionButtonsRow(
                         onClick = {
                             coroutineScope.launch {
                                                             snackbarHostState.showSnackbar(
-                                    message = "已取消关注 ${userData.displayName}",
-                                    actionLabel = "确定",
+                                    message = "已取消关注 ${userData.displayName}，稍后将会刷新数据",
+//                                    actionLabel = "确定",
                                     duration = SnackbarDuration.Short
                                 )
 
