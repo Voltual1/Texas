@@ -45,6 +45,8 @@ import cc.bbq.xq.ui.theme.ImagePreviewItem // 导入 ImagePreviewItem
 import cc.bbq.xq.ui.ImagePreview // 导入 ImagePreview 导航目标
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.ui.text.input.KeyboardType
+import cc.bbq.xq.ui.theme.BBQExposedDropdownMenuBox
+import cc.bbq.xq.ui.theme.BBQExposedDropdownMenu
 
 private const val MODE_CREATE = "create"
 private const val MODE_REFUND = "refund"
@@ -219,7 +221,7 @@ fun PostCreateScreen(
             SUBSECTIONS.find { it.id == uiState.selectedSubsectionId }?.name ?: ""
         }
 
-        ExposedDropdownMenuBox(
+        BBQExposedDropdownMenuBox(
     expanded = expanded,
     onExpandedChange = { expanded = it }
 ) {
@@ -236,7 +238,7 @@ fun PostCreateScreen(
         label = { Text(if (isRefundMode) "问题类型" else "选择话题") },
         trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) }
     )
-    ExposedDropdownMenu(
+    BBQExposedDropdownMenu(
         expanded = expanded,
         onDismissRequest = { expanded = false }
     ) {
