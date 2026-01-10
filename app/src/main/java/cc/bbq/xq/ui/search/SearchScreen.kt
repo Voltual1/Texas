@@ -292,6 +292,7 @@ private fun SearchHeader(
                 
                 DropdownMenu(
                     expanded = showModeMenu, 
+                    modifier = Modifier.background(MaterialTheme.colorScheme.surfaceVariant),
                     onDismissRequest = { showModeMenu = false }
                 ) {
                     DropdownMenuItem(
