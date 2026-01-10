@@ -92,7 +92,6 @@ Box(
         }
     }
 }
-}
 
         Box(
             modifier = Modifier
