@@ -458,19 +458,20 @@ fun AppStoreDropdownMenu(
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
     label: String = "选择商店",
-    // 添加 appStores 参数，带有默认值以保证向后兼容性
     appStores: List<AppStore> = AppStore.entries 
 ) {
     var expanded by remember { mutableStateOf(false) }
+
+    // 1. 容器只负责布局，不负责背景
     ExposedDropdownMenuBox(
         expanded = expanded,
-        modifier = modifier.background(MaterialTheme.colorScheme.surfaceVariant),
-        onExpandedChange = { expanded = it }
+        onExpandedChange = { if (enabled) expanded = it },
+        modifier = modifier // 此时的 modifier 不带背景
     ) {
         OutlinedTextField(
-            modifier = modifier
+            //  使用 Modifier.menuAnchor 绑定
+            modifier = Modifier
                 .fillMaxWidth()
-                // 使用强类型的 menuAnchor
                 .menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable, enabled),
             readOnly = true,
             value = selectedStore.displayName,
@@ -479,29 +480,29 @@ fun AppStoreDropdownMenu(
             trailingIcon = {
                 ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded)
             },
-            colors = ExposedDropdownMenuDefaults.outlinedTextFieldColors(),
-            shape = AppShapes.medium
+            //  在这里统一设置颜色，会自动处理圆角背景
+            colors = ExposedDropdownMenuDefaults.outlinedTextFieldColors(
+                unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
+                focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant
+            ),
+            shape = AppShapes.medium,
+            enabled = enabled
         )
+
         ExposedDropdownMenu(
             expanded = expanded,
+            modifier = modifier.background(MaterialTheme.colorScheme.surfaceVariant),
             onDismissRequest = { expanded = false }
         ) {
-            // 使用传入的 appStores 列表进行迭代
             appStores.forEach { store ->
                 DropdownMenuItem(
                     text = {
-                        Text(
-                            store.displayName,
-                            style = MaterialTheme.typography.bodyMedium
-                        )
+                        Text(store.displayName, style = MaterialTheme.typography.bodyMedium)
                     },
                     onClick = {
                         onStoreChange(store)
                         expanded = false
-                    },
-                    colors = MenuDefaults.itemColors(
-                        textColor = MaterialTheme.colorScheme.onSurface
-                    )
+                    }
                 )
             }
         }
