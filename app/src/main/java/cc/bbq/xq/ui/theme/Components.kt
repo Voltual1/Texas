@@ -8,76 +8,25 @@
 // 如果没有，请查阅 <http://www.gnu.org/licenses/>。
 package cc.bbq.xq.ui.theme
 
-import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.BoxScope
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ColumnScope
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.heightIn
-import androidx.compose.foundation.layout.imePadding
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.*
+import androidx.compose.foundation.gestures.ScrollableState
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyGridState
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.ExperimentalMaterialApi
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.BrokenImage
-import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.Download
-import androidx.compose.material.icons.filled.Link
-import androidx.compose.material.pullrefresh.PullRefreshIndicator
-import androidx.compose.material.pullrefresh.pullRefresh
-import androidx.compose.material.pullrefresh.rememberPullRefreshState
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.ExposedDropdownMenuBox
-import androidx.compose.material3.ExposedDropdownMenuDefaults
-import androidx.compose.material3.ExposedDropdownMenuAnchorType
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.MenuDefaults
-import androidx.compose.material3.ModalBottomSheet
-import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Snackbar
-import androidx.compose.material3.SnackbarData
-import androidx.compose.material3.SnackbarHost
-import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.Switch
-import androidx.compose.material3.Text
-import androidx.compose.material3.rememberModalBottomSheetState
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
+import androidx.compose.material.icons.filled.*
+import androidx.compose.material3.*
+import androidx.compose.material3.pulltorefresh.PullToRefreshDefaults
+import androidx.compose.material3.pulltorefresh.PullToRefreshState
+import androidx.compose.runtime.*
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
@@ -86,26 +35,14 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.window.PopupProperties
-import coil3.compose.AsyncImage
-import coil3.compose.SubcomposeAsyncImage
-import coil3.compose.rememberAsyncImagePainter
+import androidx.navigation.NavController
+import coil3.compose.*
 import coil3.request.ImageRequest
 import cc.bbq.xq.AppStore
-import cc.bbq.xq.data.unified.UnifiedAppItem
-import cc.bbq.xq.data.unified.UnifiedDownloadSource
-import androidx.compose.foundation.ScrollState
-import cc.bbq.xq.data.unified.UnifiedComment
+import cc.bbq.xq.data.unified.*
 import cc.bbq.xq.ui.compose.LinkifyText
 import kotlinx.coroutines.launch
-import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.combinedClickable
-import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.material3.*
-import androidx.compose.ui.Modifier
-import androidx.navigation.NavController
 
 // 基础按钮组件
 @Composable
@@ -892,30 +829,33 @@ fun BBQExposedDropdownMenuBox(
     )
 }
 
-// 移植的 SwipeToRefresh 组件来源自 https://github.com/10miaomiao/bilimiao
-@OptIn(ExperimentalMaterialApi::class)
+// --- 新增的下拉刷新指示器组件 ---
+
+/**
+ * 自定义的下拉刷新指示器，使用 MaterialTheme 语义颜色。
+ *
+ * @param state [PullToRefreshState] 状态对象。
+ * @param isRefreshing Boolean，指示是否正在进行刷新。
+ * @param modifier Modifier 应用于此指示器的修饰符。
+ * @param backgroundColor 指示器容器的背景色，默认使用 [MaterialTheme.colorScheme.surface]。
+ * @param contentColor 指示器的颜色，默认使用 [MaterialTheme.colorScheme.primary]。
+ * @param containerShape 指示器容器的形状，默认使用 [MaterialTheme.shapes.small]。
+ */
 @Composable
-fun SwipeToRefresh(
+fun BBQPullRefreshIndicator(
+    state: PullToRefreshState,
+    isRefreshing: Boolean,
     modifier: Modifier = Modifier,
-    refreshing: Boolean,
-    onRefresh: () -> Unit,
-    content: @Composable BoxScope.() -> Unit
+    backgroundColor: Color = MaterialTheme.colorScheme.surface,
+    contentColor: Color = MaterialTheme.colorScheme.primary,
+    containerShape: Shape = MaterialTheme.shapes.small, // 或者使用特定的指示器形状
 ) {
-    val state = rememberPullRefreshState(
-        refreshing = refreshing,
-        onRefresh = onRefresh,
+    PullToRefreshDefaults.LoadingIndicator(
+        state = state,
+        isRefreshing = isRefreshing,
+        modifier = modifier,
+        color = contentColor, // 注意：LoadingIndicator 的 color 参数对应指示器本身颜色
+        backgroundColor = backgroundColor, // 注意：LoadingIndicator 的 backgroundColor 参数对应指示器容器背景色
+        shape = containerShape // 注意：LoadingIndicator 的 shape 参数对应指示器容器形状
     )
-    Box(modifier = modifier
-        .fillMaxSize()
-        .pullRefresh(state)
-    ){
-        content()
-        PullRefreshIndicator(
-            refreshing,
-            state,
-            Modifier.align(Alignment.TopCenter),
-            contentColor = MaterialTheme.colorScheme.primary,
-            backgroundColor = MaterialTheme.colorScheme.surface,
-        )
-    }
 }

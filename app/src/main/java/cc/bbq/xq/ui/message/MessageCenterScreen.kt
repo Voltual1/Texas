@@ -13,15 +13,15 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
+import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import cc.bbq.xq.KtorClient
 import cc.bbq.xq.ui.compose.MessageItem
 import cc.bbq.xq.ui.compose.PageJumpDialog
 import cc.bbq.xq.ui.compose.PaginationControls
-import cc.bbq.xq.ui.theme.SwipeToRefresh // 导入移植的 SwipeToRefresh 组件
 
 // 在 MessageCenterScreen.kt 中修复 UI 显示问题
 
@@ -43,15 +43,23 @@ fun MessageCenterScreen(
         viewModel.initializeIfNeeded()
     }
 
-    // 使用移植的 SwipeToRefresh 组件
-    SwipeToRefresh(
-        refreshing = isRefreshing,
+    val pullRefreshState = rememberPullToRefreshState()
+
+    // 使用 MD3 的 PullToRefreshBox
+    // 移除自定义 indicator，使用默认指示器
+    PullToRefreshBox(
+        isRefreshing = isRefreshing,
         onRefresh = {
             isRefreshing = true
+            // 触发 ViewModel 重置和加载第一页
             viewModel.reset()
+            // 结束刷新状态的逻辑由 LaunchedEffect 处理
         },
+        state = pullRefreshState, // 显式传递 state
+        // 不再自定义 indicator，使用默认
         modifier = modifier.fillMaxSize()
     ) {
+        // 内容区域
         Column(
             modifier = Modifier.fillMaxSize()
         ) {
@@ -59,6 +67,7 @@ fun MessageCenterScreen(
             Box(modifier = Modifier.weight(1f)) {
                 when {
                     // 显示加载指示条 - 仅在非刷新状态下且没有消息时显示
+                    // 修改条件：不在刷新时显示这个加载指示器
                     state.isLoading && state.messages.isEmpty() && !isRefreshing -> {
                         Column(
                             modifier = Modifier.align(Alignment.Center),
@@ -75,8 +84,10 @@ fun MessageCenterScreen(
                             modifier = Modifier.align(Alignment.Center)
                         )
                     }
-                    state.messages.isEmpty() -> {
-                        Text(
+                    // 这个条件可能与上面的冲突或冗余，根据实际初始化逻辑调整
+                    // 如果初始化但尚未加载，且不在刷新状态，可以显示加载提示
+                    state.messages.isEmpty() && !state.isInitialized && !isRefreshing -> {
+                         Text(
                             text = "加载中...",
                             modifier = Modifier.align(Alignment.Center)
                         )
@@ -95,6 +106,7 @@ fun MessageCenterScreen(
                             }
 
                             // 分页加载时显示底部加载指示 - 仅在非刷新状态下显示
+                            // 修改条件：不在刷新时显示这个加载指示器
                             if (state.isLoading && state.messages.isNotEmpty() && !isRefreshing) {
                                 item {
                                     Box(
@@ -112,6 +124,7 @@ fun MessageCenterScreen(
                 }
 
                 // 显示错误信息 - 通常不在刷新时显示，除非刷新本身失败
+                // 这里简化处理：只要有错误且列表为空就显示（忽略 isRefreshing）
                 state.error?.let { error ->
                     if (state.messages.isEmpty()) {
                         Column(
@@ -123,16 +136,20 @@ fun MessageCenterScreen(
                                 color = MaterialTheme.colorScheme.error
                             )
                             Spacer(modifier = Modifier.height(8.dp))
-                            Button(onClick = { viewModel.reset() }) {
+                            Button(onClick = {
+                                viewModel.reset()
+                            }) {
                                 Text("重试")
                             }
                         }
                     }
+                    // 如果有消息且加载出错，可以考虑用 Snackbar 显示错误
                 }
             }
 
             // 分页控制栏 - 只在有数据且不是加载中时显示
-            if (state.messages.isNotEmpty() && !state.isLoading && !isRefreshing) {
+            // 修改条件：不在刷新时显示分页控件（可选，取决于设计）
+            if (state.messages.isNotEmpty() && !state.isLoading /* && !isRefreshing */) {
                 PaginationControls(
                     currentPage = state.currentPage,
                     totalPages = state.totalPages,
@@ -144,7 +161,7 @@ fun MessageCenterScreen(
                 )
             }
         }
-    }
+    } // End of PullToRefreshBox content
 
     // 分页跳转对话框
     if (showPageDialog) {
@@ -171,6 +188,7 @@ fun MessageCenterScreen(
              isRefreshing = false
         }
         // 额外检查：如果 ViewModel 的状态已经是初始化完成且非加载状态，但 UI 仍认为在刷新，也应结束
+        // 这可以处理一些边界情况
         if (state.isInitialized && !state.isLoading && isRefreshing) {
              isRefreshing = false
         }
