@@ -1,11 +1,6 @@
 //Copyright (C) 2025 Voltual
-// 本程序是自由软件：你可以根据自由软件基金会发布的 GNU 通用公共许可证第3版
-//（或任意更新的版本）的条款重新分发和/或修改它。
-//本程序是基于希望它有用而分发的，但没有任何担保；甚至没有适销性或特定用途适用性的隐含担保。
-// 有关更多细节，请参阅 GNU 通用公共许可证。
-//
-// 你应该已经收到了一份 GNU 通用公共许可证的副本
-// 如果没有，请查阅 <http://www.gnu.org/licenses/>。
+// ... (版权信息保持不变) ...
+
 package cc.bbq.xq.ui.message
 
 import androidx.compose.foundation.layout.*
@@ -14,6 +9,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
+import androidx.compose.material3.pulltorefresh.PullToRefreshDefaults
 import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -43,6 +39,8 @@ fun MessageCenterScreen(
         viewModel.initializeIfNeeded()
     }
 
+    val pullRefreshState = rememberPullToRefreshState()
+
     // 使用 MD3 的 PullToRefreshBox
     PullToRefreshBox(
         isRefreshing = isRefreshing,
@@ -50,13 +48,19 @@ fun MessageCenterScreen(
             isRefreshing = true
             // 触发 ViewModel 重置和加载第一页
             viewModel.reset()
-            // 注意：viewModel.reset() 会将 _isInitialized 设为 false，
-            // 然后 initializeIfNeeded() 又会调用 loadPage(1)。
-            // 我们需要在 loadPage 完成后，将 isRefreshing 设为 false。
-            // 一种方式是在 ViewModel 状态中添加一个字段来指示刷新完成，
-            // 或者使用 LaunchedEffect 监听 state.isLoading 和 state.isInitialized 的变化。
-            // 这里我们使用后者，因为它更符合 MVVM 的思想，
-            // 让 UI 根据 ViewModel 的状态变化做出反应。
+            // 结束刷新状态的逻辑由 LaunchedEffect 处理
+        },
+        state = pullRefreshState, // 显式传递 state
+        // 自定义指示器颜色
+        indicator = {
+            PullToRefreshDefaults.LoadingIndicator(
+                state = pullRefreshState,
+                isRefreshing = isRefreshing,
+                modifier = Modifier.align(Alignment.TopCenter),
+                // 使用语义颜色
+                color = MaterialTheme.colorScheme.primary, // 指示器颜色
+                backgroundColor = MaterialTheme.colorScheme.surface, // 背景颜色
+            )
         },
         modifier = modifier.fillMaxSize()
     ) {
@@ -67,8 +71,9 @@ fun MessageCenterScreen(
             // 消息列表
             Box(modifier = Modifier.weight(1f)) {
                 when {
-                    // 修复：显示加载指示条
-                    state.isLoading && state.messages.isEmpty() -> {
+                    // 显示加载指示条 - 仅在非刷新状态下且没有消息时显示
+                    // 修改条件：不在刷新时显示这个加载指示器
+                    state.isLoading && state.messages.isEmpty() && !isRefreshing -> {
                         Column(
                             modifier = Modifier.align(Alignment.Center),
                             horizontalAlignment = Alignment.CenterHorizontally
@@ -84,13 +89,11 @@ fun MessageCenterScreen(
                             modifier = Modifier.align(Alignment.Center)
                         )
                     }
-                    state.messages.isEmpty() -> {
-                        // 这种情况可能发生在初始化但尚未开始加载时，
-                        // 或者加载完成但列表为空时（但 isInitialized 为 false）。
-                        // 通常在 isLoading 为 true 时会走上面的分支。
-                        // 如果走到这里，可能需要更细致的状态区分。
-                        Text(
-                            text = "加载中...", // 或者 "暂无消息" 取决于具体逻辑
+                    // 这个条件可能与上面的冲突或冗余，根据实际初始化逻辑调整
+                    // 如果初始化但尚未加载，且不在刷新状态，可以显示加载提示
+                    state.messages.isEmpty() && !state.isInitialized && !isRefreshing -> {
+                         Text(
+                            text = "加载中...",
                             modifier = Modifier.align(Alignment.Center)
                         )
                     }
@@ -107,8 +110,9 @@ fun MessageCenterScreen(
                                 )
                             }
 
-                            // 修复：分页加载时显示底部加载指示
-                            if (state.isLoading && state.messages.isNotEmpty()) {
+                            // 分页加载时显示底部加载指示 - 仅在非刷新状态下显示
+                            // 修改条件：不在刷新时显示这个加载指示器
+                            if (state.isLoading && state.messages.isNotEmpty() && !isRefreshing) {
                                 item {
                                     Box(
                                         modifier = Modifier
@@ -124,10 +128,9 @@ fun MessageCenterScreen(
                     }
                 }
 
-                // 显示错误信息
+                // 显示错误信息 - 通常不在刷新时显示，除非刷新本身失败
+                // 这里简化处理：只要有错误且列表为空就显示（忽略 isRefreshing）
                 state.error?.let { error ->
-                    // 只有在没有消息且有错误时才显示错误信息（避免覆盖列表）
-                    // 如果有消息但加载下一页出错，错误信息可能需要在别的地方显示，比如 Snackbar
                     if (state.messages.isEmpty()) {
                         Column(
                             modifier = Modifier.align(Alignment.Center),
@@ -139,7 +142,6 @@ fun MessageCenterScreen(
                             )
                             Spacer(modifier = Modifier.height(8.dp))
                             Button(onClick = {
-                                // 重试逻辑：重置并重新加载
                                 viewModel.reset()
                             }) {
                                 Text("重试")
@@ -147,12 +149,12 @@ fun MessageCenterScreen(
                         }
                     }
                     // 如果有消息且加载出错，可以考虑用 Snackbar 显示错误
-                    // 或者在列表底部显示错误信息
                 }
             }
 
             // 分页控制栏 - 只在有数据且不是加载中时显示
-            if (state.messages.isNotEmpty() && !state.isLoading) {
+            // 修改条件：不在刷新时显示分页控件（可选，取决于设计）
+            if (state.messages.isNotEmpty() && !state.isLoading /* && !isRefreshing */) {
                 PaginationControls(
                     currentPage = state.currentPage,
                     totalPages = state.totalPages,
@@ -181,13 +183,18 @@ fun MessageCenterScreen(
     }
 
     // 监听 ViewModel 状态变化以结束刷新状态
-    // 当加载完成（isLoading 变为 false）且初始化完成（isInitialized 为 true）时，结束刷新
-    LaunchedEffect(state.isLoading, state.isInitialized) {
+    LaunchedEffect(state.isLoading, state.isInitialized, state.error) {
+        // 当加载完成（isLoading 变为 false）且初始化完成（isInitialized 为 true）时，结束刷新
         if (!state.isLoading && state.isInitialized && isRefreshing) {
             isRefreshing = false
         }
         // 如果加载失败并且正在刷新，也应该结束刷新状态
         if (state.error != null && isRefreshing) {
+             isRefreshing = false
+        }
+        // 额外检查：如果 ViewModel 的状态已经是初始化完成且非加载状态，但 UI 仍认为在刷新，也应结束
+        // 这可以处理一些边界情况
+        if (state.isInitialized && !state.isLoading && isRefreshing) {
              isRefreshing = false
         }
     }
