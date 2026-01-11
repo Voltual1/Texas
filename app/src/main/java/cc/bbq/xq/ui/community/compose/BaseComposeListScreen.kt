@@ -385,8 +385,8 @@ fun BaseComposeListScreen(
                             .padding(16.dp)
                     )
                 }
-            } // End Box
-        } // End PullToRefreshBox
+            } 
+        } 
     }
 }
 
