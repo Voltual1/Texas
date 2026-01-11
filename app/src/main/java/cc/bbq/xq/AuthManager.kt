@@ -38,16 +38,18 @@ object AuthManager {
     fun getAead(): Aead = aead
 
     // --- 1. 初始化 (必须在 Application 调用) ---
-    fun initialize(context: Context) {
-        AeadConfig.register()
-        aead = AndroidKeysetManager.Builder()
-            .withSharedPref(context, KEYSET_NAME, PREF_FILE_NAME)
-            .withKeyTemplate(KeyTemplates.get("AES256_GCM"))
-            .withMasterKeyUri(MASTER_KEY_URI)
-            .build()
-            .keysetHandle
-            .getPrimitive(Aead::class.java)
-    }
+fun initialize(context: Context) {
+    AeadConfig.register()
+    val keysetHandle = AndroidKeysetManager.Builder()
+        .withSharedPref(context, KEYSET_NAME, PREF_FILE_NAME)
+        .withKeyTemplate(KeyTemplates.get("AES256_GCM"))
+        .withMasterKeyUri(MASTER_KEY_URI)
+        .build()
+        .keysetHandle
+
+    // 修复处：使用 getPrimitive 的现代替代方案
+    aead = keysetHandle.getPrimitive(Aead::class.java) 
+}
 
     // --- 2. 保存逻辑 (保持原方法签名) ---
     suspend fun saveCredentials(
