@@ -164,7 +164,9 @@ fun BaseComposeListScreen(
                     ) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = " )
+                            contentDescription = "返回",
+                            tint = MaterialTheme.colorScheme.primary
+                        )
                     }
 
                     // 标题区域 - 可水平滚动
