@@ -91,9 +91,11 @@ fun UserDetailScreen(
     val pullRefreshState = rememberPullToRefreshState()
 
     // 监听 ViewModel 状态变化以结束刷新状态
+    // 优化 LaunchedEffect 条件
     LaunchedEffect(isLoading, errorMessage, userData) {
-        if (!isLoading && (userData != null || !errorMessage.isNullOrEmpty()) && isRefreshing) {
-            isRefreshing = false
+        // 当内容加载完成（无论成功还是失败）且正在刷新时，结束刷新状态
+        if (!isLoading && isRefreshing) {
+             isRefreshing = false
         }
     }
 
@@ -117,15 +119,12 @@ fun UserDetailScreen(
         },
         modifier = modifier.fillMaxSize()
     ) {
-        // Box( // 移除旧的 Box
-        //     modifier = modifier
-        //         .fillMaxSize()
-        //         .pullRefresh(pullRefreshState) // 移除旧的 pullRefresh
-        // ) { // 移除旧的 Box
         ScreenContent(
             modifier = Modifier.fillMaxSize(),
             userData = userData,
+            // 关键修改：将 isLoading 和 isRefreshing 传入 ScreenContent
             isLoading = isLoading,
+            isRefreshing = isRefreshing, // <<<--- 新增参数
             errorMessage = errorMessage,
             onPostsClick = onPostsClick,
             onResourcesClick = onResourcesClick,
@@ -134,15 +133,6 @@ fun UserDetailScreen(
             navController = navController,
             viewModel = viewModel
         )
-        // 移除旧的 PullRefreshIndicator
-        // PullRefreshIndicator(
-        //     refreshing = refreshing,
-        //     state = pullRefreshState,
-        //     modifier = Modifier.align(Alignment.TopCenter),
-        //     contentColor = MaterialTheme.colorScheme.primary,
-        //     backgroundColor = MaterialTheme.colorScheme.surface
-        // )
-        // } // End old Box
     } // End PullToRefreshBox
 }
 
@@ -150,7 +140,9 @@ fun UserDetailScreen(
 private fun ScreenContent(
     modifier: Modifier = Modifier,
     userData: UnifiedUserDetail?,
-    isLoading: Boolean,
+    // 关键修改：接收 isLoading 和 isRefreshing
+    isLoading: Boolean,       // <<<--- 新增参数
+    isRefreshing: Boolean,     // <<<--- 新增参数
     errorMessage: String?,
     onPostsClick: () -> Unit,
     onResourcesClick: (Long, AppStore) -> Unit,
@@ -164,8 +156,10 @@ private fun ScreenContent(
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.surface)
     ) {
+        // 关键修改：更新 when 条件，将 isLoading 和 isRefreshing 结合
         when {
-            isLoading -> LoadingState(Modifier.align(Alignment.Center))
+            // 显示加载指示器 - 仅在非刷新状态下且正在加载时显示
+            isLoading && !isRefreshing -> LoadingState(Modifier.align(Alignment.Center)) // <<<--- 修改条件
             !errorMessage.isNullOrEmpty() -> ErrorState(message = errorMessage, modifier = Modifier.align(Alignment.Center))
             userData == null -> EmptyState(modifier = Modifier.align(Alignment.Center))
             else -> {
