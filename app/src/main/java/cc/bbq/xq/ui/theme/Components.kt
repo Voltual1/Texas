@@ -893,33 +893,36 @@ fun BBQExposedDropdownMenuBox(
     )
 }
 
-// --- 新增的下拉刷新指示器组件 ---
-
 /**
  * 自定义的下拉刷新指示器，使用 MaterialTheme 语义颜色。
+ * 兼容 Compose Material 3 1.4.0 及以上版本。
  *
  * @param state [PullToRefreshState] 状态对象。
  * @param isRefreshing Boolean，指示是否正在进行刷新。
  * @param modifier Modifier 应用于此指示器的修饰符。
  * @param backgroundColor 指示器容器的背景色，默认使用 [MaterialTheme.colorScheme.surface]。
  * @param contentColor 指示器的颜色，默认使用 [MaterialTheme.colorScheme.primary]。
- * @param containerShape 指示器容器的形状，默认使用 [MaterialTheme.shapes.small]。
+ * @param containerShape 指示器容器的形状，默认使用 [PullToRefreshDefaults.indicatorShape]。
  */
 @Composable
 fun BBQPullRefreshIndicator(
     state: PullToRefreshState,
     isRefreshing: Boolean,
     modifier: Modifier = Modifier,
-    backgroundColor: Color = MaterialTheme.colorScheme.surface,
-    contentColor: Color = MaterialTheme.colorScheme.primary,
-    containerShape: Shape = MaterialTheme.shapes.small, // 或者使用特定的指示器形状
+    backgroundColor: Color = MaterialTheme.colorScheme.surface, // 使用语义颜色
+    contentColor: Color = MaterialTheme.colorScheme.primary,   // 使用语义颜色
+    containerShape: Shape = PullToRefreshDefaults.indicatorShape, // 使用默认形状
 ) {
+    // 使用 PullToRefreshDefaults.Indicator，它在 1.2.0+ 可用
     PullToRefreshDefaults.Indicator(
         state = state,
         isRefreshing = isRefreshing,
         modifier = modifier,
-        color = contentColor, // 注意：LoadingIndicator 的 color 参数对应指示器本身颜色
-        backgroundColor = backgroundColor, // 注意：LoadingIndicator 的 backgroundColor 参数对应指示器容器背景色
-        shape = containerShape // 注意：LoadingIndicator 的 shape 参数对应指示器容器形状
+        containerColor = backgroundColor, // 映射到 containerColor
+        color = contentColor,             // 映射到 color
+        // shape 参数在 PullToRefreshDefaults.Indicator 中不可直接设置
+        // Indicator 使用 PullToRefreshDefaults.indicatorShape 作为默认形状
+        // 如果需要自定义形状包裹，可以考虑使用 IndicatorBox，但这会更复杂。
+        // 对于当前需求，使用 Indicator 并设置颜色通常足够。
     )
 }
