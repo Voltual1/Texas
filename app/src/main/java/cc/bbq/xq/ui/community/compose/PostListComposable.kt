@@ -5,7 +5,7 @@
 // 有关更多细节，请参阅 GNU 通用公共许可证。
 //
 // 你应该已经收到了一份 GNU 通用公共许可证的副本
-// 如果没有，请查阅 <http://www.gnu.org/licenses/>。
+// 如果没有，请查阅 <http://www.gnu.org/licenses/>.
 
 package cc.bbq.xq.ui.community.compose
 
@@ -26,35 +26,34 @@ import cc.bbq.xq.ui.compose.SharedPostItem
 
 @Composable
 fun PostListComposable(
-    posts: List<KtorClient.Post>, // 修改为 KtorClient.Post
+    posts: List<KtorClient.Post>,
     isLoading: Boolean,
-    onItemClick: (KtorClient.Post) -> Unit, // 修改为 KtorClient.Post
+    onItemClick: (KtorClient.Post) -> Unit,
     onLoadMore: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    // 新增 isRefreshing 参数
+    isRefreshing: Boolean = false // <<<--- 新增参数，默认值为 false 以保持向后兼容
 ) {
     val listState = rememberLazyListState()
-    
     val shouldLoadMore = remember {
         derivedStateOf {
             val lastVisibleItem = listState.layoutInfo.visibleItemsInfo.lastOrNull()
             val totalItems = listState.layoutInfo.totalItemsCount
-            
             lastVisibleItem?.let {
                 it.index >= totalItems - 3
             } ?: false
         }
     }
-    
+
     LaunchedEffect(shouldLoadMore.value) {
         if (shouldLoadMore.value && !isLoading) {
-            onLoadMore() // 现在这个调用是合法的
+            onLoadMore()
         }
     }
-    
+
     Box(modifier = modifier) {
         LazyColumn(
             state = listState,
-            // 核心修正: 使用更合适的 padding 和 arrangement
             contentPadding = PaddingValues(vertical = 8.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
@@ -65,9 +64,9 @@ fun PostListComposable(
                 )
             }
         }
-        
-        // 在列表顶部显示加载指示器，避免遮挡底部内容
-        if (isLoading && posts.isNotEmpty()) {
+        // 在列表底部显示加载更多指示器
+        // 修改条件：只有在非刷新状态下且正在加载时才显示
+        if (isLoading && posts.isNotEmpty() && !isRefreshing) { // <<<--- 修改条件，添加 && !isRefreshing
             CircularProgressIndicator(
                 modifier = Modifier
                     .align(Alignment.BottomCenter)

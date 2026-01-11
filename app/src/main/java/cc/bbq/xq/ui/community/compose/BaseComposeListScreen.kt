@@ -370,7 +370,9 @@ fun BaseComposeListScreen(
                             isLoading = isLoading,
                             onItemClick = onItemClick,
                             onLoadMore = onLoadMore,
-                            modifier = Modifier.fillMaxSize()
+                            modifier = Modifier.fillMaxSize(),
+                            // 传递 isRefreshing 参数
+                            isRefreshing = isRefreshing
                         )
                     }
                 }
