@@ -48,8 +48,8 @@ import cc.bbq.xq.ui.theme.BBQPullRefreshIndicator
 fun UserListScreen(
     users: List<KtorClient.UserItem>,
     isLoading: Boolean,
-    errorMessage: String?, //isEmpty: Boolean,
-    onLoadMore: () -> Unit, // onRefresh: () -> Unit, // 添加 onRefresh 参数
+    errorMessage: String?, 
+    onLoadMore: () -> Unit,
     onUserClick: (Long) -> Unit,
     modifier: Modifier = Modifier,
     viewModel: UserListViewModel = viewModel()
@@ -90,43 +90,38 @@ fun UserListScreen(
         },
         modifier = modifier.fillMaxSize()
     ) {
-        // Box( // 移除旧的 Box
-        //     modifier = modifier
-        //         .fillMaxSize()
-        //         .pullRefresh(pullRefreshState) // 移除旧的 pullRefresh
-        // ) { // 移除旧的 Box
-        Column(
-            modifier = Modifier.fillMaxSize()
-        ) {
-            // 错误状态显示
-            safeErrorMessage?.takeIf { it.isNotEmpty() }?.let { message ->
-                ErrorState(message = message, onRetry = { viewModel.refresh() }) // 错误重试也调用 viewModel.refresh()
-                return // 注意：这里返回的是 Column 的作用域，不是整个函数
+        // 主内容区域
+        Box(modifier = Modifier.fillMaxSize()) {
+            // 使用 when 语句来处理不同的状态，避免在 Column 内部使用 return
+            when {
+                // 错误状态显示 - 优先级最高
+                !safeErrorMessage.isNullOrEmpty() -> {
+                    ErrorState(
+                        message = safeErrorMessage ?: "未知错误",
+                        onRetry = { viewModel.refresh() } // 错误重试也调用 viewModel.refresh()
+                    )
+                }
+                // 空状态显示 - 在没有错误且没有数据时显示
+                safeUsers.isEmpty() && !safeIsLoading -> {
+                    EmptyState()
+                }
+                // 加载中且没有数据时显示加载指示器
+                safeIsLoading && safeUsers.isEmpty() -> {
+                     Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                         CircularProgressIndicator()
+                     }
+                }
+                // 有数据时显示列表
+                else -> {
+                    SafeLazyColumn(
+                        users = safeUsers,
+                        isLoading = safeIsLoading,
+                        onLoadMore = onLoadMore,
+                        onUserClick = onUserClick
+                    )
+                }
             }
-
-            // 空状态显示
-            if (safeUsers.isEmpty() && !safeIsLoading && safeErrorMessage.isNullOrEmpty()) {
-                EmptyState()
-                return // 注意：这里返回的是 Column 的作用域，不是整个函数
-            }
-
-            // 使用更安全的 LazyColumn 实现
-            SafeLazyColumn(
-                users = safeUsers,
-                isLoading = safeIsLoading,
-                onLoadMore = onLoadMore,
-                onUserClick = onUserClick
-            )
         }
-        // 移除旧的 PullRefreshIndicator
-        // PullRefreshIndicator(
-        //     refreshing = refreshing,
-        //     state = pullRefreshState,
-        //     modifier = Modifier.align(Alignment.TopCenter),
-        //     contentColor = MaterialTheme.colorScheme.primary,
-        //     backgroundColor = MaterialTheme.colorScheme.surface
-        // )
-        // } // 移除旧的 Box
     } // End PullToRefreshBox
 }
 
@@ -264,24 +259,25 @@ private fun EmptyState() {
 
 @Composable
 private fun ErrorState(message: String, onRetry: () -> Unit) {
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(24.dp),
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally
+    Box(
+        modifier = Modifier.fillMaxSize().padding(24.dp),
+        contentAlignment = Alignment.Center
     ) {
-        Text(
-            text = message,
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.error,
-            textAlign = TextAlign.Center
-        )
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Text(
+                text = message,
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.error,
+                textAlign = TextAlign.Center
+            )
 
-        Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
-        Button(onClick = onRetry) {
-            Text(stringResource(R.string.retry))
+            Button(onClick = onRetry) {
+                Text(stringResource(R.string.retry))
+            }
         }
     }
 }
