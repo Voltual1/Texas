@@ -6,6 +6,7 @@
 //
 // 你应该已经收到了一份 GNU 通用公共许可证的副本
 // 如果没有，请查阅 <http://www.gnu.org/licenses/>.
+
 package cc.bbq.xq.ui.plaza
 
 import android.content.ClipData
@@ -13,6 +14,11 @@ import android.content.ClipboardManager
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
+// 移除 MD2 的 ExperimentalMaterialApi 和 pullrefresh 导入
+// import androidx.compose.material.ExperimentalMaterialApi
+// import androidx.compose.material.pullrefresh.PullRefreshIndicator
+// import androidx.compose.material.pullrefresh.pullRefresh
+// import androidx.compose.material.pullrefresh.rememberPullRefreshState
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.clickable
@@ -22,11 +28,9 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-// 修复：从正确的包导入 pullRefresh 相关组件
-import androidx.compose.material.ExperimentalMaterialApi
-import androidx.compose.material.pullrefresh.PullRefreshIndicator
-import androidx.compose.material.pullrefresh.pullRefresh
-import androidx.compose.material.pullrefresh.rememberPullRefreshState
+// 添加 MD3 pullrefresh 导入
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
+import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import coil3.request.ImageRequest
 import coil3.request.CachePolicy
 import androidx.compose.ui.platform.LocalContext
@@ -58,6 +62,8 @@ import cc.bbq.xq.ui.UpdateAppRelease
 import cc.bbq.xq.ui.community.compose.CommentItem
 import cc.bbq.xq.ui.theme.BBQSnackbarHost
 import cc.bbq.xq.ui.theme.DownloadSourceDrawer
+// 导入我们自定义的指示器
+import cc.bbq.xq.ui.theme.BBQPullRefreshIndicator // <<<--- 新增导入
 import coil3.compose.AsyncImage
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
@@ -70,7 +76,8 @@ import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import cc.bbq.xq.ui.theme.UnifiedCommentItem
 
-@OptIn(ExperimentalMaterialApi::class)
+// 移除 @ExperimentalMaterialApi 注解
+// @OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun AppDetailScreen(
     appId: String,
@@ -88,16 +95,13 @@ fun AppDetailScreen(
     val currentReplyComment by viewModel.currentReplyComment.collectAsState()
     val errorMessage by viewModel.errorMessage.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
-
     val showDownloadDrawer by viewModel.showDownloadDrawer.collectAsState()
     val downloadSources by viewModel.downloadSources.collectAsState()
-
     val snackbarHostState = remember { SnackbarHostState() }
     val coroutineScope = rememberCoroutineScope()
 
     // 应用删除确认对话框
     var showDeleteAppDialog by remember { mutableStateOf(false) }
-
     // 评论删除确认对话框
     var showDeleteCommentDialog by remember { mutableStateOf(false) }
     var commentToDeleteId by remember { mutableStateOf<String?>(null) }
@@ -117,37 +121,36 @@ fun AppDetailScreen(
             }
         }
     }
-    
+
     // 监听 ViewModel 中的 snackbarEvent
     LaunchedEffect(viewModel.snackbarEvent) {
         viewModel.snackbarEvent.collectLatest { message ->
             snackbarHostState.showSnackbar(message)
         }
     }
+
     // 监听更新事件
     LaunchedEffect(viewModel.snackbarEvent) {
-            viewModel.updateEvent.collectLatest { jsonString ->
-        // 直接导航到 UpdateAppRelease
-        navController.navigate(UpdateAppRelease(jsonString).createRoute())
+        viewModel.updateEvent.collectLatest { jsonString ->
+            // 直接导航到 UpdateAppRelease
+            navController.navigate(UpdateAppRelease(jsonString).createRoute())
+        }
     }
-}
-    
+
     // 监听退款和更新事件
-LaunchedEffect(Unit) {
-    viewModel.refundEvent.collectLatest { refundInfo ->
-        navController.navigate(
-            CreateRefundPost(
-                appId = refundInfo.appId.toLongOrNull() ?: 0L,
-                versionId = refundInfo.versionId,
-                appName = refundInfo.appName,
-                payMoney = refundInfo.payMoney
-            ).createRoute()
-        )
+    LaunchedEffect(Unit) {
+        viewModel.refundEvent.collectLatest { refundInfo ->
+            navController.navigate(
+                CreateRefundPost(
+                    appId = refundInfo.appId.toLongOrNull() ?: 0L,
+                    versionId = refundInfo.versionId,
+                    appName = refundInfo.appName,
+                    payMoney = refundInfo.payMoney
+                ).createRoute()
+            )
+        }
     }
-    
-    
-   }
-    
+
     // 监听支付导航事件
     LaunchedEffect(Unit) {
         viewModel.navigateToPaymentEvent.collectLatest { paymentInfo ->
@@ -163,7 +166,7 @@ LaunchedEffect(Unit) {
             )
         }
     }
-    
+
     // 监听 ViewModel 中的 navigateToDownloadEvent
     LaunchedEffect(viewModel.navigateToDownloadEvent) {
         viewModel.navigateToDownloadEvent.collectLatest { navigate ->
@@ -173,16 +176,23 @@ LaunchedEffect(Unit) {
         }
     }
 
-    var refreshing by remember { mutableStateOf(false) }
-    val pullRefreshState = rememberPullRefreshState(refreshing, onRefresh = {
-        refreshing = true
-        viewModel.refresh()
-        refreshing = false
-    })
+    // 下拉刷新状态
+    var isRefreshing by remember { mutableStateOf(false) }
+    val pullRefreshState = rememberPullToRefreshState()
 
     LaunchedEffect(errorMessage) {
         if (errorMessage.isNotEmpty()) {
-            coroutineScope.launch { snackbarHostState.showSnackbar(errorMessage) }
+            coroutineScope.launch {
+                snackbarHostState.showSnackbar(errorMessage)
+            }
+        }
+    }
+
+    // 监听 ViewModel 状态变化以结束刷新状态
+    LaunchedEffect(isRefreshing, isLoading, appDetail, errorMessage) {
+        // 当加载完成（isLoading 变为 false）且有数据或出错时，结束刷新
+        if (!isLoading && (appDetail != null || errorMessage.isNotEmpty()) && isRefreshing) {
+            isRefreshing = false
         }
     }
 
@@ -233,13 +243,32 @@ LaunchedEffect(Unit) {
         }
     }
 
-    Box(modifier = modifier.fillMaxSize().pullRefresh(pullRefreshState)) {
-        if (isLoading) {
+    // 使用 MD3 的 PullToRefreshBox
+    PullToRefreshBox(
+        isRefreshing = isRefreshing,
+        onRefresh = {
+            isRefreshing = true
+            viewModel.refresh()
+            // 结束刷新状态的逻辑由 LaunchedEffect 处理
+        },
+        state = pullRefreshState,
+        // 使用我们自定义的指示器
+        indicator = {
+            BBQPullRefreshIndicator(
+                state = pullRefreshState,
+                isRefreshing = isRefreshing,
+                modifier = Modifier.align(Alignment.TopCenter)
+                // 颜色和形状将使用我们在 Components.kt 中定义的默认值（语义颜色）
+            )
+        },
+        modifier = modifier.fillMaxSize()
+    ) {
+        // Box(modifier = modifier.fillMaxSize().pullRefresh(pullRefreshState)) { // 移除旧的 Box 包裹
+        if (isLoading && appDetail == null) { // 仅在初始加载且无数据时显示
             CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
         } else if (appDetail != null) {
             val pageCount = if (appDetail!!.store == AppStore.SIENE_SHOP) 2 else 1
             val pagerState = rememberPagerState(pageCount = { pageCount })
-            
             HorizontalPager(state = pagerState, modifier = Modifier.fillMaxSize()) { page ->
                 when (page) {
                     0 -> {
@@ -256,7 +285,9 @@ LaunchedEffect(Unit) {
                             onDeleteAppClick = { showDeleteAppDialog = true },
                             onShareClick = { handleShare() },
                             onMoreMenuClick = { showMoreMenu = true },
-                            onImagePreview = { url -> navController.navigate(ImagePreview(url).createRoute()) },
+                            onImagePreview = { url ->
+                                navController.navigate(ImagePreview(url).createRoute())
+                            },
                             onRefundClick = { viewModel.requestRefund() },
                             onUpdateClick = { viewModel.requestUpdate() }
                         )
@@ -277,7 +308,6 @@ LaunchedEffect(Unit) {
                 }
             }
         }
-
         // 浮动评论按钮
         FloatingActionButton(
             onClick = { viewModel.openCommentDialog() },
@@ -287,17 +317,17 @@ LaunchedEffect(Unit) {
         ) {
             Icon(Icons.AutoMirrored.Filled.Comment, "评论")
         }
-
-        PullRefreshIndicator(
-            refreshing, 
-            pullRefreshState, 
-            Modifier.align(Alignment.TopCenter),
-            backgroundColor = MaterialTheme.colorScheme.surface,
-            contentColor = MaterialTheme.colorScheme.primary
-        )
+        // 移除旧的 PullRefreshIndicator
+        // PullRefreshIndicator(
+        //     refreshing,
+        //     pullRefreshState,
+        //     Modifier.align(Alignment.TopCenter),
+        //     backgroundColor = MaterialTheme.colorScheme.surface,
+        //     contentColor = MaterialTheme.colorScheme.primary
+        // )
         BBQSnackbarHost(snackbarHostState, Modifier.align(Alignment.BottomCenter))
-    }
-
+        // } // End of old Box
+    } // End of PullToRefreshBox
 
     // 删除应用确认对话框
     if (showDeleteAppDialog) {
@@ -308,16 +338,16 @@ LaunchedEffect(Unit) {
             confirmButton = {
                 TextButton(onClick = {
                     showDeleteAppDialog = false
-                    viewModel.deleteApp { 
-                        navController.popBackStack() 
+                    viewModel.deleteApp {
+                        navController.popBackStack()
                     }
-                }) { 
-                    Text("删除", color = MaterialTheme.colorScheme.error) 
+                }) {
+                    Text("删除", color = MaterialTheme.colorScheme.error)
                 }
             },
-            dismissButton = { 
-                TextButton(onClick = { showDeleteAppDialog = false }) { 
-                    Text("取消") 
+            dismissButton = {
+                TextButton(onClick = { showDeleteAppDialog = false }) {
+                    Text("取消")
                 }
             }
         )
@@ -333,11 +363,13 @@ LaunchedEffect(Unit) {
                 TextButton(onClick = {
                     showDeleteCommentDialog = false
                     commentToDeleteId?.let { viewModel.deleteComment(it) }
-                }) { Text("删除", color = MaterialTheme.colorScheme.error) }
+                }) {
+                    Text("删除", color = MaterialTheme.colorScheme.error)
+                }
             },
-            dismissButton = { 
-                TextButton(onClick = { showDeleteCommentDialog = false }) { 
-                    Text("取消") 
+            dismissButton = {
+                TextButton(onClick = { showDeleteCommentDialog = false }) {
+                    Text("取消")
                 }
             }
         )
@@ -352,7 +384,9 @@ LaunchedEffect(Unit) {
                 val intent = Intent(Intent.ACTION_VIEW, Uri.parse(source.url))
                 context.startActivity(intent)
             } catch (e: Exception) {
-                coroutineScope.launch { snackbarHostState.showSnackbar("无法打开链接") }
+                coroutineScope.launch {
+                    snackbarHostState.showSnackbar("无法打开链接")
+                }
             }
         }
     )
@@ -362,7 +396,9 @@ LaunchedEffect(Unit) {
             hint = "输入评论...",
             onDismiss = { viewModel.closeCommentDialog() },
             context = context,
-            onSubmit = { content, _ -> viewModel.submitComment(content) }
+            onSubmit = { content, _ ->
+                viewModel.submitComment(content)
+            }
         )
     }
 
@@ -371,7 +407,9 @@ LaunchedEffect(Unit) {
             hint = "回复 @${currentReplyComment!!.sender.displayName}",
             onDismiss = { viewModel.closeReplyDialog() },
             context = context,
-            onSubmit = { content, _ -> viewModel.submitComment(content) }
+            onSubmit = { content, _ ->
+                viewModel.submitComment(content)
+            }
         )
     }
 }
