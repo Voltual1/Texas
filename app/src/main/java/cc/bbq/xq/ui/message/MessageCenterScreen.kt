@@ -1,6 +1,11 @@
 //Copyright (C) 2025 Voltual
-// ... (版权信息保持不变) ...
-
+// 本程序是自由软件：你可以根据自由软件基金会发布的 GNU 通用公共许可证第3版
+//（或任意更新的版本）的条款重新分发和/或修改它。
+//本程序是基于希望它有用而分发的，但没有任何担保；甚至没有适销性或特定用途适用性的隐含担保。
+// 有关更多细节，请参阅 GNU 通用公共许可证。
+//
+// 你应该已经收到了一份 GNU 通用公共许可证的副本
+// 如果没有，请查阅 <http://www.gnu.org/licenses/>。
 package cc.bbq.xq.ui.message
 
 import androidx.compose.foundation.layout.*
@@ -9,7 +14,6 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
-import androidx.compose.material3.pulltorefresh.PullToRefreshDefaults
 import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -42,6 +46,7 @@ fun MessageCenterScreen(
     val pullRefreshState = rememberPullToRefreshState()
 
     // 使用 MD3 的 PullToRefreshBox
+    // 移除自定义 indicator，使用默认指示器
     PullToRefreshBox(
         isRefreshing = isRefreshing,
         onRefresh = {
@@ -51,17 +56,7 @@ fun MessageCenterScreen(
             // 结束刷新状态的逻辑由 LaunchedEffect 处理
         },
         state = pullRefreshState, // 显式传递 state
-        // 自定义指示器颜色
-        indicator = {
-            PullToRefreshDefaults.LoadingIndicator(
-                state = pullRefreshState,
-                isRefreshing = isRefreshing,
-                modifier = Modifier.align(Alignment.TopCenter),
-                // 使用语义颜色
-                color = MaterialTheme.colorScheme.primary, // 指示器颜色
-                backgroundColor = MaterialTheme.colorScheme.surface, // 背景颜色
-            )
-        },
+        // 不再自定义 indicator，使用默认
         modifier = modifier.fillMaxSize()
     ) {
         // 内容区域
