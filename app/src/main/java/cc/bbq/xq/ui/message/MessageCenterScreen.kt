@@ -24,6 +24,7 @@ import cc.bbq.xq.ui.compose.PageJumpDialog
 import cc.bbq.xq.ui.compose.PaginationControls
 import androidx.compose.material3.pulltorefresh.*
 import androidx.compose.foundation.layout.Box
+import androidx.compose.material3.pulltorefresh.PullToRefreshDefaults.Indicator
 
 // 在 MessageCenterScreen.kt 中修复 UI 显示问题
 
@@ -45,7 +46,10 @@ fun MessageCenterScreen(
         viewModel.initializeIfNeeded()
     }
 
-    // 监听下拉刷新完成后的状态重置
+    // 判断是否正在刷新（第一页加载时）
+    val isRefreshing = state.isLoading && state.currentPage == 1
+
+    // 监听下拉刷新状态
     LaunchedEffect(pullToRefreshState.isRefreshing) {
         if (pullToRefreshState.isRefreshing) {
             // 重置 ViewModel 数据
@@ -54,9 +58,6 @@ fun MessageCenterScreen(
             pullToRefreshState.endRefresh()
         }
     }
-
-    // 判断是否正在刷新
-    val isRefreshing = state.isLoading && state.currentPage == 1
 
     // 监听刷新状态变化
     LaunchedEffect(isRefreshing) {
@@ -73,10 +74,10 @@ fun MessageCenterScreen(
             viewModel.reset()
         },
         modifier = modifier.fillMaxSize(),
-        indicator = { indicatorState ->
+        indicator = {
             // 使用 Material3 默认的指示器
-            PullToRefreshDefaults.Indicator(
-                state = indicatorState,
+            Indicator(
+                state = pullToRefreshState,
                 isRefreshing = isRefreshing,
                 modifier = Modifier.align(Alignment.TopCenter)
             )
@@ -193,7 +194,8 @@ fun MessageCenterScreen(
 
 // 扩展函数：安全结束刷新
 private suspend fun PullToRefreshState.endRefresh() {
-    if (isRefreshing) {
+    // 检查是否有刷新动画在进行
+    if (isAnimating) {
         animateToHidden()
     }
 }
