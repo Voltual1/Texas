@@ -90,7 +90,7 @@ dependencies {
     implementation("com.github.chrisbanes:PhotoView:2.3.0")
 
     // ===== Compose 全家桶 =====
-    implementation(platform("androidx.compose:compose-bom:2025.12.01"))
+    implementation(platform("androidx.compose:compose-bom:2025.12.00"))
     implementation("androidx.compose.ui:ui")
     implementation("androidx.compose.material3:material3")
     implementation("androidx.activity:activity-compose")
