@@ -17,14 +17,12 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavController
 import cc.bbq.xq.KtorClient
 import cc.bbq.xq.ui.compose.MessageItem
 import cc.bbq.xq.ui.compose.PageJumpDialog
 import cc.bbq.xq.ui.compose.PaginationControls
 import androidx.compose.material3.pulltorefresh.*
 import androidx.compose.foundation.layout.Box
-import androidx.compose.material3.pulltorefresh.PullToRefreshDefaults.Indicator
 
 // 在 MessageCenterScreen.kt 中修复 UI 显示问题
 
@@ -38,46 +36,27 @@ fun MessageCenterScreen(
     var showPageDialog by remember { mutableStateOf(false) }
     val dialogShape = remember { RoundedCornerShape(4.dp) }
 
-    // 使用 MD3 的 PullToRefreshState
-    val pullToRefreshState = rememberPullToRefreshState()
+    // 判断是否正在刷新（第一页加载时）
+    val isRefreshing = state.isLoading && state.currentPage == 1
 
     // 修复：只在真正需要时初始化，不强制重置
     LaunchedEffect(Unit) {
         viewModel.initializeIfNeeded()
     }
 
-    // 判断是否正在刷新（第一页加载时）
-    val isRefreshing = state.isLoading && state.currentPage == 1
-
-    // 监听下拉刷新状态
-    LaunchedEffect(pullToRefreshState.isRefreshing) {
-        if (pullToRefreshState.isRefreshing) {
-            // 重置 ViewModel 数据
-            viewModel.reset()
-            // 等待刷新完成
-            pullToRefreshState.endRefresh()
-        }
-    }
-
-    // 监听刷新状态变化
-    LaunchedEffect(isRefreshing) {
-        if (!isRefreshing && pullToRefreshState.isRefreshing) {
-            pullToRefreshState.endRefresh()
-        }
-    }
-
+    // 根据文档，使用 PullToRefreshBox
     PullToRefreshBox(
-        state = pullToRefreshState,
+        modifier = modifier.fillMaxSize(),
+        state = rememberPullToRefreshState(),
         isRefreshing = isRefreshing,
         onRefresh = {
             // 下拉刷新时重置到第一页
             viewModel.reset()
         },
-        modifier = modifier.fillMaxSize(),
-        indicator = {
-            // 使用 Material3 默认的指示器
-            Indicator(
-                state = pullToRefreshState,
+        indicator = { 
+            // 使用默认指示器
+            PullToRefreshDefaults.Indicator(
+                state = rememberPullToRefreshState(),
                 isRefreshing = isRefreshing,
                 modifier = Modifier.align(Alignment.TopCenter)
             )
@@ -189,13 +168,5 @@ fun MessageCenterScreen(
             },
             shape = dialogShape
         )
-    }
-}
-
-// 扩展函数：安全结束刷新
-private suspend fun PullToRefreshState.endRefresh() {
-    // 检查是否有刷新动画在进行
-    if (isAnimating) {
-        animateToHidden()
     }
 }
