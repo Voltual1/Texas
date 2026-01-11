@@ -154,10 +154,10 @@ fun RankingListScreen(
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
-                        text = errorMessage,
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
+    text = errorMessage ?: "未知错误",
+    style = MaterialTheme.typography.bodyMedium,
+    color = MaterialTheme.colorScheme.onSurfaceVariant
+)
                     Spacer(modifier = Modifier.height(16.dp))
                     Button(onClick = { viewModel.refreshRankingList() }) {
                         Text("重试")
