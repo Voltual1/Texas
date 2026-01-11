@@ -6,7 +6,6 @@
 //
 // 你应该已经收到了一份 GNU 通用公共许可证的副本
 // 如果没有，请查阅 <http://www.gnu.org/licenses/>。
-@file:OptIn(ExperimentalMaterial3ExpressiveApi::class)
 package cc.bbq.xq.ui.theme
 
 import androidx.compose.foundation.BorderStroke
@@ -894,63 +893,33 @@ fun BBQExposedDropdownMenuBox(
     )
 }
 
+// --- 新增的下拉刷新指示器组件 ---
+
 /**
- * 自定义的下拉刷新指示器 (使用稳定的 Indicator API)。
- * 使用 MaterialTheme 语义颜色。
+ * 自定义的下拉刷新指示器，使用 MaterialTheme 语义颜色。
  *
  * @param state [PullToRefreshState] 状态对象。
  * @param isRefreshing Boolean，指示是否正在进行刷新。
  * @param modifier Modifier 应用于此指示器的修饰符。
- * @param backgroundColor 指示器容器的背景色，默认使用 [PullToRefreshDefaults.indicatorContainerColor] (通常是 surface)。
- * @param contentColor 指示器的颜色，默认使用 [PullToRefreshDefaults.indicatorColor] (通常是 primary)。
+ * @param backgroundColor 指示器容器的背景色，默认使用 [MaterialTheme.colorScheme.surface]。
+ * @param contentColor 指示器的颜色，默认使用 [MaterialTheme.colorScheme.primary]。
+ * @param containerShape 指示器容器的形状，默认使用 [MaterialTheme.shapes.small]。
  */
 @Composable
 fun BBQPullRefreshIndicator(
     state: PullToRefreshState,
     isRefreshing: Boolean,
     modifier: Modifier = Modifier,
-    backgroundColor: Color = PullToRefreshDefaults.indicatorContainerColor, // 使用默认容器色
-    contentColor: Color = PullToRefreshDefaults.indicatorColor, // 使用默认指示器色
+    backgroundColor: Color = MaterialTheme.colorScheme.surface,
+    contentColor: Color = MaterialTheme.colorScheme.primary,
+    containerShape: Shape = MaterialTheme.shapes.small, // 或者使用特定的指示器形状
 ) {
     PullToRefreshDefaults.Indicator(
         state = state,
         isRefreshing = isRefreshing,
         modifier = modifier,
-        containerColor = backgroundColor,
-        color = contentColor
-    )
-}
-
-/**
- * 自定义的下拉刷新加载指示器 (使用实验性 LoadingIndicator API)。
- * 使用 MaterialTheme 语义颜色。
- * 注意：此组件需要在文件顶部添加 @file:OptIn(ExperimentalMaterial3ExpressiveApi::class)。
- *
- * @param state [PullToRefreshState] 状态对象。
- * @param isRefreshing Boolean，指示是否正在进行刷新。
- * @param modifier Modifier 应用于此指示器的修饰符。
- * @param backgroundColor 指示器容器的背景色，默认使用 [PullToRefreshDefaults.loadingIndicatorContainerColor]。
- * @param contentColor 指示器的颜色，默认使用 [PullToRefreshDefaults.loadingIndicatorColor]。
- * @param elevation 指示器容器的海拔，默认使用 [PullToRefreshDefaults.LoadingIndicatorElevation]。
- * @param shape 指示器容器的形状，默认使用 [PullToRefreshDefaults.indicatorShape]。
- */
-@Composable
-fun BBQPullRefreshLoadingIndicator(
-    state: PullToRefreshState,
-    isRefreshing: Boolean,
-    modifier: Modifier = Modifier,
-    backgroundColor: Color = PullToRefreshDefaults.loadingIndicatorContainerColor, // 使用 LoadingIndicator 默认容器色
-    contentColor: Color = PullToRefreshDefaults.loadingIndicatorColor, // 使用 LoadingIndicator 默认指示器色
-    elevation: androidx.compose.ui.unit.Dp = PullToRefreshDefaults.LoadingIndicatorElevation,
-    shape: Shape = PullToRefreshDefaults.indicatorShape,
-) {
-    PullToRefreshDefaults.LoadingIndicator(
-        state = state,
-        isRefreshing = isRefreshing,
-        modifier = modifier,
-        containerColor = backgroundColor,
-        color = contentColor,
-        elevation = elevation,
-        shape = shape
+        color = contentColor, // 注意：LoadingIndicator 的 color 参数对应指示器本身颜色
+        backgroundColor = backgroundColor, // 注意：LoadingIndicator 的 backgroundColor 参数对应指示器容器背景色
+        shape = containerShape // 注意：LoadingIndicator 的 shape 参数对应指示器容器形状
     )
 }
