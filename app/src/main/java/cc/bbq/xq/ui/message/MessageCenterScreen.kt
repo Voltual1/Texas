@@ -46,7 +46,6 @@ fun MessageCenterScreen(
     }
 
     val pullRefreshState = rememberPullToRefreshState(
-        refreshing = refreshing,
         onRefresh = {
             refreshing = true
             viewModel.reset()
@@ -54,17 +53,20 @@ fun MessageCenterScreen(
         }
     )
 
+    LaunchedEffect(refreshing) {
+        if (refreshing) {
+            viewModel.reset()
+            refreshing = false
+            pullRefreshState.endRefresh()
+        }
+    }
+
     Box(
         modifier = modifier.fillMaxSize()
     ) {
         PullToRefreshBox(
             state = pullRefreshState,
-            refreshing = refreshing,
-            onRefresh = {
-                refreshing = true
-                viewModel.reset()
-                refreshing = false
-            }
+            modifier = Modifier.fillMaxSize()
         ) {
             Column(
                 modifier = Modifier.fillMaxSize()
