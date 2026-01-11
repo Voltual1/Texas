@@ -173,7 +173,9 @@ private fun ScreenContent(
                         onImagePreview = onImagePreview,
                         snackbarHostState = snackbarHostState,
                         navController = navController,
-                        viewModel = viewModel
+                        viewModel = viewModel,
+                        // 传递 isRefreshing 参数
+                        isRefreshing = isRefreshing // <<<--- 传递参数
                     )
                     AppStore.SIENE_SHOP -> SieneShopProfileContent(
                         userData = userData,
@@ -196,7 +198,9 @@ private fun XiaoQuProfileContent(
     onImagePreview: (String) -> Unit,
     snackbarHostState: SnackbarHostState,
     navController: NavController,
-    viewModel: UserDetailViewModel
+    viewModel: UserDetailViewModel,
+    // 添加 isRefreshing 参数
+    isRefreshing: Boolean // <<<--- 新增参数
 ) {
     Column(
         modifier = Modifier
@@ -213,22 +217,21 @@ private fun XiaoQuProfileContent(
                 }
             }
         )
-
         ActionButtonsRow(
             userData = userData,
             onResourcesClick = { userId ->
                 onResourcesClick(userId, userData.store)
             },
             snackbarHostState = snackbarHostState,
-            viewModel = viewModel
+            viewModel = viewModel,
+            // 传递 isRefreshing 参数
+            isRefreshing = isRefreshing // <<<--- 传递参数
         )
-
         StatsCard(
             userData = userData,
             onPostsClick = onPostsClick,
             navController = navController
         )
-
         DetailsCard(userData = userData)
     }
 }
@@ -432,13 +435,16 @@ private fun ActionButtonsRow(
     userData: UnifiedUserDetail,
     onResourcesClick: (Long) -> Unit,
     snackbarHostState: SnackbarHostState,
-    viewModel: UserDetailViewModel
+    viewModel: UserDetailViewModel,
+    // 添加 isRefreshing 参数
+    isRefreshing: Boolean // <<<--- 新增参数
 ) {
     val coroutineScope = rememberCoroutineScope()
 
     // 根据关注状态显示不同的按钮
     val followStatus = userData.followStatus
-    val isProcessing = viewModel.isLoading.collectAsState().value
+    // 注意：这里仍然使用 ViewModel 的 isLoading 状态来判断关注操作本身是否在进行
+    val isProcessingFollowAction by viewModel.isLoading.collectAsState() 
 
     Row(
         modifier = Modifier.fillMaxWidth(),
@@ -450,18 +456,22 @@ private fun ActionButtonsRow(
                 FollowStatus.NotFollowed -> {
                     BBQButton(
                         onClick = {
-                            coroutineScope.launch {
-                                snackbarHostState.showSnackbar(
-                                    message = "已关注 ${userData.displayName}，稍后将会刷新数据",
+                             // 检查是否是关注操作导致的加载，而不是页面刷新
+                             if (!isRefreshing) { // 只有在非刷新状态下才允许点击
+                                coroutineScope.launch {
+                                    snackbarHostState.showSnackbar(
+                                        message = "已关注 ${userData.displayName}，稍后将会刷新数据",
 //                                    actionLabel = "确定",
-                                    duration = SnackbarDuration.Short
-                                )
-                                viewModel.followUser(userData.id)
-                            }
+                                        duration = SnackbarDuration.Short
+                                    )
+                                    viewModel.followUser(userData.id)
+                                }
+                             }
                         },
                         modifier = Modifier.weight(1f),
                         text = {
-                            if (isProcessing) {
+                            // 修改条件：只有在非刷新状态下且关注操作正在进行时才显示加载指示器
+                            if (!isRefreshing && isProcessingFollowAction) { // <<<--- 修改条件
                                 CircularProgressIndicator(
                                     modifier = Modifier.size(16.dp),
                                     strokeWidth = 2.dp
@@ -470,25 +480,29 @@ private fun ActionButtonsRow(
                                 Text("关注")
                             }
                         },
-                        enabled = !isProcessing
+                        // 修改 enabled 状态：在刷新时也禁用按钮，避免混淆
+                        enabled = !isRefreshing && !isProcessingFollowAction // <<<--- 修改 enabled
                     )
                 }
 
                 FollowStatus.YouFollowed -> {
                     BBQOutlinedButton(
                         onClick = {
-                            coroutineScope.launch {
-                                snackbarHostState.showSnackbar(
-                                    message = "已取消关注 ${userData.displayName}，稍后将会刷新数据",
+                             if (!isRefreshing) { // 只有在非刷新状态下才允许点击
+                                coroutineScope.launch {
+                                    snackbarHostState.showSnackbar(
+                                        message = "已取消关注 ${userData.displayName}，稍后将会刷新数据",
 //                                    actionLabel = "确定",
-                                    duration = SnackbarDuration.Short
-                                )
-                                viewModel.unfollowUser(userData.id)
-                            }
+                                        duration = SnackbarDuration.Short
+                                    )
+                                    viewModel.unfollowUser(userData.id)
+                                }
+                             }
                         },
                         modifier = Modifier.weight(1f),
                         text = {
-                            if (isProcessing) {
+                            // 修改条件：只有在非刷新状态下且取消关注操作正在进行时才显示加载指示器
+                            if (!isRefreshing && isProcessingFollowAction) { // <<<--- 修改条件
                                 CircularProgressIndicator(
                                     modifier = Modifier.size(16.dp),
                                     strokeWidth = 2.dp
@@ -497,25 +511,29 @@ private fun ActionButtonsRow(
                                 Text("已关注")
                             }
                         },
-                        enabled = !isProcessing
+                        // 修改 enabled 状态：在刷新时也禁用按钮，避免混淆
+                        enabled = !isRefreshing && !isProcessingFollowAction // <<<--- 修改 enabled
                     )
                 }
 
                 FollowStatus.FollowedYou -> {
                     BBQButton(
                         onClick = {
-                            coroutineScope.launch {
-                                snackbarHostState.showSnackbar(
-                                    message = "已回关 ${userData.displayName}，稍后将会刷新数据",
+                             if (!isRefreshing) { // 只有在非刷新状态下才允许点击
+                                coroutineScope.launch {
+                                    snackbarHostState.showSnackbar(
+                                        message = "已回关 ${userData.displayName}，稍后将会刷新数据",
 //                                    actionLabel = "确定",
-                                    duration = SnackbarDuration.Short
-                                )
-                                viewModel.followUser(userData.id)
-                            }
+                                        duration = SnackbarDuration.Short
+                                    )
+                                    viewModel.followUser(userData.id)
+                                }
+                             }
                         },
                         modifier = Modifier.weight(1f),
                         text = {
-                            if (isProcessing) {
+                            // 修改条件：只有在非刷新状态下且回关操作正在进行时才显示加载指示器
+                            if (!isRefreshing && isProcessingFollowAction) { // <<<--- 修改条件
                                 CircularProgressIndicator(
                                     modifier = Modifier.size(16.dp),
                                     strokeWidth = 2.dp
@@ -524,26 +542,30 @@ private fun ActionButtonsRow(
                                 Text("回关")
                             }
                         },
-                        enabled = !isProcessing
+                        // 修改 enabled 状态：在刷新时也禁用按钮，避免混淆
+                        enabled = !isRefreshing && !isProcessingFollowAction // <<<--- 修改 enabled
                     )
                 }
 
                 FollowStatus.MutualFollow -> {
                     BBQOutlinedButton(
                         onClick = {
-                            coroutineScope.launch {
-                                snackbarHostState.showSnackbar(
-                                    message = "已取消关注 ${userData.displayName}，稍后将会刷新数据",
+                             if (!isRefreshing) { // 只有在非刷新状态下才允许点击
+                                coroutineScope.launch {
+                                    snackbarHostState.showSnackbar(
+                                        message = "已取消关注 ${userData.displayName}，稍后将会刷新数据",
 //                                    actionLabel = "确定",
-                                    duration = SnackbarDuration.Short
-                                )
+                                        duration = SnackbarDuration.Short
+                                    )
 
-                                viewModel.unfollowUser(userData.id)
-                            }
+                                    viewModel.unfollowUser(userData.id)
+                                }
+                             }
                         },
                         modifier = Modifier.weight(1f),
                         text = {
-                            if (isProcessing) {
+                            // 修改条件：只有在非刷新状态下且取消互关操作正在进行时才显示加载指示器
+                            if (!isRefreshing && isProcessingFollowAction) { // <<<--- 修改条件
                                 CircularProgressIndicator(
                                     modifier = Modifier.size(16.dp),
                                     strokeWidth = 2.dp
@@ -552,7 +574,8 @@ private fun ActionButtonsRow(
                                 Text("互相关注")
                             }
                         },
-                        enabled = !isProcessing
+                        // 修改 enabled 状态：在刷新时也禁用按钮，避免混淆
+                        enabled = !isRefreshing && !isProcessingFollowAction // <<<--- 修改 enabled
                     )
                 }
             }
