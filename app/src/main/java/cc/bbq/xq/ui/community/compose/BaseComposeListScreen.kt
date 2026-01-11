@@ -83,9 +83,11 @@ fun BaseComposeListScreen(
     val pullRefreshState = rememberPullToRefreshState()
 
     // 监听刷新状态
+    // 更新 LaunchedEffect 以更准确地反映刷新结束的条件
     LaunchedEffect(isLoading, errorMessage, posts) {
-        if (!isLoading && (posts.isNotEmpty() || errorMessage.isNotEmpty()) && isRefreshing) {
-            isRefreshing = false
+        // 当内容加载完成（无论成功还是失败）且正在刷新时，结束刷新状态
+        if (!isLoading && isRefreshing) {
+             isRefreshing = false
         }
     }
 
@@ -162,9 +164,7 @@ fun BaseComposeListScreen(
                     ) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "返回",
-                            tint = MaterialTheme.colorScheme.primary
-                        )
+                            contentDescription = " )
                     }
 
                     // 标题区域 - 可水平滚动
@@ -321,7 +321,11 @@ fun BaseComposeListScreen(
         // 使用 MD3 的 PullToRefreshBox
         PullToRefreshBox(
             isRefreshing = isRefreshing,
-            onRefresh = onRefresh,
+            onRefresh = {
+                isRefreshing = true
+                onRefresh() // 调用传入的刷新回调
+                // 结束刷新状态的逻辑由 LaunchedEffect 处理
+            },
             state = pullRefreshState,
             indicator = {
                 BBQPullRefreshIndicator(
@@ -332,53 +336,52 @@ fun BaseComposeListScreen(
             },
             modifier = Modifier.padding(innerPadding).fillMaxSize()
         ) {
-            // Box( // 移除旧的 Box
-            //     modifier = Modifier
-            //         .padding(innerPadding)
-            //         .fillMaxSize()
-            //         .pullRefresh(pullRefreshState) // 移除旧的 pullRefresh
-            // ) { // 移除旧的 Box
-            if (errorMessage.isNotEmpty()) {
-                ErrorView(
-                    message = errorMessage,
-                    onRetry = onRefresh,
-                    modifier = Modifier.fillMaxSize()
-                )
-            } else if (posts.isEmpty() && isLoading) {
-                CircularProgressIndicator(
-                    modifier = Modifier.align(Alignment.Center)
-                )
-            } else if (posts.isEmpty()) {
-                EmptyView(
-                    onRefresh = onRefresh,
-                    modifier = Modifier.fillMaxSize()
-                )
-            } else {
-                PostListComposable(
-                    posts = posts,
-                    isLoading = isLoading,
-                    onItemClick = onItemClick,
-                    onLoadMore = onLoadMore,
-                    modifier = Modifier.fillMaxSize()
-                )
-            }
+            // 主内容区域
+            Box(modifier = Modifier.fillMaxSize()) {
+                // 内容显示逻辑
+                when {
+                    // 错误状态显示 - 优先级最高
+                    errorMessage.isNotEmpty() -> {
+                        ErrorView(
+                            message = errorMessage,
+                            onRetry = onRefresh,
+                            modifier = Modifier.fillMaxSize()
+                        )
+                    }
+                    // 加载中且没有帖子数据时显示加载指示器
+                    isLoading && posts.isEmpty() -> {
+                        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                            CircularProgressIndicator()
+                        }
+                    }
+                    // 没有帖子且不是加载中时显示空状态
+                    posts.isEmpty() -> {
+                        EmptyView(
+                            onRefresh = onRefresh,
+                            modifier = Modifier.fillMaxSize()
+                        )
+                    }
+                    // 有帖子数据时显示列表
+                    else -> {
+                        PostListComposable(
+                            posts = posts,
+                            isLoading = isLoading,
+                            onItemClick = onItemClick,
+                            onLoadMore = onLoadMore,
+                            modifier = Modifier.fillMaxSize()
+                        )
+                    }
+                }
 
-            if (isLoading && posts.isNotEmpty()) {
-                CircularProgressIndicator(
-                    modifier = Modifier
-                        .align(Alignment.BottomCenter)
-                        .padding(16.dp)
-                )
-            }
-            // 移除旧的 PullRefreshIndicator
-            // PullRefreshIndicator(
-            //     refreshing = isRefreshing,
-            //     pullRefreshState,
-            //     modifier = Modifier.align(Alignment.TopCenter),
-            //     contentColor = MaterialTheme.colorScheme.primary,
-            //     backgroundColor = MaterialTheme.colorScheme.surface
-            // )
-            // } // 移除旧的 Box
+                // 底部加载更多指示器 - 仅在有数据且正在加载更多时显示，且不在下拉刷新时显示
+                if (isLoading && posts.isNotEmpty() && !isRefreshing) {
+                    CircularProgressIndicator(
+                        modifier = Modifier
+                            .align(Alignment.BottomCenter)
+                            .padding(16.dp)
+                    )
+                }
+            } // End Box
         } // End PullToRefreshBox
     }
 }
@@ -389,21 +392,22 @@ private fun ErrorView(
     onRetry: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    Column(
-        modifier = modifier.padding(16.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
-    ) {
-        Text(
-            text = message,
-            style = TextStyle(color = MaterialTheme.colorScheme.error),
-            modifier = Modifier.padding(16.dp)
-        )
-        Button(
-            onClick = onRetry,
-            modifier = Modifier.padding(8.dp)
+    Box(modifier = modifier.padding(16.dp), contentAlignment = Alignment.Center) {
+         Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
         ) {
-            Text(text = "重试")
+            Text(
+                text = message,
+                style = TextStyle(color = MaterialTheme.colorScheme.error),
+                modifier = Modifier.padding(16.dp)
+            )
+            Button(
+                onClick = onRetry,
+                modifier = Modifier.padding(8.dp)
+            ) {
+                Text(text = "重试")
+            }
         }
     }
 }
@@ -413,22 +417,23 @@ private fun EmptyView(
     onRefresh: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    Column(
-        modifier = modifier.padding(16.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
-    ) {
-        Text(
-            text = "暂无内容",
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
-        )
-        Spacer(modifier = Modifier.height(16.dp))
-        Button(
-            onClick = onRefresh,
-            modifier = Modifier.padding(8.dp)
+    Box(modifier = modifier.padding(16.dp), contentAlignment = Alignment.Center) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
         ) {
-            Text(text = "刷新")
+            Text(
+                text = "暂无内容",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+            Spacer(modifier = Modifier.height(16.dp))
+            Button(
+                onClick = onRefresh,
+                modifier = Modifier.padding(8.dp)
+            ) {
+                Text(text = "刷新")
+            }
         }
     }
 }
