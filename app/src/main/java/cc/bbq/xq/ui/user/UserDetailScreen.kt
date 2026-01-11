@@ -6,7 +6,7 @@
 //
 // 你应该已经收到了一份 GNU 通用公共许可证的副本
 // 如果没有，请查阅 <http://www.gnu.org/licenses/>.
-    
+
 package cc.bbq.xq.ui.user
 
 import android.content.ClipData
@@ -39,10 +39,11 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import coil3.compose.AsyncImage
 import kotlinx.coroutines.launch
-import androidx.compose.material.ExperimentalMaterialApi
-import androidx.compose.material.pullrefresh.PullRefreshIndicator
-import androidx.compose.material.pullrefresh.pullRefresh
-import androidx.compose.material.pullrefresh.rememberPullRefreshState
+// 移除 MD2 的 ExperimentalMaterialApi 和 pullrefresh 导入
+// import androidx.compose.material.ExperimentalMaterialApi
+// import androidx.compose.material.pullrefresh.PullRefreshIndicator
+// import androidx.compose.material.pullrefresh.pullRefresh
+// import androidx.compose.material.pullrefresh.rememberPullRefreshState
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
@@ -61,8 +62,15 @@ import kotlinx.coroutines.flow.first
 import cc.bbq.xq.data.unified.UnifiedUserDetail  // 导入 UnifiedUserDetail
 import cc.bbq.xq.data.unified.FollowStatus // 添加导入
 import cc.bbq.xq.AppStore
+// 添加 MD3 pullrefresh 导入
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
+import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
+// 导入我们自定义的指示器
+import cc.bbq.xq.ui.theme.BBQPullRefreshIndicator
+import androidx.compose.ui.ExperimentalComposeUiApi
 
-@OptIn(ExperimentalMaterialApi::class)
+// 移除 @ExperimentalMaterialApi 注解
+// @OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun UserDetailScreen(
     viewModel: UserDetailViewModel,
@@ -77,20 +85,43 @@ fun UserDetailScreen(
     val userData by viewModel.userData.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
     val errorMessage by viewModel.errorMessage.collectAsState()
-    
+
     // 下拉刷新状态
-    var refreshing by remember { mutableStateOf(false) }
-    val pullRefreshState = rememberPullRefreshState(refreshing, onRefresh = {
-        refreshing = true
-        viewModel.refresh()
-        refreshing = false
-    })
-    
-    Box(
-        modifier = modifier
-            .fillMaxSize()
-            .pullRefresh(pullRefreshState)
+    var isRefreshing by remember { mutableStateOf(false) }
+    val pullRefreshState = rememberPullToRefreshState()
+
+    // 监听 ViewModel 状态变化以结束刷新状态
+    LaunchedEffect(isLoading, errorMessage, userData) {
+        if (!isLoading && (userData != null || !errorMessage.isNullOrEmpty()) && isRefreshing) {
+            isRefreshing = false
+        }
+    }
+
+    // 使用 MD3 的 PullToRefreshBox
+    PullToRefreshBox(
+        isRefreshing = isRefreshing,
+        onRefresh = {
+            isRefreshing = true
+            viewModel.refresh()
+            // 结束刷新状态的逻辑由 LaunchedEffect 处理
+        },
+        state = pullRefreshState,
+        // 使用我们自定义的指示器
+        indicator = {
+            BBQPullRefreshIndicator(
+                state = pullRefreshState,
+                isRefreshing = isRefreshing,
+                modifier = Modifier.align(Alignment.TopCenter)
+                // 颜色和形状将使用我们在 Components.kt 中定义的默认值（语义颜色）
+            )
+        },
+        modifier = modifier.fillMaxSize()
     ) {
+        // Box( // 移除旧的 Box
+        //     modifier = modifier
+        //         .fillMaxSize()
+        //         .pullRefresh(pullRefreshState) // 移除旧的 pullRefresh
+        // ) { // 移除旧的 Box
         ScreenContent(
             modifier = Modifier.fillMaxSize(),
             userData = userData,
@@ -103,15 +134,16 @@ fun UserDetailScreen(
             navController = navController,
             viewModel = viewModel
         )
-        
-        PullRefreshIndicator(
-            refreshing = refreshing,
-            state = pullRefreshState,
-            modifier = Modifier.align(Alignment.TopCenter),
-            contentColor = MaterialTheme.colorScheme.primary,
-            backgroundColor = MaterialTheme.colorScheme.surface
-        )
-    }
+        // 移除旧的 PullRefreshIndicator
+        // PullRefreshIndicator(
+        //     refreshing = refreshing,
+        //     state = pullRefreshState,
+        //     modifier = Modifier.align(Alignment.TopCenter),
+        //     contentColor = MaterialTheme.colorScheme.primary,
+        //     backgroundColor = MaterialTheme.colorScheme.surface
+        // )
+        // } // End old Box
+    } // End PullToRefreshBox
 }
 
 @Composable
@@ -137,6 +169,7 @@ private fun ScreenContent(
             !errorMessage.isNullOrEmpty() -> ErrorState(message = errorMessage, modifier = Modifier.align(Alignment.Center))
             userData == null -> EmptyState(modifier = Modifier.align(Alignment.Center))
             else -> {
+                BBQSnackbarHost(snackbarHostState, Modifier.align(Alignment.BottomCenter))
                 // 根据 store 选择不同的 UI
                 when (userData.store) {
                     AppStore.XIAOQU_SPACE -> XiaoQuProfileContent(
@@ -186,7 +219,7 @@ private fun XiaoQuProfileContent(
                 }
             }
         )
-        
+
         ActionButtonsRow(
             userData = userData,
             onResourcesClick = { userId ->
@@ -195,13 +228,13 @@ private fun XiaoQuProfileContent(
             snackbarHostState = snackbarHostState,
             viewModel = viewModel
         )
-        
+
         StatsCard(
             userData = userData,
             onPostsClick = onPostsClick,
             navController = navController
         )
-        
+
         DetailsCard(userData = userData)
     }
 }
@@ -292,7 +325,7 @@ private fun SieneShopProfileContent(
                 InfoItem(label = "评论数量:", value = userData.replyCount?.toString() ?: "0")
                 InfoItem(label = "加入时间:", value = userData.joinTime?.let { formatTimestamp(it) } ?: "无")
                 InfoItem(label = "上次登录设备:", value = userData.lastLoginDevice ?: "无")
-                InfoItem(label = "上次在线:", value = userData.lastOnlineTime?.let { formatTimestamp(it) } ?: "无")                                
+                InfoItem(label = "上次在线:", value = userData.lastOnlineTime?.let { formatTimestamp(it) } ?: "无")
                 InfoItem(label = "绑定QQ:", value = userData.bindQq?.toString() ?: "无")
             }
         }
@@ -309,8 +342,9 @@ private fun SieneShopProfileContent(
 private fun HeaderCard(
     userData: UnifiedUserDetail,
     onAvatarClick: () -> Unit,
+    modifier: Modifier = Modifier
 ) {
-    BBQCard {
+    BBQCard(modifier = modifier) {
         Box(modifier = Modifier.fillMaxWidth()) {
             ProfileBackground()
             Column(modifier = Modifier.padding(16.dp)) {
@@ -351,7 +385,10 @@ private fun UserAvatar(
     modifier: Modifier = Modifier
 ) {
     AsyncImage(
-        model = avatarUrl,
+        model = ImageRequest.Builder(LocalContext.current)
+            .data(avatarUrl)
+            .diskCachePolicy(CachePolicy.DISABLED)
+            .build(),
         contentDescription = "用户头像",
         contentScale = ContentScale.Crop,
         placeholder = painterResource(R.drawable.ic_menu_profile),
@@ -404,11 +441,11 @@ private fun ActionButtonsRow(
     viewModel: UserDetailViewModel
 ) {
     val coroutineScope = rememberCoroutineScope()
-    
+
     // 根据关注状态显示不同的按钮
     val followStatus = userData.followStatus
     val isProcessing = viewModel.isLoading.collectAsState().value
-    
+
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.spacedBy(8.dp)
@@ -420,16 +457,16 @@ private fun ActionButtonsRow(
                     BBQButton(
                         onClick = {
                             coroutineScope.launch {
-                            snackbarHostState.showSnackbar(
+                                snackbarHostState.showSnackbar(
                                     message = "已关注 ${userData.displayName}，稍后将会刷新数据",
 //                                    actionLabel = "确定",
                                     duration = SnackbarDuration.Short
                                 )
-                                viewModel.followUser(userData.id)                                
+                                viewModel.followUser(userData.id)
                             }
                         },
                         modifier = Modifier.weight(1f),
-                        text = { 
+                        text = {
                             if (isProcessing) {
                                 CircularProgressIndicator(
                                     modifier = Modifier.size(16.dp),
@@ -442,21 +479,21 @@ private fun ActionButtonsRow(
                         enabled = !isProcessing
                     )
                 }
-                
+
                 FollowStatus.YouFollowed -> {
                     BBQOutlinedButton(
                         onClick = {
                             coroutineScope.launch {
-                            snackbarHostState.showSnackbar(
+                                snackbarHostState.showSnackbar(
                                     message = "已取消关注 ${userData.displayName}，稍后将会刷新数据",
 //                                    actionLabel = "确定",
                                     duration = SnackbarDuration.Short
                                 )
-                                viewModel.unfollowUser(userData.id)                                
+                                viewModel.unfollowUser(userData.id)
                             }
                         },
                         modifier = Modifier.weight(1f),
-                        text = { 
+                        text = {
                             if (isProcessing) {
                                 CircularProgressIndicator(
                                     modifier = Modifier.size(16.dp),
@@ -469,21 +506,21 @@ private fun ActionButtonsRow(
                         enabled = !isProcessing
                     )
                 }
-                
+
                 FollowStatus.FollowedYou -> {
                     BBQButton(
                         onClick = {
                             coroutineScope.launch {
-                            snackbarHostState.showSnackbar(
+                                snackbarHostState.showSnackbar(
                                     message = "已回关 ${userData.displayName}，稍后将会刷新数据",
 //                                    actionLabel = "确定",
                                     duration = SnackbarDuration.Short
                                 )
-                                viewModel.followUser(userData.id)                                
+                                viewModel.followUser(userData.id)
                             }
                         },
                         modifier = Modifier.weight(1f),
-                        text = { 
+                        text = {
                             if (isProcessing) {
                                 CircularProgressIndicator(
                                     modifier = Modifier.size(16.dp),
@@ -496,12 +533,12 @@ private fun ActionButtonsRow(
                         enabled = !isProcessing
                     )
                 }
-                
+
                 FollowStatus.MutualFollow -> {
                     BBQOutlinedButton(
                         onClick = {
                             coroutineScope.launch {
-                                                            snackbarHostState.showSnackbar(
+                                snackbarHostState.showSnackbar(
                                     message = "已取消关注 ${userData.displayName}，稍后将会刷新数据",
 //                                    actionLabel = "确定",
                                     duration = SnackbarDuration.Short
@@ -511,7 +548,7 @@ private fun ActionButtonsRow(
                             }
                         },
                         modifier = Modifier.weight(1f),
-                        text = { 
+                        text = {
                             if (isProcessing) {
                                 CircularProgressIndicator(
                                     modifier = Modifier.size(16.dp),
