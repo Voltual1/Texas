@@ -5,7 +5,8 @@
 // 有关更多细节，请参阅 GNU 通用公共许可证。
 //
 // 你应该已经收到了一份 GNU 通用公共许可证的副本
-// 如果没有，请查阅 <http://www.gnu.org/licenses/>。
+// 如果没有，请查阅 <http://www.gnu.org/licenses/>.
+
 package cc.bbq.xq.ui.community.compose
 
 import android.content.Context
@@ -32,15 +33,23 @@ import cc.bbq.xq.R
 import cc.bbq.xq.KtorClient
 import cc.bbq.xq.ui.theme.BBQDropdownMenu
 import cc.bbq.xq.AuthManager
-import androidx.compose.material.ExperimentalMaterialApi
-import androidx.compose.material.pullrefresh.PullRefreshIndicator
-import androidx.compose.material.pullrefresh.pullRefresh
-import androidx.compose.material.pullrefresh.rememberPullRefreshState
+// 移除 MD2 的 ExperimentalMaterialApi 和 pullrefresh 导入
+// import androidx.compose.material.ExperimentalMaterialApi
+// import androidx.compose.material.pullrefresh.PullRefreshIndicator
+// import androidx.compose.material.pullrefresh.pullRefresh
+// import androidx.compose.material.pullrefresh.rememberPullRefreshState
 import kotlinx.coroutines.launch
 import androidx.compose.ui.res.stringResource
 import kotlinx.coroutines.flow.first
+// 添加 MD3 pullrefresh 导入
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
+import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
+// 导入我们自定义的指示器
+import cc.bbq.xq.ui.theme.BBQPullRefreshIndicator
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterialApi::class)
+// 移除 @ExperimentalMaterialApi 注解
+// @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterialApi::class)
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun BaseComposeListScreen(
     title: String = "",
@@ -59,7 +68,7 @@ fun BaseComposeListScreen(
     onNavigate: (String) -> Unit,
     onBackClick: () -> Unit = {},
     snackbarHostState: SnackbarHostState,
-    isRefreshing: Boolean = false,
+    // isRefreshing: Boolean = false, // 不需要直接使用 isRefreshing
     modifier: Modifier = Modifier
 ) {
     var showJumpDialog by remember { mutableStateOf(false) }
@@ -68,12 +77,17 @@ fun BaseComposeListScreen(
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     val scrollState = rememberScrollState()
-    
-    // 添加下拉刷新状态
-    val pullRefreshState = rememberPullRefreshState(
-        refreshing = isRefreshing,
-        onRefresh = onRefresh
-    )
+
+    // 下拉刷新状态
+    var isRefreshing by remember { mutableStateOf(false) }
+    val pullRefreshState = rememberPullToRefreshState()
+
+    // 监听刷新状态
+    LaunchedEffect(isLoading, errorMessage, posts) {
+        if (!isLoading && (posts.isNotEmpty() || errorMessage.isNotEmpty()) && isRefreshing) {
+            isRefreshing = false
+        }
+    }
 
     if (showJumpDialog) {
         AlertDialog(
@@ -152,7 +166,7 @@ fun BaseComposeListScreen(
                             tint = MaterialTheme.colorScheme.primary
                         )
                     }
-                    
+
                     // 标题区域 - 可水平滚动
                     Row(
                         modifier = Modifier
@@ -178,7 +192,7 @@ fun BaseComposeListScreen(
                                     modifier = Modifier.padding(horizontal = 8.dp)
                                 )
                             }
-                            
+
                             // 下拉菜单
                             BBQDropdownMenu(
                                 expanded = expanded,
@@ -233,7 +247,7 @@ fun BaseComposeListScreen(
                             }
                         }
                     }
-                    
+
                     // 操作按钮区域 - 固定宽度，使用可水平滚动的Row
                     Row(
                         modifier = Modifier
@@ -251,7 +265,7 @@ fun BaseComposeListScreen(
                                 tint = MaterialTheme.colorScheme.primary
                             )
                         }
-                        
+
                         // 跳页按钮
                         IconButton(
                             onClick = { showJumpDialog = true; inputPage = "" },
@@ -263,7 +277,7 @@ fun BaseComposeListScreen(
                                 tint = MaterialTheme.colorScheme.primary
                             )
                         }
-                        
+
                         // 搜索按钮
                         IconButton(
                             onClick = onSearchClick,
@@ -275,7 +289,7 @@ fun BaseComposeListScreen(
                                 tint = MaterialTheme.colorScheme.primary
                             )
                         }
-                        
+
                         // 发帖按钮
                         IconButton(
                             onClick = onCreateClick,
@@ -287,7 +301,7 @@ fun BaseComposeListScreen(
                                 tint = MaterialTheme.colorScheme.primary
                             )
                         }
-                        
+
                         // 历史记录按钮
                         IconButton(
                             onClick = historyClick,
@@ -304,12 +318,26 @@ fun BaseComposeListScreen(
             }
         }
     ) { innerPadding ->
-        Box(
-            modifier = Modifier
-                .padding(innerPadding)
-                .fillMaxSize()
-                .pullRefresh(pullRefreshState)
+        // 使用 MD3 的 PullToRefreshBox
+        PullToRefreshBox(
+            isRefreshing = isRefreshing,
+            onRefresh = onRefresh,
+            state = pullRefreshState,
+            indicator = {
+                BBQPullRefreshIndicator(
+                    state = pullRefreshState,
+                    isRefreshing = isRefreshing,
+                    modifier = Modifier.align(Alignment.TopCenter)
+                )
+            },
+            modifier = Modifier.padding(innerPadding).fillMaxSize()
         ) {
+            // Box( // 移除旧的 Box
+            //     modifier = Modifier
+            //         .padding(innerPadding)
+            //         .fillMaxSize()
+            //         .pullRefresh(pullRefreshState) // 移除旧的 pullRefresh
+            // ) { // 移除旧的 Box
             if (errorMessage.isNotEmpty()) {
                 ErrorView(
                     message = errorMessage,
@@ -342,15 +370,16 @@ fun BaseComposeListScreen(
                         .padding(16.dp)
                 )
             }
-            
-            PullRefreshIndicator(
-                refreshing = isRefreshing,
-                state = pullRefreshState,
-                modifier = Modifier.align(Alignment.TopCenter),
-                contentColor = MaterialTheme.colorScheme.primary,
-                backgroundColor = MaterialTheme.colorScheme.surface
-            )
-        }
+            // 移除旧的 PullRefreshIndicator
+            // PullRefreshIndicator(
+            //     refreshing = isRefreshing,
+            //     pullRefreshState,
+            //     modifier = Modifier.align(Alignment.TopCenter),
+            //     contentColor = MaterialTheme.colorScheme.primary,
+            //     backgroundColor = MaterialTheme.colorScheme.surface
+            // )
+            // } // 移除旧的 Box
+        } // End PullToRefreshBox
     }
 }
 
