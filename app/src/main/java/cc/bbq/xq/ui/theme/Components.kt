@@ -14,6 +14,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.PaddingValues
@@ -36,11 +37,15 @@ import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.BrokenImage
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Download
 import androidx.compose.material.icons.filled.Link
+import androidx.compose.material.pullrefresh.PullRefreshIndicator
+import androidx.compose.material.pullrefresh.pullRefresh
+import androidx.compose.material.pullrefresh.rememberPullRefreshState
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -885,4 +890,32 @@ fun BBQExposedDropdownMenuBox(
         modifier = modifier,
         content = content
     )
+}
+
+// 移植的 SwipeToRefresh 组件来源自 https://github.com/10miaomiao/bilimiao
+@OptIn(ExperimentalMaterialApi::class)
+@Composable
+fun SwipeToRefresh(
+    modifier: Modifier = Modifier,
+    refreshing: Boolean,
+    onRefresh: () -> Unit,
+    content: @Composable BoxScope.() -> Unit
+) {
+    val state = rememberPullRefreshState(
+        refreshing = refreshing,
+        onRefresh = onRefresh,
+    )
+    Box(modifier = modifier
+        .fillMaxSize()
+        .pullRefresh(state)
+    ){
+        content()
+        PullRefreshIndicator(
+            refreshing,
+            state,
+            Modifier.align(Alignment.TopCenter),
+            contentColor = MaterialTheme.colorScheme.primary,
+            backgroundColor = MaterialTheme.colorScheme.surface,
+        )
+    }
 }
