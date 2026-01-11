@@ -12,10 +12,6 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.ExperimentalMaterialApi
-import androidx.compose.material.pullrefresh.PullRefreshIndicator
-import androidx.compose.material.pullrefresh.pullRefresh
-import androidx.compose.material.pullrefresh.rememberPullRefreshState
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -26,10 +22,11 @@ import cc.bbq.xq.KtorClient
 import cc.bbq.xq.ui.compose.MessageItem
 import cc.bbq.xq.ui.compose.PageJumpDialog
 import cc.bbq.xq.ui.compose.PaginationControls
+import androidx.compose.material3.pulltorefresh.*
+import androidx.compose.foundation.layout.Box
 
 // 在 MessageCenterScreen.kt 中修复 UI 显示问题
 
-@OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun MessageCenterScreen(
     viewModel: MessageViewModel,
@@ -40,24 +37,50 @@ fun MessageCenterScreen(
     var showPageDialog by remember { mutableStateOf(false) }
     val dialogShape = remember { RoundedCornerShape(4.dp) }
 
-    // 下拉刷新状态
-    var refreshing by remember { mutableStateOf(false) }
+    // 使用 MD3 的 PullToRefreshState
+    val pullToRefreshState = rememberPullToRefreshState()
 
     // 修复：只在真正需要时初始化，不强制重置
     LaunchedEffect(Unit) {
         viewModel.initializeIfNeeded()
     }
 
-    val pullRefreshState = rememberPullRefreshState(refreshing, onRefresh = {
-        refreshing = true
-        viewModel.reset()
-        refreshing = false
-    })
+    // 监听下拉刷新完成后的状态重置
+    LaunchedEffect(pullToRefreshState.isRefreshing) {
+        if (pullToRefreshState.isRefreshing) {
+            // 重置 ViewModel 数据
+            viewModel.reset()
+            // 等待刷新完成
+            pullToRefreshState.endRefresh()
+        }
+    }
 
-    Box(
-        modifier = modifier
-            .fillMaxSize()
-            .pullRefresh(pullRefreshState)
+    // 判断是否正在刷新
+    val isRefreshing = state.isLoading && state.currentPage == 1
+
+    // 监听刷新状态变化
+    LaunchedEffect(isRefreshing) {
+        if (!isRefreshing && pullToRefreshState.isRefreshing) {
+            pullToRefreshState.endRefresh()
+        }
+    }
+
+    PullToRefreshBox(
+        state = pullToRefreshState,
+        isRefreshing = isRefreshing,
+        onRefresh = {
+            // 下拉刷新时重置到第一页
+            viewModel.reset()
+        },
+        modifier = modifier.fillMaxSize(),
+        indicator = { indicatorState ->
+            // 使用 Material3 默认的指示器
+            PullToRefreshDefaults.Indicator(
+                state = indicatorState,
+                isRefreshing = isRefreshing,
+                modifier = Modifier.align(Alignment.TopCenter)
+            )
+        }
     ) {
         Column(
             modifier = Modifier.fillMaxSize()
@@ -151,13 +174,6 @@ fun MessageCenterScreen(
                 )
             }
         }
-        PullRefreshIndicator(
-            refreshing = refreshing,
-            state = pullRefreshState,
-            modifier = Modifier.align(Alignment.TopCenter),
-            contentColor = MaterialTheme.colorScheme.primary,
-            backgroundColor = MaterialTheme.colorScheme.surface
-        )
     }
 
     // 分页跳转对话框
@@ -172,5 +188,12 @@ fun MessageCenterScreen(
             },
             shape = dialogShape
         )
+    }
+}
+
+// 扩展函数：安全结束刷新
+private suspend fun PullToRefreshState.endRefresh() {
+    if (isRefreshing) {
+        animateToHidden()
     }
 }
