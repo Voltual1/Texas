@@ -257,36 +257,37 @@ private suspend fun downloadChunk(
         throw Exception("Chunk ${chunk.id} failed: ${response.status}")
     }
 
-    // 使用临时文件，然后合并
-    val tempFile = File(file.parent, "${file.name}.part${chunk.id}")
-    
     withContext(Dispatchers.IO) {
-        tempFile.outputStream().use { output ->
-            // 使用 Ktor 的内置 copyTo 方法
-            response.bodyAsChannel().copyTo(output)
-        }
-        
-        // 将临时文件内容复制到正确位置
         RandomAccessFile(file, "rw").use { raf ->
-            raf.seek(chunk.current)
-            tempFile.inputStream().use { input ->
-                val buffer = ByteArray(BUFFER_SIZE)
-                var bytesRead: Int
-                var total = 0L
-                
-                while (input.read(buffer).also { bytesRead = it } != -1) {
+            raf.seek(chunk.start)
+            
+            // 获取输入流
+            val channel = response.bodyAsChannel()
+            val buffer = ByteArray(BUFFER_SIZE)
+            
+            try {
+                while (true) {
+                    // 确保协程未取消
+                    ensureActive()
+                    
+                    // 读取数据到缓冲区
+                    val bytesRead = channel.readAvailable(buffer)
+                    if (bytesRead == -1) break
+                    
+                    // 写入到目标文件
                     raf.write(buffer, 0, bytesRead)
-                    total += bytesRead
+                    
+                    // 更新进度
                     onBytesRead(bytesRead)
                 }
+            } finally {
+                // 确保通道关闭
+                channel.cancel()
             }
         }
-        
-        tempFile.delete()
     }
     
-    chunk.current = chunk.start + tempFile.length()
-    Log.d(TAG, "Chunk ${chunk.id} completed at ${chunk.current}")
+    Log.d(TAG, "Chunk ${chunk.id} completed")
 }
 
     /**
