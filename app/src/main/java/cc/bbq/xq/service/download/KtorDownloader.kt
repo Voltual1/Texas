@@ -17,6 +17,7 @@ import io.ktor.http.contentLength
 import io.ktor.http.isSuccess
 import io.ktor.utils.io.ByteReadChannel
 //import io.ktor.utils.io.core.*
+import io.ktor.utils.io.readAvailable
 import io.ktor.utils.io.jvm.javaio.copyTo
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
@@ -281,7 +282,8 @@ private suspend fun ByteReadChannel.copyToWithProgress(
         ensureActive()
         
         // 读取数据
-        val bytesRead = readAvailable(buffer, 0, buffer.size)
+val bytesRead = readAvailable(buffer) // 默认从 0 开始填充整个 buffer
+if (bytesRead <= 0) break
         if (bytesRead == 0) {
             // 没有数据，等待一下
             try {
