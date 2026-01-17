@@ -23,6 +23,7 @@ import io.ktor.client.statement.*
 import io.ktor.http.*
 import io.ktor.serialization.kotlinx.json.*
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.first
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
@@ -36,6 +37,9 @@ object LingMarketClient {
     private const val CONNECT_TIMEOUT = 30000L
     private const val SOCKET_TIMEOUT = 30000L
 
+    // 用户代理信息
+    private const val USER_AGENT = "Ktor client"
+
     // Ktor HttpClient 实例
     val httpClient = HttpClient(OkHttp) {
         initConfig(this)
@@ -47,7 +51,7 @@ object LingMarketClient {
             url(BASE_URL)
             header(HttpHeaders.Accept, ContentType.Application.Json.toString())
             header(HttpHeaders.AcceptCharset, "UTF-8")
-            header(HttpHeaders.UserAgent, "Ktor client")
+            header(HttpHeaders.UserAgent, USER_AGENT)
             header(HttpHeaders.Host, "market.ziling.xin")
             header(HttpHeaders.Connection, "Keep-Alive")
             header(HttpHeaders.AcceptEncoding, "gzip")
@@ -97,6 +101,13 @@ object LingMarketClient {
     data class LoginRequest(
         val username: String,
         val password: String
+    )
+
+    // 登录响应
+    @Serializable
+    data class LoginResponseData(
+        val token: String,
+        val user: LingMarketUser
     )
 
     // 用户信息
@@ -300,10 +311,7 @@ object LingMarketClient {
      * 安全地执行 Ktor 请求
      */
     @Suppress("RedundantSuspendModifier")
-    private suspend inline fun <reified T> safeApiCall(
-        token: String? = null,
-        block: suspend () -> HttpResponse
-    ): Result<T> {
+    private suspend inline fun <reified T> safeApiCall(block: suspend () -> HttpResponse): Result<T> {
         var attempts = 0
         while (attempts < MAX_RETRIES) {
             try {
@@ -331,31 +339,68 @@ object LingMarketClient {
     }
 
     /**
-     * 登录灵应用商店
+     * 发起 GET 请求
      */
-    suspend fun login(username: String, password: String): Result<LingMarketBaseResponse<Nothing>> {
-        val url = "/auth/login"
-        val requestBody = LoginRequest(username, password)
-        
+    private suspend inline fun <reified T> get(
+        url: String,
+        token: String? = null
+    ): Result<T> {
         return safeApiCall {
-            httpClient.post(url) {
-                contentType(ContentType.Application.Json)
-                setBody(requestBody)
+            httpClient.get(url) {
+                token?.let { bearerAuth(it) }
             }
         }
     }
 
     /**
-     * 获取应用分类列表
+     * 发起 POST 请求（JSON 格式）
      */
-    suspend fun getCategories(includeInactive: Boolean = false, token: String? = null): Result<List<LingMarketCategory>> {
-        val url = "/categories?includeInactive=$includeInactive"
-        
-        return safeApiCall(token) {
-            httpClient.get(url) {
+    private suspend inline fun <reified T> postJson(
+        url: String,
+        body: Any? = null,
+        token: String? = null
+    ): Result<T> {
+        return safeApiCall {
+            httpClient.post(url) {
+                contentType(ContentType.Application.Json)
+                body?.let { setBody(it) }
                 token?.let { bearerAuth(it) }
             }
         }
+    }
+
+    /**
+     * 发起 DELETE 请求
+     */
+    private suspend inline fun <reified T> delete(
+        url: String,
+        token: String? = null
+    ): Result<T> {
+        return safeApiCall {
+            httpClient.delete(url) {
+                token?.let { bearerAuth(it) }
+            }
+        }
+    }
+
+    /**
+     * 登录灵应用商店
+     */
+    suspend fun login(username: String, password: String): Result<LingMarketBaseResponse<LoginResponseData>> {
+        val url = "/auth/login"
+        val requestBody = LoginRequest(username, password)
+        
+        return postJson(url, requestBody)
+    }
+
+    /**
+     * 获取应用分类列表
+     */
+    suspend fun getCategories(includeInactive: Boolean = false): Result<List<LingMarketCategory>> {
+        val token = getToken()
+        val url = "/categories?includeInactive=$includeInactive"
+        
+        return get(url, token)
     }
 
     /**
@@ -364,29 +409,22 @@ object LingMarketClient {
     suspend fun getAppsByCategory(
         category: String,
         page: Int = 1,
-        limit: Int = 20,
-        token: String? = null
+        limit: Int = 20
     ): Result<LingMarketAppListResponse> {
+        val token = getToken()
         val url = "/apps/category/$category?page=$page&limit=$limit"
         
-        return safeApiCall(token) {
-            httpClient.get(url) {
-                token?.let { bearerAuth(it) }
-            }
-        }
+        return get(url, token)
     }
 
     /**
      * 获取应用详情
      */
-    suspend fun getAppDetail(appId: String, token: String? = null): Result<LingMarketApp> {
+    suspend fun getAppDetail(appId: String): Result<LingMarketApp> {
+        val token = getToken()
         val url = "/apps/$appId"
         
-        return safeApiCall(token) {
-            httpClient.get(url) {
-                token?.let { bearerAuth(it) }
-            }
-        }
+        return get(url, token)
     }
 
     /**
@@ -395,17 +433,13 @@ object LingMarketClient {
     suspend fun searchApps(
         query: String,
         page: Int = 1,
-        limit: Int = 20,
-        token: String? = null
+        limit: Int = 20
     ): Result<LingMarketAppListResponse> {
+        val token = getToken()
         val encodedQuery = java.net.URLEncoder.encode(query, "UTF-8")
         val url = "/apps?page=$page&limit=$limit&search=$encodedQuery"
         
-        return safeApiCall(token) {
-            httpClient.get(url) {
-                token?.let { bearerAuth(it) }
-            }
-        }
+        return get(url, token)
     }
 
     /**
@@ -413,16 +447,12 @@ object LingMarketClient {
      */
     suspend fun getRecentlyUpdatedApps(
         page: Int = 1,
-        limit: Int = 10,
-        token: String? = null
+        limit: Int = 10
     ): Result<LingMarketAppListResponse> {
+        val token = getToken()
         val url = "/apps/recently-updated?page=$page&limit=$limit"
         
-        return safeApiCall(token) {
-            httpClient.get(url) {
-                token?.let { bearerAuth(it) }
-            }
-        }
+        return get(url, token)
     }
 
     /**
@@ -430,19 +460,13 @@ object LingMarketClient {
      */
     suspend fun postAppComment(
         appId: String,
-        content: String,
-        token: String
+        content: String
     ): Result<LingMarketBaseResponse<LingMarketComment>> {
+        val token = getToken()
         val url = "/apps/$appId/comments"
         val requestBody = CommentRequest(content)
         
-        return safeApiCall(token) {
-            httpClient.post(url) {
-                contentType(ContentType.Application.Json)
-                bearerAuth(token)
-                setBody(requestBody)
-            }
-        }
+        return postJson(url, requestBody, token)
     }
 
     /**
@@ -451,19 +475,13 @@ object LingMarketClient {
     suspend fun postCommentReply(
         appId: String,
         commentId: String,
-        content: String,
-        token: String
+        content: String
     ): Result<LingMarketBaseResponse<LingMarketReply>> {
+        val token = getToken()
         val url = "/apps/$appId/comments/$commentId/replies"
         val requestBody = ReplyRequest(content)
         
-        return safeApiCall(token) {
-            httpClient.post(url) {
-                contentType(ContentType.Application.Json)
-                bearerAuth(token)
-                setBody(requestBody)
-            }
-        }
+        return postJson(url, requestBody, token)
     }
 
     /**
@@ -471,16 +489,12 @@ object LingMarketClient {
      */
     suspend fun deleteComment(
         appId: String,
-        commentId: String,
-        token: String
+        commentId: String
     ): Result<DeleteResponse> {
+        val token = getToken()
         val url = "/apps/$appId/comments/$commentId"
         
-        return safeApiCall(token) {
-            httpClient.delete(url) {
-                bearerAuth(token)
-            }
-        }
+        return delete(url, token)
     }
 
     /**
@@ -490,17 +504,13 @@ object LingMarketClient {
     suspend fun getAppComments(
         appId: String,
         page: Int = 1,
-        limit: Int = 20,
-        token: String? = null
+        limit: Int = 20
     ): Result<LingMarketBaseResponse<List<LingMarketComment>>> {
+        val token = getToken()
         // 根据示例，可能需要猜测端点格式
         val url = "/apps/$appId/comments?page=$page&limit=$limit"
         
-        return safeApiCall(token) {
-            httpClient.get(url) {
-                token?.let { bearerAuth(it) }
-            }
-        }
+        return get(url, token)
     }
 
     /**
@@ -510,21 +520,30 @@ object LingMarketClient {
         appId: String,
         commentId: String,
         page: Int = 1,
-        limit: Int = 20,
-        token: String? = null
+        limit: Int = 20
     ): Result<LingMarketBaseResponse<List<LingMarketReply>>> {
+        val token = getToken()
         val url = "/apps/$appId/comments/$commentId/replies?page=$page&limit=$limit"
         
-        return safeApiCall(token) {
-            httpClient.get(url) {
-                token?.let { bearerAuth(it) }
-            }
-        }
+        return get(url, token)
     }
 
     // 辅助方法：为请求添加Bearer认证
     private fun HttpRequestBuilder.bearerAuth(token: String) {
         header(HttpHeaders.Authorization, "Bearer $token")
+    }
+
+    /**
+     * 获取灵应用商店 Token
+     */
+    private suspend fun getToken(): String? {
+        return try {
+            // 使用 BBQApplication.instance 获取 Context，然后从 AuthManager 获取 token
+            AuthManager.getLingMarketToken(BBQApplication.instance).first()
+        } catch (e: Exception) {
+            println("Failed to get LingMarket token: ${e.message}")
+            null
+        }
     }
 
     /**
@@ -537,52 +556,52 @@ object LingMarketClient {
     // ===== API Service 接口（兼容现有模式） =====
     
     interface LingMarketApiService {
-        suspend fun login(username: String, password: String): Result<LingMarketBaseResponse<Nothing>>
-        suspend fun getCategories(includeInactive: Boolean, token: String?): Result<List<LingMarketCategory>>
-        suspend fun getAppsByCategory(category: String, page: Int, limit: Int, token: String?): Result<LingMarketAppListResponse>
-        suspend fun getAppDetail(appId: String, token: String?): Result<LingMarketApp>
-        suspend fun searchApps(query: String, page: Int, limit: Int, token: String?): Result<LingMarketAppListResponse>
-        suspend fun getRecentlyUpdatedApps(page: Int, limit: Int, token: String?): Result<LingMarketAppListResponse>
-        suspend fun postAppComment(appId: String, content: String, token: String): Result<LingMarketBaseResponse<LingMarketComment>>
-        suspend fun postCommentReply(appId: String, commentId: String, content: String, token: String): Result<LingMarketBaseResponse<LingMarketReply>>
-        suspend fun deleteComment(appId: String, commentId: String, token: String): Result<DeleteResponse>
+        suspend fun login(username: String, password: String): Result<LingMarketBaseResponse<LoginResponseData>>
+        suspend fun getCategories(includeInactive: Boolean): Result<List<LingMarketCategory>>
+        suspend fun getAppsByCategory(category: String, page: Int, limit: Int): Result<LingMarketAppListResponse>
+        suspend fun getAppDetail(appId: String): Result<LingMarketApp>
+        suspend fun searchApps(query: String, page: Int, limit: Int): Result<LingMarketAppListResponse>
+        suspend fun getRecentlyUpdatedApps(page: Int, limit: Int): Result<LingMarketAppListResponse>
+        suspend fun postAppComment(appId: String, content: String): Result<LingMarketBaseResponse<LingMarketComment>>
+        suspend fun postCommentReply(appId: String, commentId: String, content: String): Result<LingMarketBaseResponse<LingMarketReply>>
+        suspend fun deleteComment(appId: String, commentId: String): Result<DeleteResponse>
     }
 
     object LingMarketApiServiceImpl : LingMarketApiService {
-        override suspend fun login(username: String, password: String): Result<LingMarketBaseResponse<Nothing>> {
+        override suspend fun login(username: String, password: String): Result<LingMarketBaseResponse<LoginResponseData>> {
             return this@LingMarketClient.login(username, password)
         }
 
-        override suspend fun getCategories(includeInactive: Boolean, token: String?): Result<List<LingMarketCategory>> {
-            return this@LingMarketClient.getCategories(includeInactive, token)
+        override suspend fun getCategories(includeInactive: Boolean): Result<List<LingMarketCategory>> {
+            return this@LingMarketClient.getCategories(includeInactive)
         }
 
-        override suspend fun getAppsByCategory(category: String, page: Int, limit: Int, token: String?): Result<LingMarketAppListResponse> {
-            return this@LingMarketClient.getAppsByCategory(category, page, limit, token)
+        override suspend fun getAppsByCategory(category: String, page: Int, limit: Int): Result<LingMarketAppListResponse> {
+            return this@LingMarketClient.getAppsByCategory(category, page, limit)
         }
 
-        override suspend fun getAppDetail(appId: String, token: String?): Result<LingMarketApp> {
-            return this@LingMarketClient.getAppDetail(appId, token)
+        override suspend fun getAppDetail(appId: String): Result<LingMarketApp> {
+            return this@LingMarketClient.getAppDetail(appId)
         }
 
-        override suspend fun searchApps(query: String, page: Int, limit: Int, token: String?): Result<LingMarketAppListResponse> {
-            return this@LingMarketClient.searchApps(query, page, limit, token)
+        override suspend fun searchApps(query: String, page: Int, limit: Int): Result<LingMarketAppListResponse> {
+            return this@LingMarketClient.searchApps(query, page, limit)
         }
 
-        override suspend fun getRecentlyUpdatedApps(page: Int, limit: Int, token: String?): Result<LingMarketAppListResponse> {
-            return this@LingMarketClient.getRecentlyUpdatedApps(page, limit, token)
+        override suspend fun getRecentlyUpdatedApps(page: Int, limit: Int): Result<LingMarketAppListResponse> {
+            return this@LingMarketClient.getRecentlyUpdatedApps(page, limit)
         }
 
-        override suspend fun postAppComment(appId: String, content: String, token: String): Result<LingMarketBaseResponse<LingMarketComment>> {
-            return this@LingMarketClient.postAppComment(appId, content, token)
+        override suspend fun postAppComment(appId: String, content: String): Result<LingMarketBaseResponse<LingMarketComment>> {
+            return this@LingMarketClient.postAppComment(appId, content)
         }
 
-        override suspend fun postCommentReply(appId: String, commentId: String, content: String, token: String): Result<LingMarketBaseResponse<LingMarketReply>> {
-            return this@LingMarketClient.postCommentReply(appId, commentId, content, token)
+        override suspend fun postCommentReply(appId: String, commentId: String, content: String): Result<LingMarketBaseResponse<LingMarketReply>> {
+            return this@LingMarketClient.postCommentReply(appId, commentId, content)
         }
 
-        override suspend fun deleteComment(appId: String, commentId: String, token: String): Result<DeleteResponse> {
-            return this@LingMarketClient.deleteComment(appId, commentId, token)
+        override suspend fun deleteComment(appId: String, commentId: String): Result<DeleteResponse> {
+            return this@LingMarketClient.deleteComment(appId, commentId)
         }
     }
 }
