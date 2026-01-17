@@ -210,7 +210,8 @@ internal const val BASE_URL = "https://market.ziling.xin/api/api/v1/"
         @SerialName("updatedAt") val updatedAt: String,
         @SerialName("__v") val version: Int = 0,
         @SerialName("versions") val versions: List<LingMarketAppVersion>? = null,
-        val variants: List<LingMarketVariant>? = null
+        val variants: List<LingMarketVariant>? = null,
+        @SerialName("latestVersionAt") val latestVersionAt: String? = null  // 新增：最近更新应用列表返回的字段
     )
 
     // 应用版本
@@ -259,7 +260,7 @@ internal const val BASE_URL = "https://market.ziling.xin/api/api/v1/"
     data class LingMarketUploader(
         @SerialName("_id") val id: String,
         val username: String,
-        val nickname: String
+        val nickname: String? = null  // 改为可空
     )
 
     // 审核日志
@@ -267,7 +268,7 @@ internal const val BASE_URL = "https://market.ziling.xin/api/api/v1/"
     data class LingMarketAuditLog(
         val action: String,
         val reason: String,
-        val reviewer: LingMarketUploader,
+        val reviewer: LingMarketUploader? = null,  // 改为可空
         val timestamp: String,
         @SerialName("_id") val id: String
     )
