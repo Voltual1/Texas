@@ -261,29 +261,21 @@ private suspend fun downloadChunk(
         RandomAccessFile(file, "rw").use { raf ->
             raf.seek(chunk.start)
             
-            // 获取输入流
+            // 使用 response.bodyAsChannel() 直接读取
             val channel = response.bodyAsChannel()
             val buffer = ByteArray(BUFFER_SIZE)
             
-            try {
-                while (true) {
-                    // 确保协程未取消
-                    ensureActive()
-                    
-                    // 读取数据到缓冲区
-                    val bytesRead = channel.readAvailable(buffer)
-                    if (bytesRead == -1) break
-                    
-                    // 写入到目标文件
-                    raf.write(buffer, 0, bytesRead)
-                    
-                    // 更新进度
-                    onBytesRead(bytesRead)
-                }
-            } finally {
-                // 确保通道关闭
-                channel.cancel()
+            // 直接读取，无需手动关闭
+            while (true) {
+                ensureActive() // 检查协程是否取消
+                
+                val bytesRead = channel.readAvailable(buffer)
+                if (bytesRead == -1) break
+                
+                raf.write(buffer, 0, bytesRead)
+                onBytesRead(bytesRead)
             }
+            // 通道会在作用域结束时自动关闭
         }
     }
     
