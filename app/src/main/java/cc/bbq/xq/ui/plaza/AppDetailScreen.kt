@@ -233,6 +233,10 @@ fun AppDetailScreen(
                         snackbarHostState.showSnackbar("暂不支持该商店的分享功能")
                     }
                 }
+                AppStore.LING_MARKET -> {
+                                        coroutineScope.launch {
+                        snackbarHostState.showSnackbar("暂不支持该商店的分享功能")
+                                    }
                 AppStore.LOCAL -> {
                     // 本地商店：暂不支持分享
                     coroutineScope.launch {
@@ -528,6 +532,9 @@ var showMoreMenu by remember { mutableStateOf(false) }
                                     AppStore.LOCAL -> {
                                         // 本地商店：无特殊选项
                                     }
+                                    AppStore.LING_MARKET -> {
+                                        // 灵应用商店：无特殊选项
+                                    }
                                 }
                             }
                         }
@@ -734,7 +741,18 @@ if (appDetail.store == AppStore.XIAOQU_SPACE) {
                                 )
                             }
                         }
-                    }
+                        AppStore.LING_MARKET -> {
+InfoRow(
+                                label = "应用类型",
+                                value = appDetail.type
+                            )
+                            if (appDetail.size != null) {
+                                InfoRow(
+                                    label = "安装包大小",
+                                    value = appDetail.size
+                                )
+                            }
+                        }                    }
                 }
             }
         }
@@ -906,6 +924,30 @@ item {
                         }
                         AppStore.LOCAL -> {
                             // 本地商店只显示上传者
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(16.dp)
+                                    .clickable {
+                                        val userId = appDetail.user.id.toLongOrNull()
+                                        if (userId != null) {
+                                            navController.navigate(UserDetail(userId, appDetail.store).createRoute())
+                                        }
+                                    },
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                AsyncImage(
+                                    model = appDetail.user.avatarUrl,
+                                    contentDescription = "上传者头像",
+                                    modifier = Modifier.size(40.dp).clip(CircleShape),
+                                    contentScale = ContentScale.Crop
+                                )
+                                Spacer(Modifier.width(16.dp))
+                                Text(appDetail.user.displayName, style = MaterialTheme.typography.titleMedium)
+                            }
+                        }
+                        AppStore.LING_MARKET -> {
+                            // 暂时这么处理
                             Row(
                                 modifier = Modifier
                                     .fillMaxWidth()
