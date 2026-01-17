@@ -23,6 +23,7 @@ import cc.bbq.xq.SineShopClient.SineShopAppDetail
 import cc.bbq.xq.SineShopClient.AppTag
 import cc.bbq.xq.SineShopClient.SineShopDownloadSource
 import cc.bbq.xq.SineShopClient.SineShopUserInfo
+import cc.bbq.xq.LingMarketClient
 
 // --- KtorClient (小趣空间) Mappers ---
 
