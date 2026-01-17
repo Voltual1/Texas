@@ -30,7 +30,7 @@ import kotlinx.serialization.json.Json
 import java.io.IOException
 
 object LingMarketClient {
-    private const val BASE_URL = "https://market.ziling.xin/api/api/v1"
+    private const val BASE_URL = "https://market.ziling.xin/api/api/v1/" 
     private const val MAX_RETRIES = 3
     private const val RETRY_DELAY = 1000L
     private const val REQUEST_TIMEOUT = 30000L
@@ -387,7 +387,7 @@ object LingMarketClient {
      * 登录灵应用商店
      */
     suspend fun login(username: String, password: String): Result<LingMarketBaseResponse<LoginResponseData>> {
-        val url = "/auth/login"
+        val url = "auth/login"
         val requestBody = LoginRequest(username, password)
         
         return postJson(url, requestBody)
@@ -398,7 +398,7 @@ object LingMarketClient {
      */
     suspend fun getCategories(includeInactive: Boolean = false): Result<List<LingMarketCategory>> {
         val token = getToken()
-        val url = "/categories?includeInactive=$includeInactive"
+        val url = "categories?includeInactive=$includeInactive"
         
         return get(url, token)
     }
@@ -412,7 +412,7 @@ object LingMarketClient {
         limit: Int = 20
     ): Result<LingMarketAppListResponse> {
         val token = getToken()
-        val url = "/apps/category/$category?page=$page&limit=$limit"
+        val url = "apps/category/$category?page=$page&limit=$limit"
         
         return get(url, token)
     }
@@ -422,7 +422,7 @@ object LingMarketClient {
      */
     suspend fun getAppDetail(appId: String): Result<LingMarketApp> {
         val token = getToken()
-        val url = "/apps/$appId"
+        val url = "apps/$appId"
         
         return get(url, token)
     }
@@ -437,7 +437,7 @@ object LingMarketClient {
     ): Result<LingMarketAppListResponse> {
         val token = getToken()
         val encodedQuery = java.net.URLEncoder.encode(query, "UTF-8")
-        val url = "/apps?page=$page&limit=$limit&search=$encodedQuery"
+        val url = "apps?page=$page&limit=$limit&search=$encodedQuery"
         
         return get(url, token)
     }
@@ -450,7 +450,7 @@ object LingMarketClient {
         limit: Int = 10
     ): Result<LingMarketAppListResponse> {
         val token = getToken()
-        val url = "/apps/recently-updated?page=$page&limit=$limit"
+        val url = "apps/recently-updated?page=$page&limit=$limit"
         
         return get(url, token)
     }
@@ -463,7 +463,7 @@ object LingMarketClient {
         content: String
     ): Result<LingMarketBaseResponse<LingMarketComment>> {
         val token = getToken()
-        val url = "/apps/$appId/comments"
+        val url = "apps/$appId/comments"
         val requestBody = CommentRequest(content)
         
         return postJson(url, requestBody, token)
@@ -478,7 +478,7 @@ object LingMarketClient {
         content: String
     ): Result<LingMarketBaseResponse<LingMarketReply>> {
         val token = getToken()
-        val url = "/apps/$appId/comments/$commentId/replies"
+        val url = "apps/$appId/comments/$commentId/replies"
         val requestBody = ReplyRequest(content)
         
         return postJson(url, requestBody, token)
@@ -492,7 +492,7 @@ object LingMarketClient {
         commentId: String
     ): Result<DeleteResponse> {
         val token = getToken()
-        val url = "/apps/$appId/comments/$commentId"
+        val url = "apps/$appId/comments/$commentId"
         
         return delete(url, token)
     }
@@ -508,7 +508,7 @@ object LingMarketClient {
     ): Result<LingMarketBaseResponse<List<LingMarketComment>>> {
         val token = getToken()
         // 根据示例，可能需要猜测端点格式
-        val url = "/apps/$appId/comments?page=$page&limit=$limit"
+        val url = "apps/$appId/comments?page=$page&limit=$limit"
         
         return get(url, token)
     }
@@ -523,7 +523,7 @@ object LingMarketClient {
         limit: Int = 20
     ): Result<LingMarketBaseResponse<List<LingMarketReply>>> {
         val token = getToken()
-        val url = "/apps/$appId/comments/$commentId/replies?page=$page&limit=$limit"
+        val url = "apps/$appId/comments/$commentId/replies?page=$page&limit=$limit"
         
         return get(url, token)
     }
