@@ -30,7 +30,7 @@ import kotlinx.serialization.json.Json
 import java.io.IOException
 
 object LingMarketClient {
-    private const val BASE_URL = "https://market.ziling.xin/api/api/v1/" 
+internal const val BASE_URL = "https://market.ziling.xin/api/api/v1/" 
     /**
      * 【重要警告】BASE_URL 必须以 '/' 结尾。
      * * 根据 Ktor 的路径解析规则：
@@ -40,6 +40,7 @@ object LingMarketClient {
      * - 如果请求路径以 '/' 开头（如 "/path"），Ktor 会将其视为绝对路径，
      * 导致最终请求变为 "https://domain.com/path"，从而丢失 "/api/api/v1" 部分。
      * - 如果请求路径不以 '/' 开头（如 "path"），Ktor 会将其拼接到 BASE_URL 之后。
+     在 Ktor 和 Retrofit 等网络库中，基础路径（Base URL）与相对路径的拼接逻辑严格遵循 RFC 3986 标准。
      */
     private const val MAX_RETRIES = 3
     private const val RETRY_DELAY = 1000L

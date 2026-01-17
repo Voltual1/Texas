@@ -13,6 +13,7 @@ import cc.bbq.xq.data.db.DownloadTaskDao
 import cc.bbq.xq.data.repository.IAppStoreRepository
 import cc.bbq.xq.data.repository.SineShopRepository
 import cc.bbq.xq.data.repository.XiaoQuRepository
+import cc.bbq.xq.data.repository.SineOpenMarketRepository // 添加这个导入
 import cc.bbq.xq.data.db.DownloadTaskRepository
 import cc.bbq.xq.ui.auth.LoginViewModel
 import cc.bbq.xq.ui.billing.BillingViewModel
@@ -110,16 +111,18 @@ val appModule = module {
     // Repositories - 修改 DownloadTaskRepository 的定义
     single { XiaoQuRepository(KtorClient.ApiServiceImpl) }
     single { SineShopRepository() }
+    single { SineOpenMarketRepository() } // 添加 SINE_OPEN_MARKET 的仓库
     single { DownloadTaskRepository(get()) }  // 这里会自动使用上面定义的 DownloadTaskDao
     
     single { LingMarketRepository() } // 新增灵应用商店
     
+    // 修正：显式指定 Map 的类型参数
     single<Map<AppStore, IAppStoreRepository>> {
-        mapOf(
-            AppStore.XIAOQU_SPACE to get<XiaoQuRepository>(),
-            AppStore.SIENE_SHOP to get<SineShopRepository>(),
-            AppStore.SINE_OPEN_MARKET to get<SineOpenMarketRepository>(),
-            AppStore.LING_MARKET to get<LingMarketRepository>() // 新增
-        )
+        val map = mutableMapOf<AppStore, IAppStoreRepository>()
+        map[AppStore.XIAOQU_SPACE] = get<XiaoQuRepository>()
+        map[AppStore.SIENE_SHOP] = get<SineShopRepository>()
+        map[AppStore.SINE_OPEN_MARKET] = get<SineOpenMarketRepository>()
+        map[AppStore.LING_MARKET] = get<LingMarketRepository>()
+        map
     }
 }
