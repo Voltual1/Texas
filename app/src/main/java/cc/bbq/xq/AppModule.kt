@@ -101,7 +101,7 @@ val appModule = module {
     single { get<AppDatabase>().logDao() }  // 如果需要的话
     single { get<AppDatabase>().browseHistoryDao() }  // 如果需要的话
     single { get<AppDatabase>().networkCacheDao() }  // 如果需要的话
-    single { get<AppDatabase>().postDraftDao() }  // 如果需要的话
+    single { get<AppDatabase>().postDraftDao() }  
     single { get<AppDatabase>().downloadTaskDao() }  // 关键：添加 DownloadTaskDao 的定义
     
     single { SearchHistoryDataStore(androidApplication()) }
