@@ -284,11 +284,31 @@ fun SineShopClient.SineShopReview.toUnifiedReview(): UnifiedComment {
 
 // --- LingMarketClient (灵应用商店) Mappers ---
 
-fun LingMarketClient.LingMarketCategory.toUnifiedCategory(): UnifiedCategory {
-    return UnifiedCategory(
-        id = this.id, // 使用 _id 字段
-        name = this.displayName, // 使用 displayName 而不是 name
-        icon = this.icon
+// 在 Mappers.kt 末尾添加灵应用商店的映射
+
+// --- LingMarketClient (灵应用商店) Mappers ---
+
+fun LingMarketClient.LingMarketUploader.toUnifiedUser(): UnifiedUser {
+    return UnifiedUser(
+        id = this.id,
+        displayName = this.nickname ?: this.username ?: "未知用户", // 确保非空
+        avatarUrl = null
+    )
+}
+
+fun LingMarketClient.LingMarketUser.toUnifiedUser(): UnifiedUser {
+    return UnifiedUser(
+        id = this.id,
+        displayName = this.nickname ?: this.username ?: "未知用户", // 确保非空
+        avatarUrl = this.avatarUrl
+    )
+}
+
+fun LingMarketClient.LingMarketUserLite.toUnifiedUser(): UnifiedUser {
+    return UnifiedUser(
+        id = this.id,
+        displayName = this.nickname ?: this.username ?: "未知用户", // 确保非空
+        avatarUrl = this.avatarUrl
     )
 }
 
@@ -299,7 +319,7 @@ fun LingMarketClient.LingMarketApp.toUnifiedAppItem(): UnifiedAppItem {
         navigationVersionId = this.versionCode.toLong(),
         store = AppStore.LING_MARKET,
         name = this.name,
-        iconUrl = this.iconKey, // 使用原始 key，让UI组件拼接完整URL
+        iconUrl = this.iconKey,
         versionName = this.versionName
     )
 }
@@ -320,11 +340,7 @@ fun LingMarketClient.LingMarketApp.toUnifiedAppDetail(): UnifiedAppDetail {
         developer = this.developer,
         size = this.size.toString(),
         uploadTime = this.createdAt.toLongOrNull() ?: 0L,
-        user = UnifiedUser(
-            id = this.uploader.id,
-            displayName = this.uploader.nickname,
-            avatarUrl = null
-        ),
+        user = this.uploader.toUnifiedUser(), // 使用映射函数
         tags = this.tags,
         downloadCount = this.downloads,
         isFavorite = false,
