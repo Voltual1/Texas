@@ -286,7 +286,7 @@ fun SineShopClient.SineShopReview.toUnifiedReview(): UnifiedComment {
 
 fun LingMarketClient.LingMarketCategory.toUnifiedCategory(): UnifiedCategory {
     return UnifiedCategory(
-        id = this._id, // 使用 _id 字段
+        id = this.id, // 使用 _id 字段
         name = this.displayName, // 使用 displayName 而不是 name
         icon = this.icon
     )

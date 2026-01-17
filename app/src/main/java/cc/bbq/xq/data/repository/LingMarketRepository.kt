@@ -12,30 +12,37 @@ import cc.bbq.xq.AppStore
 import cc.bbq.xq.LingMarketClient
 import cc.bbq.xq.data.unified.*
 import java.io.File
-import kotlin.math.ceil
 import org.koin.core.annotation.Single
 
 @Single
 class LingMarketRepository : IAppStoreRepository {
 
+    // 硬编码灵应用商店的分类列表，模仿小趣空间的做法
     override suspend fun getCategories(): Result<List<UnifiedCategory>> {
-        return try {
-            val result = LingMarketClient.getCategories(includeInactive = false)
-            result.map { categories ->
-                // 添加一个特殊的"最近更新"分类作为第一个选项
-                val specialCategories = listOf(
-                    UnifiedCategory(id = "-1", name = "最近更新")
-                )
-                
-                // 将服务器分类转换为统一分类
-                val serverCategories = categories.map { it.toUnifiedCategory() }
-                
-                // 合并特殊分类和服务器分类
-                specialCategories + serverCategories
-            }
-        } catch (e: Exception) {
-            Result.failure(e)
-        }
+        val categories = listOf(
+            UnifiedCategory(id = "-1", name = "最近更新"),
+            UnifiedCategory(id = "6956562da6e99cdd1889fd4d", name = "浏览器"),
+            UnifiedCategory(id = "6953b1577d2d1f9ff425beff", name = "游戏"),
+            UnifiedCategory(id = "695653f4a6e99cdd1889fb20", name = "实用工具"),
+            UnifiedCategory(id = "69579bf7cb26248be8026ce4", name = "应用商店"),
+            UnifiedCategory(id = "69597ab25ab9672c454868c1", name = "视频播放"),
+            UnifiedCategory(id = "695655c3a6e99cdd1889fcbb", name = "教育学习"),
+            UnifiedCategory(id = "6956555ba6e99cdd1889fc66", name = "图文阅读"),
+            UnifiedCategory(id = "695654c8a6e99cdd1889fbf6", name = "系统优化"),
+            UnifiedCategory(id = "695654a6a6e99cdd1889fba5", name = "文件管理"),
+            UnifiedCategory(id = "69561cffa6e99cdd1889f456", name = "表盘（wearOS4+）"),
+            UnifiedCategory(id = "6956533fa6e99cdd1889fa2f", name = "表盘（wearOS4-）"),
+            UnifiedCategory(id = "69565649a6e99cdd1889fd77", name = "数字消费"),
+            UnifiedCategory(id = "6956566aa6e99cdd1889fdaf", name = "音乐播放"),
+            UnifiedCategory(id = "6959f29f5ab9672c4548ab65", name = "社交通讯"),
+            UnifiedCategory(id = "695b5d008cf3c9673032b846", name = "便利出行"),
+            UnifiedCategory(id = "69612716adb03ba46433e8a6", name = "输入法"),
+            UnifiedCategory(id = "696235c2c62bfbdadaf2e832", name = "桌面/启动器"),
+            UnifiedCategory(id = "696237ffc62bfbdadaf2fff9", name = "整活搞怪"),
+            UnifiedCategory(id = "69637499dd964a0e3d1f328d", name = "xposed 模块"),
+            UnifiedCategory(id = "6953b1577d2d1f9ff425bf07", name = "未分类")
+        )
+        return Result.success(categories)
     }
 
     override suspend fun getApps(categoryId: String?, page: Int, userId: String?): Result<Pair<List<UnifiedAppItem>, Int>> {
@@ -52,7 +59,17 @@ class LingMarketRepository : IAppStoreRepository {
             }
             
             result.map { response ->
-                val unifiedItems = response.apps.map { it.toUnifiedAppItem() }
+                val unifiedItems = response.apps.map { app ->
+                    UnifiedAppItem(
+                        uniqueId = "ling_market-${app.id}-${app.versionCode}",
+                        navigationId = app.id,
+                        navigationVersionId = app.versionCode.toLong(),
+                        store = AppStore.LING_MARKET,
+                        name = app.name,
+                        iconUrl = app.iconKey, // 使用原始 key
+                        versionName = app.versionName
+                    )
+                }
                 val totalPages = response.pagination.pages
                 Pair(unifiedItems, totalPages)
             }
@@ -65,7 +82,17 @@ class LingMarketRepository : IAppStoreRepository {
         return try {
             val result = LingMarketClient.searchApps(query = query, page = page, limit = 20)
             result.map { response ->
-                val unifiedItems = response.apps.map { it.toUnifiedAppItem() }
+                val unifiedItems = response.apps.map { app ->
+                    UnifiedAppItem(
+                        uniqueId = "ling_market-${app.id}-${app.versionCode}",
+                        navigationId = app.id,
+                        navigationVersionId = app.versionCode.toLong(),
+                        store = AppStore.LING_MARKET,
+                        name = app.name,
+                        iconUrl = app.iconKey, // 使用原始 key
+                        versionName = app.versionName
+                    )
+                }
                 val totalPages = response.pagination.pages
                 Pair(unifiedItems, totalPages)
             }
@@ -77,7 +104,36 @@ class LingMarketRepository : IAppStoreRepository {
     override suspend fun getAppDetail(appId: String, versionId: Long): Result<UnifiedAppDetail> {
         return try {
             val result = LingMarketClient.getAppDetail(appId)
-            result.map { it.toUnifiedAppDetail() }
+            result.map { app ->
+                UnifiedAppDetail(
+                    id = app.id,
+                    store = AppStore.LING_MARKET,
+                    packageName = app.packageName,
+                    name = app.name,
+                    versionCode = app.versionCode.toLong(),
+                    versionName = app.versionName,
+                    iconUrl = app.iconKey,
+                    type = app.category,
+                    previews = app.screenshotKeys,
+                    description = app.description,
+                    updateLog = null,
+                    developer = app.developer,
+                    size = app.size.toString(),
+                    uploadTime = app.createdAt.toLongOrNull() ?: 0L,
+                    user = UnifiedUser(
+                        id = app.uploader.id,
+                        displayName = app.uploader.nickname,
+                        avatarUrl = null
+                    ),
+                    tags = app.tags,
+                    downloadCount = app.downloads,
+                    isFavorite = false,
+                    favoriteCount = 0,
+                    reviewCount = app.ratingCount,
+                    downloadUrl = app.apkKey,
+                    raw = app
+                )
+            }
         } catch (e: Exception) {
             Result.failure(e)
         }
@@ -88,18 +144,11 @@ class LingMarketRepository : IAppStoreRepository {
         return Result.success(Pair(emptyList(), 0))
     }
 
-    // 以下方法灵应用商店可能不支持或需要单独实现
-
     override suspend fun postComment(appId: String, versionId: Long, content: String, parentCommentId: String?, mentionUserId: String?): Result<Unit> {
-        return if (parentCommentId == null) {
-            LingMarketClient.postAppComment(appId, content).map { Unit }
-        } else {
-            LingMarketClient.postCommentReply(appId, parentCommentId, content).map { Unit }
-        }
+        return Result.failure(NotImplementedError("灵应用商店暂不支持评论功能"))
     }
 
     override suspend fun deleteComment(commentId: String): Result<Unit> {
-        // 注意：灵应用商店删除评论需要appId，这里可能无法实现
         return Result.failure(NotImplementedError("灵应用商店暂不支持删除评论"))
     }
 
