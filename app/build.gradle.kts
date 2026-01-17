@@ -15,8 +15,8 @@ android {
         applicationId = "cc.bbq.xq"
         minSdk = 21
         targetSdk = 35
-        versionCode = 411
-        versionName = "16.3"
+        versionCode = 412
+        versionName = "16.4"
         multiDexEnabled = true
         buildConfigField("String", "LICENSE", "\"GPLv3\"")
         resourceConfigurations += listOf("zh")
