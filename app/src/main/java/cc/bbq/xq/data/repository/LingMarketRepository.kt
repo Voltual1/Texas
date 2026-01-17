@@ -8,6 +8,7 @@
 // 如果没有，请查阅 <http://www.gnu.org/licenses/>.
 package cc.bbq.xq.data.repository
 
+import cc.bbq.xq.AppStore
 import cc.bbq.xq.LingMarketClient
 import cc.bbq.xq.data.unified.*
 import java.io.File
@@ -16,11 +17,6 @@ import org.koin.core.annotation.Single
 
 @Single
 class LingMarketRepository : IAppStoreRepository {
-
-    private fun calculateTotalPages(totalItems: Int, limit: Int): Int {
-        if (totalItems <= 0) return 1
-        return ceil(totalItems.toDouble() / limit).toInt()
-    }
 
     override suspend fun getCategories(): Result<List<UnifiedCategory>> {
         return try {
@@ -61,7 +57,8 @@ class LingMarketRepository : IAppStoreRepository {
                         versionName = app.versionName
                     )
                 }
-                val totalPages = calculateTotalPages(response.pagination.total, response.pagination.limit)
+                // 直接使用灵应用商店返回的 pages 字段
+                val totalPages = response.pagination.pages
                 Pair(unifiedItems, totalPages)
             }
         } catch (e: Exception) {
@@ -84,7 +81,8 @@ class LingMarketRepository : IAppStoreRepository {
                         versionName = app.versionName
                     )
                 }
-                val totalPages = calculateTotalPages(response.pagination.total, response.pagination.limit)
+                // 直接使用灵应用商店返回的 pages 字段
+                val totalPages = response.pagination.pages
                 Pair(unifiedItems, totalPages)
             }
         } catch (e: Exception) {
@@ -131,6 +129,7 @@ class LingMarketRepository : IAppStoreRepository {
     }
 
     override suspend fun getAppComments(appId: String, versionId: Long, page: Int): Result<Pair<List<UnifiedComment>, Int>> {
+        // 灵应用商店可能不支持评论功能，根据实际情况返回
         return try {
             val result = LingMarketClient.getAppComments(appId, page = page, limit = 20)
             result.map { response ->
@@ -150,7 +149,7 @@ class LingMarketRepository : IAppStoreRepository {
                         )
                     } ?: emptyList()
                     
-                    // 灵应用商店评论可能没有分页信息，这里假设足够小
+                    // 假设评论数量不多，只有一页
                     Pair(comments, 1)
                 } else {
                     Pair(emptyList(), 0)
