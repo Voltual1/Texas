@@ -278,3 +278,58 @@ fun SineShopClient.SineShopReview.toUnifiedReview(): UnifiedComment {
         isCountedInRating = this.isCountedInRating
     )
 }
+
+// 灵应用商店的映射
+
+// --- LingMarketClient (灵应用商店) Mappers ---
+
+fun LingMarketClient.LingMarketCategory.toUnifiedCategory(): UnifiedCategory {
+    return UnifiedCategory(
+        id = this.id, // 使用 _id 字段
+        name = this.displayName, // 使用 displayName 而不是 name
+        icon = this.icon
+    )
+}
+
+fun LingMarketClient.LingMarketApp.toUnifiedAppItem(): UnifiedAppItem {
+    return UnifiedAppItem(
+        uniqueId = "${AppStore.LING_MARKET}-${this.id}-${this.versionCode}",
+        navigationId = this.id,
+        navigationVersionId = this.versionCode.toLong(),
+        store = AppStore.LING_MARKET,
+        name = this.name,
+        iconUrl = this.iconKey, // 使用原始 key，让UI组件拼接完整URL
+        versionName = this.versionName
+    )
+}
+
+fun LingMarketClient.LingMarketApp.toUnifiedAppDetail(): UnifiedAppDetail {
+    return UnifiedAppDetail(
+        id = this.id,
+        store = AppStore.LING_MARKET,
+        packageName = this.packageName,
+        name = this.name,
+        versionCode = this.versionCode.toLong(),
+        versionName = this.versionName,
+        iconUrl = this.iconKey,
+        type = this.category,
+        previews = this.screenshotKeys,
+        description = this.description,
+        updateLog = null,
+        developer = this.developer,
+        size = this.size.toString(),
+        uploadTime = this.createdAt.toLongOrNull() ?: 0L,
+        user = UnifiedUser(
+            id = this.uploader.id,
+            displayName = this.uploader.nickname,
+            avatarUrl = null
+        ),
+        tags = this.tags,
+        downloadCount = this.downloads,
+        isFavorite = false,
+        favoriteCount = 0,
+        reviewCount = this.ratingCount,
+        downloadUrl = this.apkKey,
+        raw = this
+    )
+}
