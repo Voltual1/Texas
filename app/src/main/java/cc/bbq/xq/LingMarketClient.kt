@@ -48,9 +48,6 @@ internal const val BASE_URL = "https://market.ziling.xin/api/api/v1/"
     private const val CONNECT_TIMEOUT = 30000L
     private const val SOCKET_TIMEOUT = 30000L
 
-    // 用户代理信息
-    private const val USER_AGENT = "Ktor client"
-
     // Ktor HttpClient 实例
     val httpClient = HttpClient(OkHttp) {
         initConfig(this)
@@ -61,11 +58,6 @@ internal const val BASE_URL = "https://market.ziling.xin/api/api/v1/"
         client.defaultRequest {
             url(BASE_URL)
             header(HttpHeaders.Accept, ContentType.Application.Json.toString())
-            header(HttpHeaders.AcceptCharset, "UTF-8")
-            header(HttpHeaders.UserAgent, USER_AGENT)
-            header(HttpHeaders.Host, "market.ziling.xin")
-            header(HttpHeaders.Connection, "Keep-Alive")
-            header(HttpHeaders.AcceptEncoding, "gzip")
         }
 
         // JSON 序列化配置

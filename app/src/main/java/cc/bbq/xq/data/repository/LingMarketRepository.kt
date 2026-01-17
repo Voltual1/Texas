@@ -20,29 +20,29 @@ class LingMarketRepository : IAppStoreRepository {
     // 硬编码灵应用商店的分类列表，模仿小趣空间的做法
     override suspend fun getCategories(): Result<List<UnifiedCategory>> {
         val categories = listOf(
-            UnifiedCategory(id = "-1", name = "最近更新"),
-            UnifiedCategory(id = "6956562da6e99cdd1889fd4d", name = "浏览器"),
-            UnifiedCategory(id = "6953b1577d2d1f9ff425beff", name = "游戏"),
-            UnifiedCategory(id = "695653f4a6e99cdd1889fb20", name = "实用工具"),
-            UnifiedCategory(id = "69579bf7cb26248be8026ce4", name = "应用商店"),
-            UnifiedCategory(id = "69597ab25ab9672c454868c1", name = "视频播放"),
-            UnifiedCategory(id = "695655c3a6e99cdd1889fcbb", name = "教育学习"),
-            UnifiedCategory(id = "6956555ba6e99cdd1889fc66", name = "图文阅读"),
-            UnifiedCategory(id = "695654c8a6e99cdd1889fbf6", name = "系统优化"),
-            UnifiedCategory(id = "695654a6a6e99cdd1889fba5", name = "文件管理"),
-            UnifiedCategory(id = "69561cffa6e99cdd1889f456", name = "表盘（wearOS4+）"),
-            UnifiedCategory(id = "6956533fa6e99cdd1889fa2f", name = "表盘（wearOS4-）"),
-            UnifiedCategory(id = "69565649a6e99cdd1889fd77", name = "数字消费"),
-            UnifiedCategory(id = "6956566aa6e99cdd1889fdaf", name = "音乐播放"),
-            UnifiedCategory(id = "6959f29f5ab9672c4548ab65", name = "社交通讯"),
-            UnifiedCategory(id = "695b5d008cf3c9673032b846", name = "便利出行"),
-            UnifiedCategory(id = "69612716adb03ba46433e8a6", name = "输入法"),
-            UnifiedCategory(id = "696235c2c62bfbdadaf2e832", name = "桌面/启动器"),
-            UnifiedCategory(id = "696237ffc62bfbdadaf2fff9", name = "整活搞怪"),
-            UnifiedCategory(id = "69637499dd964a0e3d1f328d", name = "xposed 模块"),
-            UnifiedCategory(id = "6953b1577d2d1f9ff425bf07", name = "未分类")
-        )
-        return Result.success(categories)
+    UnifiedCategory(id = "recent", name = "最近更新"),  // 特殊处理：最近更新没有对应的响应项
+    UnifiedCategory(id = "browser", name = "浏览器"),
+    UnifiedCategory(id = "Games", name = "游戏"),
+    UnifiedCategory(id = "tools", name = "实用工具"),
+    UnifiedCategory(id = "Apps", name = "应用商店"),
+    UnifiedCategory(id = "video", name = "视频播放"),
+    UnifiedCategory(id = "teach", name = "教育学习"),
+    UnifiedCategory(id = "read", name = "图文阅读"),
+    UnifiedCategory(id = "system", name = "系统优化"),
+    UnifiedCategory(id = "file", name = "文件管理"),
+    UnifiedCategory(id = "watchfaces", name = "表盘（wearOS4+）"),
+    UnifiedCategory(id = "watchfacess", name = "表盘（wearOS4-）"),
+    UnifiedCategory(id = "pay", name = "数字消费"),
+    UnifiedCategory(id = "music", name = "音乐播放"),
+    UnifiedCategory(id = "talk", name = "社交通讯"),
+    UnifiedCategory(id = "walk", name = "便利出行"),
+    UnifiedCategory(id = "tab", name = "输入法"),
+    UnifiedCategory(id = "desktop", name = "桌面/启动器"),
+    UnifiedCategory(id = "hahaha", name = "整活搞怪"),
+    UnifiedCategory(id = "xposed", name = "xposed 模块"),
+    UnifiedCategory(id = "Uncategorized", name = "未分类")
+)
+return Result.success(categories)
     }
 
     override suspend fun getApps(categoryId: String?, page: Int, userId: String?): Result<Pair<List<UnifiedAppItem>, Int>> {
