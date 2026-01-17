@@ -93,35 +93,32 @@ class KtorDownloader {
                     if (read <= 0) break
                     
                     raf.write(buffer, 0, read)
-                    current += read
-                    
-                    updateProgress(current, totalSize, startTime)
+current += read
+updateProgress(current, totalSize, startTime)
                 }
             }
             _status.value = DownloadStatus.Success(file)
         }
     }
 
-    private fun updateProgress(current: Long, total: Long, startTime: Long) {
-        if (total <= 0) return
-        val progress = current.toFloat() / total
-        val elapsed = (System.currentTimeMillis() - startTime) / 1000f
-        // 这里的起始点计算稍微修正一下，使速度显示更准确
-        val speed = if (elapsed > 0) (current - (_lastStartSize ?: current)) / elapsed else 0f
-        
-        val lastStatus = _status.value
-        val lastProgress = (lastStatus as? DownloadStatus.Downloading)?.progress ?: 0f
+private fun updateProgress(current: Long, total: Long, startTime: Long) {
+    if (total <= 0) return
+    val progress = current.toFloat() / total
+    
+    val lastStatus = _status.value
+    val lastProgress = (lastStatus as? DownloadStatus.Downloading)?.progress ?: 0f
 
-        // 限制 Flow 更新频率：进度变化 > 1% 或完成时更新
-        if (progress >= 1f || progress - lastProgress > 0.01f) {
-            _status.value = DownloadStatus.Downloading(
-                progress = progress,
-                currentSize = current,
-                totalSize = total,
-                speed = formatSpeed(current, startTime)
-            )
-        }
+    // 限制 Flow 更新频率：进度变化 > 1% 或完成时更新
+    if (progress >= 1f || progress - lastProgress > 0.01f) {
+        _status.value = DownloadStatus.Downloading(
+            progress = progress,
+            // 修复点：确保参数名与 DownloadStatus.kt 中定义的一致
+            downloadedBytes = current, 
+            totalBytes = total,
+            speed = formatSpeed(current, startTime)
+        )
     }
+}
 
     private var _lastStartSize: Long? = null // 用于更精确的速度计算
 
