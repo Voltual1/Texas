@@ -36,21 +36,23 @@ class DownloadViewModel(
 
     private var downloadService: DownloadService? = null
     private var isBound = false
+    private var downloadBinder: DownloadService.DownloadBinder? = null // 修改变量类型
 
     private val serviceConnection = object : ServiceConnection {
-        override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
-            val binder = service as DownloadService.DownloadBinder
-            downloadService = binder.getService()
-            isBound = true
-            // 连接成功后，开始同步 Service 中的实时下载状态
-            observeServiceStatus()
-        }
-
-        override fun onServiceDisconnected(name: ComponentName?) {
-            downloadService = null
-            isBound = false
-        }
+    override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
+        val binder = service as DownloadService.DownloadBinder
+        downloadBinder = binder // 保存 binder 实例
+        downloadService = binder.getService()
+        isBound = true
+        observeServiceStatus()
     }
+
+    override fun onServiceDisconnected(name: ComponentName?) {
+        downloadBinder = null
+        downloadService = null
+        isBound = false
+    }
+}
 
     init {
         bindService()
@@ -69,12 +71,13 @@ class DownloadViewModel(
     }
 
     private fun observeServiceStatus() {
-        viewModelScope.launch {
-            downloadService?.getDownloadStatus()?.collect { status ->
-                _downloadStatus.value = status
-            }
+    viewModelScope.launch {
+        // 使用 binder 获取状态流
+        downloadBinder?.getDownloadStatus()?.collect { status ->
+            _downloadStatus.value = status
         }
     }
+}
 
     private fun observeDownloadTasks() {
         viewModelScope.launch {
@@ -83,16 +86,15 @@ class DownloadViewModel(
             }
         }
     }
-
-    /**
-     * 取消当前正在进行的下载任务
-     */
-    fun cancelDownload() {
-        if (isBound) {
-            downloadService?.cancelCurrentDownload() 
-            // 注意：Service 内部会更新 Flow，所以这里不需要手动设置 _downloadStatus.value
-        }
+/**
+ * 取消当前正在进行的下载任务
+ */
+fun cancelDownload() {
+    if (isBound) {
+        // 通过 binder 调用暴露出来的取消逻辑
+        downloadBinder?.cancelDownload() 
     }
+}
 
     /**
      * 删除下载任务（同时尝试物理删除文件可以根据需求决定）

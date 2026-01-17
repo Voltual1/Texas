@@ -30,16 +30,18 @@ class DownloadService : Service() {
     private val downloadTaskDao by lazy { appDatabase.downloadTaskDao() }
     private var currentDownloadConfig: DownloadConfig? = null
 
-    inner class DownloadBinder : Binder() {
-        fun getService(): DownloadService = this@DownloadService
-        fun getDownloadStatus(): StateFlow<DownloadStatus> = downloader.status
-        fun startDownload(url: String, fileName: String) = this@DownloadService.startDownload(url, fileName)
-        
-        // 修复点 1：明确调用内部取消逻辑
-        fun cancelDownload() {
-            this@DownloadService.cancelCurrentDownload()
-        }
+    // 在 DownloadService.kt 中修改 DownloadBinder
+inner class DownloadBinder : Binder() {
+    fun getService(): DownloadService = this@DownloadService
+    
+    // 暴露状态流
+    fun getDownloadStatus(): StateFlow<DownloadStatus> = downloader.status
+    
+    // 暴露取消方法
+    fun cancelDownload() {
+        this@DownloadService.cancelCurrentDownload()
     }
+}
 
     override fun onCreate() {
         super.onCreate()
