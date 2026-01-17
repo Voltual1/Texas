@@ -85,17 +85,38 @@ inner class DownloadBinder : Binder() {
     }
 
     fun startDownload(url: String, fileName: String, customSavePath: String? = null) {
-        if (downloader.status.value is DownloadStatus.Downloading) return
+    if (downloader.status.value is DownloadStatus.Downloading) return
 
-        val config = DownloadConfig(url, customSavePath ?: getDefaultPath(), fileName)
-        currentDownloadConfig = config
+    val savePath = customSavePath ?: getDefaultDownloadPath()
+    val config = DownloadConfig(url, savePath, fileName)
+    currentDownloadConfig = config
 
-        // 修复点 3：分配 Job 并启动
-        downloadTaskJob?.cancel() 
-        downloadTaskJob = serviceScope.launch {
+    // 关键：合并到一个 launch 块中，确保顺序执行
+    serviceScope.launch {
+        try {
+            // 1. 先检查并确保数据库有这条记录
+            val existing = downloadTaskDao.getDownloadTask(url).firstOrNull()
+            if (existing == null) {
+                val newTask = DownloadTask(
+                    url = url,
+                    fileName = fileName,
+                    savePath = savePath,
+                    status = DownloadStatus.Pending::class.java.simpleName,
+                    progress = 0f
+                )
+                downloadTaskDao.insert(newTask)
+                Log.d(TAG, "Task inserted into DB")
+            }
+
+            // 2. 只有数据库准备好了，才开始下载
+            // 注意：这里不再开启新的 launch，直接在当前协程执行或调用挂起函数
             downloader.startDownload(config)
+            
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed to initialize download task", e)
         }
     }
+}
 
     private fun setupStatusObserver() {
         downloader.status
