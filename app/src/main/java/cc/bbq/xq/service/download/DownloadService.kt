@@ -169,3 +169,4 @@ inner class DownloadBinder : Binder() {
 private fun getDefaultDownloadPath(): String {
     return getExternalFilesDir(null)?.absolutePath ?: filesDir.absolutePath + "/downloads"
 }
+}
