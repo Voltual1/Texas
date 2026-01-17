@@ -237,6 +237,7 @@ fun AppDetailScreen(
                                         coroutineScope.launch {
                         snackbarHostState.showSnackbar("暂不支持该商店的分享功能")
                                     }
+                                    }
                 AppStore.LOCAL -> {
                     // 本地商店：暂不支持分享
                     coroutineScope.launch {
