@@ -83,6 +83,7 @@ fun NavigationDrawerItems(
             DrawerItem("settings", "主题设置", R.drawable.ic_menu_settings, ThemeCustomize.route),
             DrawerItem("signin_settings", "签到设置", R.drawable.sign_in,SignInSettings.route),
             DrawerItem("logout", "退出登录", R.drawable.ic_menu_logout, "logout") // 特殊处理
+            DrawerItem("login", "登录账号", R.drawable.ic_menu_login.xml, "login") // 特殊处理
         )
     }
     val allItemsMap = remember { allDrawerItems.associateBy { it.id } }

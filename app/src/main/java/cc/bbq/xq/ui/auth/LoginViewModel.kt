@@ -22,6 +22,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.Flow
 import org.koin.android.annotation.KoinViewModel
+import cc.bbq.xq.LingMarketClient // 确保导入
 
 @KoinViewModel
 class LoginViewModel(
@@ -72,30 +73,30 @@ class LoginViewModel(
     // --- 业务逻辑 ---
 
     fun login() {
-        if (_username.value.isBlank() || _password.value.isBlank()) {
-            _errorMessage.value = "用户名和密码不能为空"
-            return
-        }
-        viewModelScope.launch {
-            _isLoading.value = true
-            _errorMessage.value = null
-            try {
-                // 根据选择的商店分发到不同的登录逻辑
-                when (_selectedStore.value) {
-                    AppStore.XIAOQU_SPACE -> loginXiaoqu()
-                    AppStore.SIENE_SHOP -> loginSineShop()
-                    AppStore.SINE_OPEN_MARKET -> loginSineOpenMarket()
-                    AppStore.LOCAL -> {
-                        _errorMessage.value = "不支持本地登录"
-                    }
+    if (_username.value.isBlank() || _password.value.isBlank()) {
+        _errorMessage.value = "用户名和密码不能为空"
+        return
+    }
+    viewModelScope.launch {
+        _isLoading.value = true
+        _errorMessage.value = null
+        try {
+            when (_selectedStore.value) {
+                AppStore.XIAOQU_SPACE -> loginXiaoqu()
+                AppStore.SIENE_SHOP -> loginSineShop()
+                AppStore.SINE_OPEN_MARKET -> loginSineOpenMarket()
+                AppStore.LING_MARKET -> loginLingMarket() // 新增灵应用商店
+                AppStore.LOCAL -> {
+                    _errorMessage.value = "不支持本地登录"
                 }
-            } catch (e: Exception) {
-                _errorMessage.value = "登录异常: ${e.message}"
-            } finally {
-                _isLoading.value = false
             }
+        } catch (e: Exception) {
+            _errorMessage.value = "登录异常: ${e.message}"
+        } finally {
+            _isLoading.value = false
         }
     }
+}
 
     // --- 平台特定登录逻辑 ---
 
@@ -136,6 +137,35 @@ class LoginViewModel(
             _errorMessage.value = "网络错误: ${e.message}"
         }
     }
+    
+    /**
+ * 灵应用商店登录逻辑
+ */
+private suspend fun loginLingMarket() {
+    try {
+        val loginResult = LingMarketClient.login(
+            username = _username.value,
+            password = _password.value
+        )
+        
+        if (loginResult.isSuccess) {
+            val response = loginResult.getOrNull()
+            // 根据抓包：成功时 code 为 null 或 200/201
+            if (response != null && response.isSuccess && response.token != null) {
+                val context: Application = getApplication()
+                // 调用之前在 AuthManager 中新增的保存方法
+                AuthManager.saveLingMarketToken(context, response.token)
+                _loginSuccess.value = true
+            } else {
+                _errorMessage.value = response?.msg ?: "灵应用商店登录失败：未知错误"
+            }
+        } else {
+            _errorMessage.value = "灵应用商店登录失败: ${loginResult.exceptionOrNull()?.message}"
+        }
+    } catch (e: Exception) {
+        _errorMessage.value = "灵应用商店连接失败: ${e.message}"
+    }
+}
 
     /**
      * 弦应用商店登录逻辑
