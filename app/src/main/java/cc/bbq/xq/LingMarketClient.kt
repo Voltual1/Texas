@@ -31,6 +31,16 @@ import java.io.IOException
 
 object LingMarketClient {
     private const val BASE_URL = "https://market.ziling.xin/api/api/v1/" 
+    /**
+     * 【重要警告】BASE_URL 必须以 '/' 结尾。
+     * * 根据 Ktor 的路径解析规则：
+     * 1. 这里的 BASE_URL 必须保留末尾斜杠。
+     * 2. 下方 API 方法中的 url 路径【绝对不能】以 '/' 开头（必须是 "auth/login" 而不能是 "/auth/login"）。
+     * * 逻辑说明：
+     * - 如果请求路径以 '/' 开头（如 "/path"），Ktor 会将其视为绝对路径，
+     * 导致最终请求变为 "https://domain.com/path"，从而丢失 "/api/api/v1" 部分。
+     * - 如果请求路径不以 '/' 开头（如 "path"），Ktor 会将其拼接到 BASE_URL 之后。
+     */
     private const val MAX_RETRIES = 3
     private const val RETRY_DELAY = 1000L
     private const val REQUEST_TIMEOUT = 30000L

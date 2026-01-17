@@ -9,7 +9,7 @@
 package cc.bbq.xq
 
 import cc.bbq.xq.data.db.AppDatabase
-import cc.bbq.xq.data.db.DownloadTaskDao  // 新增导入
+import cc.bbq.xq.data.db.DownloadTaskDao  
 import cc.bbq.xq.data.repository.IAppStoreRepository
 import cc.bbq.xq.data.repository.SineShopRepository
 import cc.bbq.xq.data.repository.XiaoQuRepository
@@ -49,6 +49,7 @@ import cc.bbq.xq.ui.home.HomeViewModel
 import cc.bbq.xq.ui.plaza.VersionListViewModel
 import cc.bbq.xq.data.UserFilterDataStore
 import cc.bbq.xq.ui.user.MyCommentsViewModel
+import cc.bbq.xq.data.repository.LingMarketRepository //新增灵应用商店仓库
 
 val appModule = module {
     // ViewModel definitions
@@ -111,10 +112,14 @@ val appModule = module {
     single { SineShopRepository() }
     single { DownloadTaskRepository(get()) }  // 这里会自动使用上面定义的 DownloadTaskDao
     
+    single { LingMarketRepository() } // 新增灵应用商店
+    
     single<Map<AppStore, IAppStoreRepository>> {
         mapOf(
             AppStore.XIAOQU_SPACE to get<XiaoQuRepository>(),
-            AppStore.SIENE_SHOP to get<SineShopRepository>()
+            AppStore.SIENE_SHOP to get<SineShopRepository>(),
+            AppStore.SINE_OPEN_MARKET to get<SineOpenMarketRepository>(),
+            AppStore.LING_MARKET to get<LingMarketRepository>() // 新增
         )
     }
 }
