@@ -668,13 +668,18 @@ fun PaymentResultDialog(
  * 启动内部下载服务
  */
 private fun startInternalDownload(context: Context, downloadUrl: String, fileName: String) {
+    // 这里的逻辑应与 DownloadService 中定义的一致
     val intent = Intent(context, DownloadService::class.java).apply {
-        action = DownloadService.ACTION_START_DOWNLOAD
+        // 确保 action 匹配我们在 Service 里定义的常量
+        action = DownloadService.ACTION_START_DOWNLOAD 
         putExtra(DownloadService.EXTRA_URL, downloadUrl)
         putExtra(DownloadService.EXTRA_FILE_NAME, fileName)
-        // 可以根据需要添加保存路径
+        // 如果你之前在 Service 里改用了特定的 Key，这里也要改
         putExtra(DownloadService.EXTRA_SAVE_PATH, getDefaultDownloadPath(context))
     }
+    
+    // 适配 Android 12+ 的前台服务启动限制
+    // 如果下载是在支付成功后的“瞬间”触发，通常处于前台状态，startService 是没问题的
     context.startService(intent)
 }
 

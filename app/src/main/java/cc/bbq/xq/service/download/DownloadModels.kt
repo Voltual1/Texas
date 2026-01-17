@@ -17,15 +17,27 @@ import androidx.room.PrimaryKey
 sealed interface DownloadStatus {
     data object Idle : DownloadStatus
     data object Pending : DownloadStatus
+    
     data class Downloading(
-        val progress: Float, // 0.0 - 1.0
+        val progress: Float, 
         val downloadedBytes: Long,
         val totalBytes: Long,
-        val speed: String // e.g., "2.5 MB/s"
+        val speed: String
     ) : DownloadStatus
-    data class Paused(val downloadedBytes: Long, val totalBytes: Long) : DownloadStatus
+
+    // 建议保留 Paused，即使当前版本暂未实现手动暂停，未来扩展很方便
+    data class Paused(
+        val downloadedBytes: Long, 
+        val totalBytes: Long
+    ) : DownloadStatus
+
+    // 确保这里的 File 导入正确 (java.io.File)
     data class Success(val file: java.io.File) : DownloadStatus
-    data class Error(val message: String, val throwable: Throwable? = null) : DownloadStatus
+
+    data class Error(
+        val message: String, 
+        val throwable: Throwable? = null
+    ) : DownloadStatus
 }
 
 /**
