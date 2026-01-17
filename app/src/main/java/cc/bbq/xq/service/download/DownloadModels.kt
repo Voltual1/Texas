@@ -68,13 +68,13 @@ internal data class Chunk(
  */
 @Entity(tableName = "download_tasks")
 data class DownloadTask(
-    @PrimaryKey val url: String, // 使用 URL 作为主键，保证唯一性
+    @PrimaryKey val url: String,
     val fileName: String,
     val savePath: String,
-    val totalBytes: Long,
-    val downloadedBytes: Long,
-    val status: String, // 使用字符串存储下载状态，方便转换
-    val progress: Float,
+    val totalBytes: Long = 0L,        // 加上默认值
+    val downloadedBytes: Long = 0L,   // 加上默认值
+    val status: String,
+    val progress: Float = 0f,         // 加上默认值
     val speed: String? = null,
     val errorMessage: String? = null
 )

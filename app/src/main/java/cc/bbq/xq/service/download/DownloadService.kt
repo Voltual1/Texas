@@ -87,37 +87,36 @@ inner class DownloadBinder : Binder() {
     fun startDownload(url: String, fileName: String, customSavePath: String? = null) {
     if (downloader.status.value is DownloadStatus.Downloading) return
 
-    val savePath = customSavePath ?: getDefaultDownloadPath()
+    val savePath = customSavePath ?: getDefaultDownloadPath() // 确保函数名一致
     val config = DownloadConfig(url, savePath, fileName)
     currentDownloadConfig = config
 
-    // 关键：合并到一个 launch 块中，确保顺序执行
+    // 使用同一个 launch 块，确保“先存数据库，后启动下载”
     serviceScope.launch {
         try {
-            // 1. 先检查并确保数据库有这条记录
+            // 1. 检查并写入数据库
             val existing = downloadTaskDao.getDownloadTask(url).firstOrNull()
             if (existing == null) {
                 val newTask = DownloadTask(
                     url = url,
                     fileName = fileName,
                     savePath = savePath,
-                    status = DownloadStatus.Pending::class.java.simpleName,
+                    status = "Pending", // 对应 DownloadStatus.Pending
+                    totalBytes = 0L,    // 显式传入初始值，修复编译错误 121, 122
+                    downloadedBytes = 0L,
                     progress = 0f
                 )
                 downloadTaskDao.insert(newTask)
-                Log.d(TAG, "Task inserted into DB")
             }
 
-            // 2. 只有数据库准备好了，才开始下载
-            // 注意：这里不再开启新的 launch，直接在当前协程执行或调用挂起函数
+            // 2. 启动下载引擎
             downloader.startDownload(config)
             
         } catch (e: Exception) {
-            Log.e(TAG, "Failed to initialize download task", e)
+            Log.e("DownloadService", "Init task failed", e)
         }
     }
 }
-
     private fun setupStatusObserver() {
         downloader.status
             .onEach { status ->
@@ -166,5 +165,7 @@ inner class DownloadBinder : Binder() {
         super.onDestroy()
     }
 
-    private fun getDefaultPath(): String = getExternalFilesDir(null)?.absolutePath ?: filesDir.absolutePath
+    // 将原本的 getDefaultPath 修改为：
+private fun getDefaultDownloadPath(): String {
+    return getExternalFilesDir(null)?.absolutePath ?: filesDir.absolutePath + "/downloads"
 }
