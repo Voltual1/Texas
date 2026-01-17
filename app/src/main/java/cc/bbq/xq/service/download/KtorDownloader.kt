@@ -16,6 +16,8 @@ import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import java.io.File
+import io.ktor.client.request.prepareGet
+import io.ktor.client.statement.bodyAsChannel
 import java.io.RandomAccessFile
 import kotlin.coroutines.coroutineContext
 
@@ -66,40 +68,40 @@ class KtorDownloader {
     }
 
     private suspend fun performDownload(url: String, file: File, startOffset: Long) {
-        // 使用 try-resource 或 ensureActive 确保协程取消时及时退出
-        client.get(url) {
-            if (startOffset > 0) header(HttpHeaders.Range, "bytes=$startOffset-")
-        }.let { response ->
-            if (!response.status.isSuccess() && response.status != HttpStatusCode.PartialContent) {
-                throw Exception("HTTP Error: ${response.status}")
-            }
-
-            val channel = response.bodyAsChannel()
-            // 修复错误 B：确保 response.contentLength() 能被识别
-            val contentLength = response.contentLength() ?: 0L
-            val totalSize = contentLength + startOffset
-            val startTime = System.currentTimeMillis()
-
-            RandomAccessFile(file, "rw").use { raf ->
-                raf.seek(startOffset)
-                var current = startOffset
-                val buffer = ByteArray(BUFFER_SIZE)
-                
-                while (!channel.isClosedForRead) {
-                    // 修复错误 C：使用 coroutineContext.ensureActive()
-                    coroutineContext.ensureActive() 
-                    
-                    val read = channel.readAvailable(buffer, 0, buffer.size)
-                    if (read <= 0) break
-                    
-                    raf.write(buffer, 0, read)
-current += read
-updateProgress(current, totalSize, startTime)
-                }
-            }
-            _status.value = DownloadStatus.Success(file)
+    // 关键点 1：使用 prepareGet 而不是 get
+    client.prepareGet(url) {
+        if (startOffset > 0) header(HttpHeaders.Range, "bytes=$startOffset-")
+    }.execute { response -> // 在 execute 块内处理流
+        if (!response.status.isSuccess() && response.status != HttpStatusCode.PartialContent) {
+            throw Exception("HTTP Error: ${response.status}")
         }
+
+        // 关键点 2：在 Ktor 3 中，直接获取 content 字节流通道
+        val channel = response.bodyAsChannel() 
+        val contentLength = response.contentLength() ?: 0L
+        val totalSize = contentLength + startOffset
+        val startTime = System.currentTimeMillis()
+
+        RandomAccessFile(file, "rw").use { raf ->
+            raf.seek(startOffset)
+            var current = startOffset
+            val buffer = ByteArray(BUFFER_SIZE)
+            
+            while (!channel.isClosedForRead) {
+                coroutineContext.ensureActive() 
+                
+                // 这里的 readAvailable 会直接从网络层读取到你的 buffer
+                val read = channel.readAvailable(buffer, 0, buffer.size)
+                if (read <= 0) break
+                
+                raf.write(buffer, 0, read)
+                current += read
+                updateProgress(current, totalSize, startTime)
+            }
+        }
+        _status.value = DownloadStatus.Success(file)
     }
+}
 
 private fun updateProgress(current: Long, total: Long, startTime: Long) {
     if (total <= 0) return
