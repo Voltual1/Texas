@@ -78,6 +78,11 @@ fun initialize(context: Context) {
         context.credentialsStore.updateData { it.toBuilder().setSineOpenMarketToken(token).build() }
     }
 
+    // 新增：保存灵应用商店Token
+    suspend fun saveLingMarketToken(context: Context, token: String) {
+        context.credentialsStore.updateData { it.toBuilder().setLingMarketToken(token).build() }
+    }
+
     // --- 3. 获取逻辑 (Flow 保持一致) ---
     fun getCredentials(context: Context): Flow<UserCredentials?> = context.credentialsStore.data
 
@@ -86,6 +91,10 @@ fun initialize(context: Context) {
 
     fun getSineOpenMarketToken(context: Context): Flow<String> = 
         getCredentials(context).map { it?.sineOpenMarketToken ?: "" }
+
+    // 新增：获取灵应用商店Token
+    fun getLingMarketToken(context: Context): Flow<String> = 
+        getCredentials(context).map { it?.lingMarketToken ?: "" }
 
     fun getUserId(context: Context): Flow<Long> = 
         getCredentials(context).map { it?.userId ?: -1L }
