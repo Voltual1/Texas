@@ -394,10 +394,15 @@ class AppDetailComposeViewModel(
 
 
     // 扩展函数：启动下载服务
-    private fun Application.startDownload(downloadUrl: String, fileName: String) {
-        val intent = Intent(this, cc.bbq.xq.service.download.DownloadService::class.java)
-        intent.putExtra("url", downloadUrl)
-        intent.putExtra("fileName", fileName)
+private fun Application.startDownload(downloadUrl: String, fileName: String) {
+    val intent = Intent(this, cc.bbq.xq.service.download.DownloadService::class.java)
+    intent.action = DownloadService.ACTION_START_DOWNLOAD  // 明确指定 action
+    intent.putExtra(DownloadService.EXTRA_URL, downloadUrl)  // 使用正确的 key
+    intent.putExtra(DownloadService.EXTRA_FILE_NAME, fileName)
+    
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+        startForegroundService(intent)
+    } else {
         startService(intent)
     }
-}
+}}
