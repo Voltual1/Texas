@@ -261,25 +261,46 @@ private suspend fun downloadChunk(
         RandomAccessFile(file, "rw").use { raf ->
             raf.seek(chunk.start)
             
-            // 使用 response.bodyAsChannel() 直接读取
-            val channel = response.bodyAsChannel()
-            val buffer = ByteArray(BUFFER_SIZE)
-            
-            // 直接读取，无需手动关闭
-            while (true) {
-                ensureActive() // 检查协程是否取消
-                
-                val bytesRead = channel.readAvailable(buffer)
-                if (bytesRead == -1) break
-                
-                raf.write(buffer, 0, bytesRead)
-                onBytesRead(bytesRead)
-            }
-            // 通道会在作用域结束时自动关闭
+            // 使用自定义的 copyToWithProgress 方法
+            response.bodyAsChannel().copyToWithProgress(raf, onBytesRead)
         }
     }
     
     Log.d(TAG, "Chunk ${chunk.id} completed")
+}
+
+// 自定义扩展函数：将 ByteReadChannel 复制到 RandomAccessFile 并报告进度
+private suspend fun ByteReadChannel.copyToWithProgress(
+    raf: RandomAccessFile,
+    onBytesRead: (Int) -> Unit
+) {
+    val buffer = ByteArray(BUFFER_SIZE)
+    
+    while (!isClosedForRead) {
+        // 检查协程是否被取消
+        ensureActive()
+        
+        // 读取数据
+        val bytesRead = readAvailable(buffer, 0, buffer.size)
+        if (bytesRead == 0) {
+            // 没有数据，等待一下
+            try {
+                awaitContent()
+            } catch (e: Throwable) {
+                if (e is CancellationException) throw e
+                break
+            }
+            continue
+        }
+        
+        if (bytesRead < 0) break
+        
+        // 写入文件
+        raf.write(buffer, 0, bytesRead)
+        
+        // 报告进度
+        onBytesRead(bytesRead)
+    }
 }
 
     /**
