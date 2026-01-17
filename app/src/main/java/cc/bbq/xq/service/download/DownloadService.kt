@@ -13,10 +13,15 @@ import kotlinx.coroutines.flow.*
 
 class DownloadService : Service() {
     companion object {
-        private const val TAG = "DownloadService"
-        const val ACTION_START_DOWNLOAD = "cc.bbq.xq.action.START_DOWNLOAD"
-        const val ACTION_CANCEL_DOWNLOAD = "cc.bbq.xq.action.CANCEL_DOWNLOAD"
-    }
+    private const val TAG = "DownloadService"
+    const val ACTION_START_DOWNLOAD = "cc.bbq.xq.action.START_DOWNLOAD"
+    const val ACTION_CANCEL_DOWNLOAD = "cc.bbq.xq.action.CANCEL_DOWNLOAD"
+    
+    // 补充缺失的 Key 常量
+    const val EXTRA_URL = "extra_url"
+    const val EXTRA_FILE_NAME = "extra_file_name"
+    const val EXTRA_SAVE_PATH = "extra_save_path"
+}
 
     private val binder = DownloadBinder()
     private lateinit var downloader: KtorDownloader
@@ -49,6 +54,26 @@ inner class DownloadBinder : Binder() {
         appDatabase = AppDatabase.getDatabase(this)
         setupStatusObserver()
     }
+    
+    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+    when (intent?.action) {
+        ACTION_START_DOWNLOAD -> {
+            val url = intent.getStringExtra(EXTRA_URL)
+            val fileName = intent.getStringExtra(EXTRA_FILE_NAME)
+            val savePath = intent.getStringExtra(EXTRA_SAVE_PATH)
+            
+            if (url != null && fileName != null) {
+                // 调用你已经写好的 startDownload 方法
+                startDownload(url, fileName, savePath)
+            }
+        }
+        ACTION_CANCEL_DOWNLOAD -> {
+            cancelCurrentDownload()
+        }
+    }
+    // START_NOT_STICKY 表示如果系统内存不足杀掉了 Service，不会自动尝试重新创建（适合下载任务）
+    return START_NOT_STICKY
+}
 
     /**
      * 核心取消逻辑：既取消协程，又重置 Downloader 状态
