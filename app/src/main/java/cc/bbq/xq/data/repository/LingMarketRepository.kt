@@ -67,7 +67,7 @@ class LingMarketRepository : IAppStoreRepository {
             }
             
             result.map { response ->
-                val unifiedItems = response.apps.map { it.toUnifiedAppItem() } // 使用映射函数
+                val unifiedItems = response.apps.map { it.toUnifiedAppItem() } // 现在使用 LingMarketAppMinimal 的映射
                 val totalPages = response.pagination.pages
                 Pair(unifiedItems, totalPages)
             }
@@ -80,7 +80,7 @@ class LingMarketRepository : IAppStoreRepository {
         return try {
             val result = LingMarketClient.searchApps(query = query, page = page, limit = 20)
             result.map { response ->
-                val unifiedItems = response.apps.map { it.toUnifiedAppItem() } // 使用映射函数
+                val unifiedItems = response.apps.map { it.toUnifiedAppItem() } // 现在使用 LingMarketAppMinimal 的映射
                 val totalPages = response.pagination.pages
                 Pair(unifiedItems, totalPages)
             }

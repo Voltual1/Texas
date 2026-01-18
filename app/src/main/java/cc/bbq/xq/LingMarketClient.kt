@@ -294,10 +294,10 @@ data class LingMarketAppMinimal(
 
     // 应用列表响应
     @Serializable
-    data class LingMarketAppListResponse(
-        val apps: List<LingMarketApp>,
-        val pagination: LingMarketPagination
-    )
+data class LingMarketAppListResponse(
+    val apps: List<LingMarketAppMinimal>,  // 改为使用 LingMarketAppMinimal
+    val pagination: LingMarketPagination
+)
 
     // 评论请求
     @Serializable
@@ -567,19 +567,18 @@ data class LingMarketAppMinimal(
         httpClient.close()
     }
 
-    // ===== API Service 接口（兼容现有模式） =====
-    
-    interface LingMarketApiService {
-        suspend fun login(username: String, password: String): Result<LingMarketBaseResponse<LoginResponseData>>
-        suspend fun getCategories(includeInactive: Boolean): Result<List<LingMarketCategory>>
-        suspend fun getAppsByCategory(category: String, page: Int, limit: Int): Result<LingMarketAppListResponse>
-        suspend fun getAppDetail(appId: String): Result<LingMarketApp>
-        suspend fun searchApps(query: String, page: Int, limit: Int): Result<LingMarketAppListResponse>
-        suspend fun getRecentlyUpdatedApps(page: Int, limit: Int): Result<LingMarketAppListResponse>
-        suspend fun postAppComment(appId: String, content: String): Result<LingMarketBaseResponse<LingMarketComment>>
-        suspend fun postCommentReply(appId: String, commentId: String, content: String): Result<LingMarketBaseResponse<LingMarketReply>>
-        suspend fun deleteComment(appId: String, commentId: String): Result<DeleteResponse>
-    }
+   // ===== API Service 接口（兼容现有模式） =====
+interface LingMarketApiService {
+    suspend fun login(username: String, password: String): Result<LingMarketBaseResponse<LoginResponseData>>
+    suspend fun getCategories(includeInactive: Boolean): Result<List<LingMarketCategory>>
+    suspend fun getAppsByCategory(category: String, page: Int, limit: Int): Result<LingMarketAppListResponse>
+    suspend fun getAppDetail(appId: String): Result<LingMarketApp>
+    suspend fun searchApps(query: String, page: Int, limit: Int): Result<LingMarketAppListResponse>
+    suspend fun getRecentlyUpdatedApps(page: Int, limit: Int): Result<LingMarketAppListResponse>
+    suspend fun postAppComment(appId: String, content: String): Result<LingMarketBaseResponse<LingMarketComment>>
+    suspend fun postCommentReply(appId: String, commentId: String, content: String): Result<LingMarketBaseResponse<LingMarketReply>>
+    suspend fun deleteComment(appId: String, commentId: String): Result<DeleteResponse>
+}
 
     object LingMarketApiServiceImpl : LingMarketApiService {
         override suspend fun login(username: String, password: String): Result<LingMarketBaseResponse<LoginResponseData>> {
