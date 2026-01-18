@@ -304,6 +304,15 @@ data class LingMarketAppVersion(
         val total: Int,
         val pages: Int
     )
+    
+    @Serializable
+data class AvatarUploadResponse(
+    @SerialName("message") val msg: String,
+    @SerialName("avatarUrl") val avatarUrl: String,
+    val user: LingMarketUser
+) {
+    val isSuccess: Boolean get() = msg.contains("成功")
+}
 
     // 应用列表响应
     @Serializable
@@ -576,6 +585,45 @@ data class LingMarketFileUrlResponse(
     }
     
     /**
+ * 上传用户头像
+ */
+suspend fun uploadAvatar(
+    imageData: ByteArray,
+    filename: String
+): Result<AvatarUploadResponse> {
+    val token = getToken() ?: return Result.failure(IOException("No token available"))
+    
+    return safeApiCall<AvatarUploadResponse> {
+        httpClient.submitFormWithBinaryData(
+            url = "users/avatar",
+            formData = formData {
+                append("image", imageData, Headers.build {
+                    // 根据文件扩展名判断 Content-Type
+                    val contentType = when {
+                        filename.endsWith(".jpg", ignoreCase = true) || 
+                        filename.endsWith(".jpeg", ignoreCase = true) -> "image/jpeg"
+                        filename.endsWith(".png", ignoreCase = true) -> "image/png"
+                        filename.endsWith(".gif", ignoreCase = true) -> "image/gif"
+                        else -> "image/jpeg" // 默认使用 jpeg
+                    }
+                    append(HttpHeaders.ContentType, contentType)
+                    append(HttpHeaders.ContentDisposition, "filename=\"$filename\"")
+                })
+            }
+        ) {
+            header(HttpHeaders.Authorization, "Bearer $token")
+        }
+    }.map { response ->
+        // 检查是否上传成功（根据响应消息判断）
+        if (response.msg.contains("成功")) {
+            response
+        } else {
+            throw IOException("Upload failed: ${response.msg}")
+        }
+    }
+}
+    
+    /**
  * 获取当前登录用户的个人资料
  */
 suspend fun getUserProfile(): Result<LingMarketBaseResponse<LingMarketUser>> {
@@ -589,8 +637,6 @@ suspend fun getUserProfile(): Result<LingMarketBaseResponse<LingMarketUser>> {
     private fun HttpRequestBuilder.bearerAuth(token: String) {
         header(HttpHeaders.Authorization, "Bearer $token")
     }    
-
-// ===== API 方法 =====
 
 /**
  * 获取文件下载URL
@@ -643,6 +689,7 @@ suspend fun getFileDownloadUrl(
         suspend fun postCommentReply(appId: String, commentId: String, content: String): Result<LingMarketBaseResponse<LingMarketReply>>
         suspend fun deleteComment(appId: String, commentId: String): Result<DeleteResponse>
         suspend fun getAppComments(appId: String, page: Int, limit: Int): Result<CommentListResponse>
+        suspend fun uploadAvatar(imageData: ByteArray, filename: String): Result<AvatarUploadResponse>
         suspend fun getUserProfile(): Result<LingMarketBaseResponse<LingMarketUser>>
         suspend fun getFileDownloadUrl(fileKey: String, type: String): Result<LingMarketClient.LingMarketFileUrlResponse>
         suspend fun getCommentReplies(appId: String, commentId: String, page: Int, limit: Int): Result<LingMarketBaseResponse<List<LingMarketReply>>>
@@ -655,6 +702,10 @@ suspend fun getFileDownloadUrl(
         
         override suspend fun getUserProfile(): Result<LingMarketBaseResponse<LingMarketUser>> {
         return this@LingMarketClient.getUserProfile()
+    }
+    
+    override suspend fun uploadAvatar(imageData: ByteArray, filename: String): Result<AvatarUploadResponse> {
+        return this@LingMarketClient.uploadAvatar(imageData, filename)
     }
 
         override suspend fun getUserDetail(userId: String): Result<LingMarketBaseResponse<LingMarketUser>> {
