@@ -154,12 +154,48 @@ private suspend fun getLingMarketDownloadUrl(fileKey: String): Result<String> {
 }
 
     override suspend fun postComment(appId: String, versionId: Long, content: String, parentCommentId: String?, mentionUserId: String?): Result<Unit> {
-        return Result.failure(NotImplementedError("灵应用商店暂不支持评论功能"))
+    return try {
+        val result = if (parentCommentId == null) {
+            // 发布主评论
+            LingMarketClient.postAppComment(appId, content)
+        } else {
+            // 发布回复评论
+            LingMarketClient.postCommentReply(appId, parentCommentId, content)
+        }
+        
+        if (result.isSuccess) {
+            Result.success(Unit)
+        } else {
+            Result.failure(Exception("发布评论失败"))
+        }
+    } catch (e: Exception) {
+        Result.failure(Exception("发布评论时出错: ${e.message}"))
     }
+}
 
     override suspend fun deleteComment(commentId: String): Result<Unit> {
         return Result.failure(NotImplementedError("灵应用商店暂不支持删除评论"))
     }
+    
+    // 保留原有的 deleteComment 方法（仅 commentId）
+override suspend fun deleteComment(commentId: String): Result<Unit> {
+    return Result.failure(NotImplementedError("灵应用商店删除评论需要appId，请使用 deleteComment(appId: String, commentId: String)"))
+}
+
+// 新增：支持 appId 的评论删除方法
+override suspend fun deleteComment(appId: String, commentId: String): Result<Unit> {
+    return try {
+        // 使用 LingMarketClient 的 deleteComment 方法
+        val result = LingMarketClient.deleteComment(appId, commentId)
+        if (result.isSuccess) {
+            Result.success(Unit)
+        } else {
+            Result.failure(Exception("删除评论失败"))
+        }
+    } catch (e: Exception) {
+        Result.failure(Exception("删除评论时出错: ${e.message}"))
+    }
+}
 
     override suspend fun toggleFavorite(appId: String, isCurrentlyFavorite: Boolean): Result<Boolean> {
         return Result.failure(NotImplementedError("灵应用商店不支持收藏功能"))

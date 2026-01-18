@@ -24,6 +24,7 @@ interface IAppStoreRepository {
     
     // 新增：上传APK (主要用于小趣空间第三方图床)
 suspend fun deleteReview(reviewId: String): Result<Unit>
-    suspend fun uploadApk(file: File, serviceType: String): Result<String>
-
+    suspend fun uploadApk(file: File, serviceType: String): Result<String>    
+    // 新增：支持 appId 的评论删除方法
+    suspend fun deleteComment(appId: String, commentId: String): Result<Unit>
 }

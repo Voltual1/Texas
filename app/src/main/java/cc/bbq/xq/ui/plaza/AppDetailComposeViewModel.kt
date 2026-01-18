@@ -382,30 +382,35 @@ private suspend fun handleLingMarketDownload(detail: UnifiedAppDetail) {
     }
 
     fun submitComment(content: String) {
-        viewModelScope.launch {
-            val parentId = _currentReplyComment.value?.id
-            // 修正：传递 currentVersionId
-            val result = repository.postComment(currentAppId, currentVersionId, content, parentId, null)
+    viewModelScope.launch {
+        val parentId = _currentReplyComment.value?.id
+        val result = repository.postComment(currentAppId, currentVersionId, content, parentId, null)
 
-            if (result.isSuccess) {
-                loadComments()
-                if (parentId == null) closeCommentDialog() else closeReplyDialog()
-            } else {
-                _errorMessage.value = "提交失败: ${result.exceptionOrNull()?.message}"
-            }
+        if (result.isSuccess) {
+            loadComments()
+            if (parentId == null) closeCommentDialog() else closeReplyDialog()
+        } else {
+            _errorMessage.value = "提交失败: ${result.exceptionOrNull()?.message}"
         }
     }
+}
 
     fun deleteComment(commentId: String) {
-        viewModelScope.launch {
-            val result = repository.deleteComment(commentId)
-            if (result.isSuccess) {
-                loadComments()
-            } else {
-                _errorMessage.value = "删除失败: ${result.exceptionOrNull()?.message}"
-            }
+    viewModelScope.launch {
+        // 判断是否为灵应用商店，如果是则使用新方法
+        val result = if (currentStore == AppStore.LING_MARKET) {
+            repository.deleteComment(currentAppId, commentId)
+        } else {
+            repository.deleteComment(commentId)
+        }
+        
+        if (result.isSuccess) {
+            loadComments()
+        } else {
+            _errorMessage.value = "删除失败: ${result.exceptionOrNull()?.message}"
         }
     }
+}
 
     // 删除应用（无需鉴权，服务器会处理）
     fun deleteApp(onSuccess: () -> Unit) {
