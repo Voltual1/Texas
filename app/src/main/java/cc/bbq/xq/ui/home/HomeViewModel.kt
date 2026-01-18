@@ -19,6 +19,7 @@ import cc.bbq.xq.data.SignInSettingsDataStore // 导入 SignInSettingsDataStore
 import cc.bbq.xq.ui.theme.ThemeManager
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
+import cc.bbq.xq.LingMarketClient
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
@@ -173,56 +174,59 @@ class HomeViewModel : ViewModel() {
     
     // 新增：加载灵应用商店用户信息
     private fun loadLingMarketUserInfo(context: Context) {
-        viewModelScope.launch {
-            try {
-                // 获取灵应用商店token
-                val lingMarketTokenFlow = AuthManager.getLingMarketToken(context)
-                val lingMarketToken = lingMarketTokenFlow.first()
+    viewModelScope.launch {
+        try {
+            // 获取灵应用商店token
+            val lingMarketTokenFlow = AuthManager.getLingMarketToken(context)
+            val lingMarketToken = lingMarketTokenFlow.first()
 
-                // 如果没有token，则显示登录提示
-                if (lingMarketToken.isNullOrEmpty()) {
-                    uiState.value = uiState.value.copy(
-                        lingMarketLoginPrompt = true,
-                        lingMarketUserInfo = null
-                    )
-                    return@launch
-                }
+            // 如果没有token，则显示登录提示
+            if (lingMarketToken.isNullOrEmpty()) {
+                uiState.value = uiState.value.copy(
+                    lingMarketLoginPrompt = true,
+                    lingMarketUserInfo = null
+                )
+                return@launch
+            }
 
-                // 调用获取用户个人资料的API
-                val userProfileResult = withContext(Dispatchers.IO) {
+            // 调用获取用户个人资料的API
+            // 明确指定类型参数
+            val userProfileResult: Result<LingMarketClient.LingMarketBaseResponse<LingMarketClient.LingMarketUser>> = 
+                withContext(Dispatchers.IO) {
                     LingMarketClient.getUserProfile()
                 }
 
-                userProfileResult.onSuccess { response ->
-                    if (response.isSuccess) {
-                        uiState.value = uiState.value.copy(
-                            lingMarketUserInfo = response.data,
-                            lingMarketLoginPrompt = false
-                        )
-                    } else {
-                        // API返回错误，可能需要重新登录
-                        println("Failed to load LingMarket user profile: ${response.msg}")
-                        uiState.value = uiState.value.copy(
-                            lingMarketLoginPrompt = true,
-                            lingMarketUserInfo = null
-                        )
-                    }
-                }.onFailure { e ->
-                    println("Failed to load LingMarket user info: ${e.message}")
+            userProfileResult.onSuccess { response ->
+                // LingMarketBaseResponse 应该有 isSuccess 属性
+                if (response.code == null || response.code == 200) { // 根据实际情况检查成功条件
+                    uiState.value = uiState.value.copy(
+                        lingMarketUserInfo = response.data,
+                        lingMarketLoginPrompt = false
+                    )
+                } else {
+                    // API返回错误，可能需要重新登录
+                    println("Failed to load LingMarket user profile: ${response.msg}")
                     uiState.value = uiState.value.copy(
                         lingMarketLoginPrompt = true,
                         lingMarketUserInfo = null
                     )
                 }
-            } catch (e: Exception) {
-                println("Error loading LingMarket user info: ${e.message}")
+            }.onFailure { e ->
+                println("Failed to load LingMarket user info: ${e.message}")
                 uiState.value = uiState.value.copy(
                     lingMarketLoginPrompt = true,
                     lingMarketUserInfo = null
                 )
             }
+        } catch (e: Exception) {
+            println("Error loading LingMarket user info: ${e.message}")
+            uiState.value = uiState.value.copy(
+                lingMarketLoginPrompt = true,
+                lingMarketUserInfo = null
+            )
         }
     }
+}
     
     // 新增：显式检查和更新灵应用商店登录状态的方法
     fun checkAndUpdateLingMarketLoginState(context: Context) {

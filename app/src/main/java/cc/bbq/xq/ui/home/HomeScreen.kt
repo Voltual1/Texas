@@ -27,6 +27,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
+import cc.bbq.xq.LingMarketClient
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -76,18 +77,20 @@ import cc.bbq.xq.SineShopClient
 import cc.bbq.xq.ui.Update // 导入 Update 导航目标
 import cc.bbq.xq.ui.MyComments // 导入 MyComments 导航目标
 
+// 修改 HomeScreen.kt 中 HomeScreen 函数的参数列表
 @Composable
 fun HomeScreen(
     state: HomeState,
     sineShopUserInfo: SineShopClient.SineShopUserInfo?,
     sineShopLoginPrompt: Boolean,
-        // 新增：灵应用商店参数
+    // 新增：灵应用商店参数
     lingMarketUserInfo: LingMarketClient.LingMarketUser?,
+    lingMarketLoginPrompt: Boolean, // 新增：灵应用商店登录提示状态
     onSineShopLoginClick: () -> Unit,
+    onLingMarketLoginClick: () -> Unit, // 新增：灵应用商店登录点击
     onAvatarClick: () -> Unit,
     onAvatarLongClick: () -> Unit,
     onMessageCenterClick: () -> Unit,
-    onLingMarketLoginClick: () -> Unit, // 新增：灵应用商店登录点击
     onBrowseHistoryClick: () -> Unit,
     onMyLikesClick: () -> Unit,
     onFollowersClick: () -> Unit,
@@ -109,7 +112,7 @@ fun HomeScreen(
     modifier: Modifier = Modifier,
     viewModel: HomeViewModel,
     snackbarHostState: SnackbarHostState,
-    navController: NavController // 添加 navController 参数
+    navController: NavController
 ) {
     // 修改页面数量为3
     val pagerState = rememberPagerState(pageCount = { 3 })
