@@ -333,9 +333,7 @@ fun LingMarketClient.LingMarketAppMinimal.toUnifiedAppItem(): UnifiedAppItem {
         store = AppStore.LING_MARKET,
         name = this.name,
         iconUrl = buildFullIconUrl(this.iconKey),
-        versionName = this.versionName,
-        ratingAvg = this.ratingAvg,
-        ratingCount = this.ratingCount
+        versionName = this.versionName
     )
 }
 
