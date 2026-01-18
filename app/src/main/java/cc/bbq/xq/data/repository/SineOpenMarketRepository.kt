@@ -17,7 +17,6 @@ class SineOpenMarketRepository : IAppStoreRepository {
     override suspend fun getAppDetail(appId: String, versionId: Long): Result<UnifiedAppDetail> = Result.failure(Exception("Not supported"))
     override suspend fun getAppComments(appId: String, versionId: Long, page: Int): Result<Pair<List<UnifiedComment>, Int>> = Result.failure(Exception("Not supported"))
     override suspend fun postComment(appId: String, versionId: Long, content: String, parentCommentId: String?, mentionUserId: String?): Result<Unit> = Result.failure(Exception("Not supported"))
-    override suspend fun deleteComment(commentId: String): Result<Unit> = Result.failure(Exception("Not supported"))
     override suspend fun toggleFavorite(appId: String, isCurrentlyFavorite: Boolean): Result<Boolean> = Result.failure(Exception("Not supported"))
     override suspend fun deleteApp(appId: String, versionId: Long): Result<Unit> = Result.failure(Exception("Not supported"))
     override suspend fun getAppDownloadSources(appId: String, versionId: Long): Result<List<UnifiedDownloadSource>> = Result.failure(Exception("Not supported"))
