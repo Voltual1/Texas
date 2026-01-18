@@ -383,5 +383,3 @@ private fun formatSize(bytes: Int): String {
         else -> "$bytes B"
     }
 }
-
-}

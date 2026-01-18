@@ -862,7 +862,7 @@ AppStore.LING_MARKET -> {
 }      }
                 }
             }
-        }
+        
 
         // --- 应用介绍 ---
 item {
