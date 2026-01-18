@@ -567,18 +567,34 @@ var showMoreMenu by remember { mutableStateOf(false) }
         }
     }
         
-        // --- 更新日志（弦应用商店） ---
-        if (appDetail.store == AppStore.SIENE_SHOP && !appDetail.updateLog.isNullOrEmpty()) {
-            item {
-                Card(modifier = Modifier.fillMaxWidth(), colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)) {
-                    Column(modifier = Modifier.padding(16.dp)) {
-                        Text("更新日志", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
-                        Spacer(Modifier.height(8.dp))
-                        Text(appDetail.updateLog!!)
-                    }
-                }
+// --- 更新日志（弦应用商店和灵应用商店） ---
+val updateLog = when (appDetail.store) {
+    AppStore.SIENE_SHOP -> appDetail.updateLog
+    AppStore.LING_MARKET -> {
+        val raw = appDetail.raw as? LingMarketClient.LingMarketApp
+        // 尝试从 versions 数组中获取更新日志
+        val versions = raw?.versions
+        versions?.firstOrNull()?.changelog ?: raw?.changelog
+    }
+    else -> null
+}
+
+if (!updateLog.isNullOrEmpty()) {
+    item {
+        Card(modifier = Modifier.fillMaxWidth(), colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)) {
+            Column(modifier = Modifier.padding(16.dp)) {
+                Text("更新日志", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+                Spacer(Modifier.height(8.dp))
+                LinkifyText(
+                    text = updateLog,
+                    navController = navController,
+                    modifier = Modifier.fillMaxWidth(),
+                    style = MaterialTheme.typography.bodyMedium.copy(color = MaterialTheme.colorScheme.onSurface)
+                )
             }
         }
+    }
+}
 
         // --- 适配说明（小趣空间） ---
 if (appDetail.store == AppStore.XIAOQU_SPACE) {
@@ -742,18 +758,103 @@ if (appDetail.store == AppStore.XIAOQU_SPACE) {
                                 )
                             }
                         }
-                        AppStore.LING_MARKET -> {
-InfoRow(
-                                label = "应用类型",
-                                value = appDetail.type
-                            )
-                            if (appDetail.size != null) {
-                                InfoRow(
-                                    label = "安装包大小",
-                                    value = appDetail.size
-                                )
-                            }
-                        }                    }
+                        // 修改 AppDetailContent 函数中的灵应用商店信息显示部分
+AppStore.LING_MARKET -> {
+    val raw = appDetail.raw as? LingMarketClient.LingMarketApp
+    
+    // SDK 信息
+    val minSdk = raw?.minSdk
+    val targetSdk = raw?.targetSdk
+    if (minSdk != null && targetSdk != null) {
+        InfoRow(
+            label = "SDK",
+            value = "Min $minSdk / Target $targetSdk"
+        )
+    } else if (minSdk != null) {
+        InfoRow(
+            label = "SDK",
+            value = "Min $minSdk"
+        )
+    }
+    
+    // 架构信息
+    val archText = raw?.architectures?.joinToString(", ") ?: "未知"
+    InfoRow(
+        label = "Arch",
+        value = archText
+    )
+    
+    // 下载量
+    InfoRow(
+        label = "下载量",
+        value = "${raw?.downloads ?: 0}"
+    )
+    
+    // 创建时间
+    raw?.createdAt?.let { createdAt ->
+        // 尝试格式化日期 (2026-01-14T12:54:00.499Z -> 2026-01-14)
+        val formattedDate = try {
+            createdAt.substring(0, 10)
+        } catch (e: Exception) {
+            createdAt
+        }
+        InfoRow(
+            label = "创建于",
+            value = formattedDate
+        )
+    }
+    
+    // 包名
+    InfoRow(
+        label = "包名",
+        value = raw?.packageName ?: "未知"
+    )
+    
+    // 应用类型
+    InfoRow(
+        label = "应用类型",
+        value = appDetail.type
+    )
+    
+    // 安装包大小
+    if (appDetail.size != null) {
+        InfoRow(
+            label = "安装包大小",
+            value = appDetail.size
+        )
+    }
+    
+    // 支持设备类型
+    val supportedDevices = raw?.supportedDevices?.joinToString(", ") ?: "未知"
+    if (supportedDevices.isNotEmpty() && supportedDevices != "未知") {
+        InfoRow(
+            label = "支持设备",
+            value = supportedDevices
+        )
+    }
+    
+    // 支持的屏幕密度
+    raw?.supportedDensities?.takeIf { it.isNotEmpty() }?.let { densities ->
+        InfoRow(
+            label = "屏幕密度",
+            value = densities.joinToString(", ")
+        )
+    }
+    
+    // 支持的架构（如果 architectures 已经显示了，这里可省略）
+    // 最后更新时间
+    raw?.updatedAt?.let { updatedAt ->
+        val formattedDate = try {
+            updatedAt.substring(0, 10)
+        } catch (e: Exception) {
+            updatedAt
+        }
+        InfoRow(
+            label = "最后更新",
+            value = formattedDate
+        )
+    }
+}      }
                 }
             }
         }

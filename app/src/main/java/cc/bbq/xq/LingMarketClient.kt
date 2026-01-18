@@ -219,7 +219,8 @@ object LingMarketClient {
         @SerialName("lastVersionUpdateAt") val lastVersionUpdateAt: String,
         @SerialName("createdAt") val createdAt: String,
         @SerialName("updatedAt") val updatedAt: String,
-        @SerialName("__v") val version: Int = 0
+        @SerialName("__v") val version: Int = 0,
+        val changelog: String? = null // 添加更新日志字段
     )
 
     @Serializable
@@ -289,7 +290,7 @@ object LingMarketClient {
     @Serializable
     data class LingMarketAuditLog(
         val action: String,
-        val reason: String,
+        val reason: String? = null,  // 改为可空
         val reviewer: LingMarketUploader? = null,  // 改为可空
         val timestamp: String,
         @SerialName("_id") val id: String

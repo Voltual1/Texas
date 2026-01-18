@@ -337,6 +337,7 @@ fun LingMarketClient.LingMarketAppMinimal.toUnifiedAppItem(): UnifiedAppItem {
     )
 }
 
+// 修改 LingMarketApp 到 UnifiedAppDetail 的映射，添加缺失字段
 fun LingMarketClient.LingMarketApp.toUnifiedAppDetail(): UnifiedAppDetail {
     return UnifiedAppDetail(
         id = this.id,
@@ -345,21 +346,37 @@ fun LingMarketClient.LingMarketApp.toUnifiedAppDetail(): UnifiedAppDetail {
         name = this.name,
         versionCode = this.versionCode.toLong(),
         versionName = this.versionName,
-        iconUrl = this.iconKey,
+        iconUrl = buildFullIconUrl(this.iconKey),
         type = this.category,
         previews = this.screenshotKeys,
         description = this.description,
-        updateLog = null,
-        developer = this.developer,
-        size = this.size.toString(),
+        updateLog = this.changelog, // 添加更新日志字段
+        developer = null, // 灵应用商店没有单独的开发者字段
+        size = formatSize(this.size), // 格式化大小
         uploadTime = this.createdAt.toLongOrNull() ?: 0L,
-        user = this.uploader.toUnifiedUser(), // 使用映射函数
+        user = this.uploader.toUnifiedUser(),
         tags = this.tags,
         downloadCount = this.downloads,
         isFavorite = false,
         favoriteCount = 0,
         reviewCount = this.ratingCount,
-        downloadUrl = this.apkKey,
-        raw = this
+        downloadUrl = null, // 留空，由 ViewModel 处理下载
+        raw = this // 包含所有原始数据
     )
+}
+
+// 添加辅助函数：格式化文件大小
+private fun formatSize(bytes: Int): String {
+    return when {
+        bytes >= 1024 * 1024 -> String.format("%.2f MB", bytes / (1024.0 * 1024.0))
+        bytes >= 1024 -> String.format("%.2f KB", bytes / 1024.0)
+        else -> "$bytes B"
+    }
+}
+
+// 如果版本信息单独存在，也添加映射
+private fun getChangelogFromVersions(versions: List<LingMarketClient.LingMarketVersion>?): String? {
+    return versions?.firstOrNull()?.changelog
+}
+
 }
