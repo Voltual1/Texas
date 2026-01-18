@@ -280,13 +280,18 @@ fun SineShopClient.SineShopReview.toUnifiedReview(): UnifiedComment {
     )
 }
 
-// 灵应用商店的映射
-
 // --- LingMarketClient (灵应用商店) Mappers ---
 
-// 在 Mappers.kt 末尾添加灵应用商店的映射
-
-// --- LingMarketClient (灵应用商店) Mappers ---
+// 辅助函数：构建完整的图标URL
+private fun buildFullIconUrl(iconKey: String): String {
+    return if (iconKey.startsWith("http")) {
+        // 如果已经是完整URL，直接返回
+        iconKey
+    } else {
+        // 拼接基础URL
+        LingMarketClient.ICON_BASE_URL + iconKey
+    }
+}
 
 fun LingMarketClient.LingMarketUploader.toUnifiedUser(): UnifiedUser {
     return UnifiedUser(
@@ -327,8 +332,10 @@ fun LingMarketClient.LingMarketAppMinimal.toUnifiedAppItem(): UnifiedAppItem {
         navigationVersionId = this.versionCode.toLong(),
         store = AppStore.LING_MARKET,
         name = this.name,
-        iconUrl = this.iconKey,
-        versionName = this.versionName
+        iconUrl = buildFullIconUrl(this.iconKey),
+        versionName = this.versionName,
+        ratingAvg = this.ratingAvg,
+        ratingCount = this.ratingCount
     )
 }
 

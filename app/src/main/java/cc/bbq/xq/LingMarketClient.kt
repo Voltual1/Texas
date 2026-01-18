@@ -31,6 +31,8 @@ import java.io.IOException
 
 object LingMarketClient {
 internal const val BASE_URL = "https://market.ziling.xin/api/api/v1/" 
+// 添加图标基础URL
+    internal const val ICON_BASE_URL = "https://market.ziling.xin/api/download/icon/
     /**
      * 【重要警告】BASE_URL 必须以 '/' 结尾。
      * * 根据 Ktor 的路径解析规则：
