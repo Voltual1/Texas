@@ -9,32 +9,48 @@ import org.koin.core.annotation.Single
 @Single
 class LingMarketRepository : IAppStoreRepository {
 
-    // 硬编码灵应用商店的分类列表
     override suspend fun getCategories(): Result<List<UnifiedCategory>> {
-        val categories = listOf(
-    UnifiedCategory(id = "-1", name = "最近更新"),  // 特殊处理：最近更新没有对应的响应项
-    UnifiedCategory(id = "browser", name = "浏览器"),
-    UnifiedCategory(id = "Games", name = "游戏"),
-    UnifiedCategory(id = "tools", name = "实用工具"),
-    UnifiedCategory(id = "Apps", name = "应用商店"),
-    UnifiedCategory(id = "video", name = "视频播放"),
-    UnifiedCategory(id = "teach", name = "教育学习"),
-    UnifiedCategory(id = "read", name = "图文阅读"),
-    UnifiedCategory(id = "system", name = "系统优化"),
-    UnifiedCategory(id = "file", name = "文件管理"),
-    UnifiedCategory(id = "watchfaces", name = "表盘（wearOS4+）"),
-    UnifiedCategory(id = "watchfacess", name = "表盘（wearOS4-）"),
-    UnifiedCategory(id = "pay", name = "数字消费"),
-    UnifiedCategory(id = "music", name = "音乐播放"),
-    UnifiedCategory(id = "talk", name = "社交通讯"),
-    UnifiedCategory(id = "walk", name = "便利出行"),
-    UnifiedCategory(id = "tab", name = "输入法"),
-    UnifiedCategory(id = "desktop", name = "桌面/启动器"),
-    UnifiedCategory(id = "hahaha", name = "整活搞怪"),
-    UnifiedCategory(id = "xposed", name = "xposed 模块"),
-    UnifiedCategory(id = "Uncategorized", name = "未分类")
-)
-return Result.success(categories)
+        return try {
+            val result = LingMarketClient.getCategories(includeInactive = false)
+            result.map { categories ->
+                // 添加一个特殊的"最近更新"分类作为第一个选项
+                val specialCategories = listOf(
+                    UnifiedCategory(id = "-1", name = "最近更新")
+                )
+                
+                // 使用映射函数将服务器分类转换为统一分类
+                val serverCategories = categories.map { it.toUnifiedCategory() }
+                
+                // 合并特殊分类和服务器分类
+                specialCategories + serverCategories
+            }
+        } catch (e: Exception) {
+            // 如果API失败，返回硬编码的分类作为fallback
+            val categories = listOf(
+                UnifiedCategory(id = "-1", name = "最近更新"),
+                UnifiedCategory(id = "browser", name = "浏览器"),
+                UnifiedCategory(id = "Games", name = "游戏"),
+                UnifiedCategory(id = "tools", name = "实用工具"),
+                UnifiedCategory(id = "Apps", name = "应用商店"),
+                UnifiedCategory(id = "video", name = "视频播放"),
+                UnifiedCategory(id = "teach", name = "教育学习"),
+                UnifiedCategory(id = "read", name = "图文阅读"),
+                UnifiedCategory(id = "system", name = "系统优化"),
+                UnifiedCategory(id = "file", name = "文件管理"),
+                UnifiedCategory(id = "watchfaces", name = "表盘（wearOS4+）"),
+                UnifiedCategory(id = "watchfacess", name = "表盘（wearOS4-）"),
+                UnifiedCategory(id = "pay", name = "数字消费"),
+                UnifiedCategory(id = "music", name = "音乐播放"),
+                UnifiedCategory(id = "talk", name = "社交通讯"),
+                UnifiedCategory(id = "walk", name = "便利出行"),
+                UnifiedCategory(id = "tab", name = "输入法"),
+                UnifiedCategory(id = "desktop", name = "桌面/启动器"),
+                UnifiedCategory(id = "hahaha", name = "整活搞怪"),
+                UnifiedCategory(id = "xposed", name = "xposed 模块"),
+                UnifiedCategory(id = "Uncategorized", name = "未分类")
+            )
+            Result.success(categories)
+        }
     }
 
     override suspend fun getApps(categoryId: String?, page: Int, userId: String?): Result<Pair<List<UnifiedAppItem>, Int>> {
@@ -45,7 +61,7 @@ return Result.success(categories)
                     LingMarketClient.getRecentlyUpdatedApps(page = page, limit = 20)
                 }
                 else -> {
-                    // 按分类获取
+                    // 按分类获取 - 使用 categoryId（即分类的 name 字段）
                     LingMarketClient.getAppsByCategory(category = categoryId, page = page, limit = 20)
                 }
             }
