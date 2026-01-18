@@ -30,7 +30,6 @@ import androidx.compose.foundation.clickable
 import androidx.navigation.NavController
 import cc.bbq.xq.LingMarketClient
 import cc.bbq.xq.ui.AccountProfile
-import cc.bbq.xq.AppStore
 import cc.bbq.xq.ui.theme.BBQCard
 import coil3.compose.AsyncImage
 import coil3.request.ImageRequest
