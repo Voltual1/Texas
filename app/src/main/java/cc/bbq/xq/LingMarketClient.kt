@@ -30,8 +30,8 @@ import kotlinx.serialization.json.Json
 import java.io.IOException
 
 object LingMarketClient {
-internal const val BASE_URL = "https://market.ziling.xin/api/api/v1/" 
-// 添加图标基础URL
+    internal const val BASE_URL = "https://market.ziling.xin/api/api/v1/" 
+    // 添加图标基础URL
     internal const val ICON_BASE_URL = "https://market.ziling.xin/api/download/icon/"
     /**
      * 【重要警告】BASE_URL 必须以 '/' 结尾。
@@ -96,7 +96,9 @@ internal const val BASE_URL = "https://market.ziling.xin/api/api/v1/"
         val token: String? = null,
         val user: LingMarketUser? = null,
         val comment: LingMarketComment? = null,
-        val reply: LingMarketReply? = null
+        val reply: LingMarketReply? = null,
+        val comments: List<LingMarketComment>? = null, // 用于评论列表响应
+        val pagination: LingMarketPagination? = null // 用于分页响应
     ) {
         val isSuccess: Boolean get() = code == null || code == 200 || code == 201
     }
@@ -122,11 +124,20 @@ internal const val BASE_URL = "https://market.ziling.xin/api/api/v1/"
         val username: String,
         val password: String? = null, // 登录响应中可能有加密密码
         val nickname: String,
-        val email: String,
+        val email: String? = null, // 从请求示例看，用户详情可能没有email
         val role: String,
-        val status: String,
+        val status: String? = null, // 从请求示例看，用户详情可能没有status
         @SerialName("createdAt") val createdAt: String,
-        @SerialName("__v") val version: Int = 0,
+        @SerialName("__v") val version: Int? = 0, // 从请求示例看，用户详情可能没有version
+        @SerialName("avatarUrl") val avatarUrl: String? = null
+    )
+
+    // 精简用户信息（用于评论/回复）
+    @Serializable
+    data class LingMarketUserLite(
+        @SerialName("_id") val id: String,
+        val username: String,
+        val nickname: String,
         @SerialName("avatarUrl") val avatarUrl: String? = null
     )
 
@@ -150,13 +161,11 @@ internal const val BASE_URL = "https://market.ziling.xin/api/api/v1/"
         @SerialName("replyToUser") val replyToUser: LingMarketUserLite
     )
 
-    // 精简用户信息（用于评论/回复）
+    // 评论列表响应（根据请求示例）
     @Serializable
-    data class LingMarketUserLite(
-        @SerialName("_id") val id: String,
-        val username: String,
-        val nickname: String,
-        @SerialName("avatarUrl") val avatarUrl: String? = null
+    data class CommentListResponse(
+        val comments: List<LingMarketComment>,
+        val pagination: LingMarketPagination
     )
 
     // 应用分类
@@ -175,56 +184,57 @@ internal const val BASE_URL = "https://market.ziling.xin/api/api/v1/"
 
     // 应用信息
     @Serializable
-data class LingMarketApp(
-    @SerialName("_id") val id: String,
-    val name: String,
-    @SerialName("packageName") val packageName: String,
-    @SerialName("variantKey") val variantKey: String,
-    @SerialName("versionCode") val versionCode: Int,
-    @SerialName("versionName") val versionName: String,
-    @SerialName("minSdk") val minSdk: Int,
-    @SerialName("targetSdk") val targetSdk: Int,
-    val architectures: List<String> = emptyList(),
-    val category: String,
-    val tags: List<String> = emptyList(),
-    val description: String,
-    val developer: String? = null,
-    val source: String? = null,
-    @SerialName("supportedDevices") val supportedDevices: List<String> = emptyList(),
-    @SerialName("isWearOS") val isWearOS: Boolean = false,
-    @SerialName("isApks") val isApks: Boolean = false,
-    @SerialName("supportedLanguages") val supportedLanguages: List<String> = emptyList(),
-    @SerialName("supportedDensities") val supportedDensities: List<String> = emptyList(),
-    @SerialName("iconKey") val iconKey: String,
-    @SerialName("apkKey") val apkKey: String,
-    @SerialName("screenshotKeys") val screenshotKeys: List<String> = emptyList(),
-    @SerialName("downloadLines") val downloadLines: List<String> = emptyList(),
-    val size: Long,
-    val uploader: LingMarketUploader,
-    val status: String,
-    @SerialName("auditLog") val auditLog: List<LingMarketAuditLog> = emptyList(),
-    val downloads: Int,
-    @SerialName("viewCount") val viewCount: Int,
-    @SerialName("ratingAvg") val ratingAvg: Float = 0f,
-    @SerialName("ratingCount") val ratingCount: Int = 0,
-    @SerialName("lastVersionUpdateAt") val lastVersionUpdateAt: String,
-    @SerialName("createdAt") val createdAt: String,
-    @SerialName("updatedAt") val updatedAt: String,
-    @SerialName("__v") val version: Int = 0
-)
-@Serializable
-data class LingMarketAppMinimal(
-    @SerialName("_id") val id: String,
-    val name: String,
-    @SerialName("versionCode") val versionCode: Int,
-    @SerialName("versionName") val versionName: String,
-    @SerialName("iconKey") val iconKey: String,
-    // 可选：其他你可能需要的字段
-    val packageName: String? = null,
-    val category: String? = null,
-    val downloads: Int? = null,
-    @SerialName("viewCount") val viewCount: Int? = null
-) 
+    data class LingMarketApp(
+        @SerialName("_id") val id: String,
+        val name: String,
+        @SerialName("packageName") val packageName: String,
+        @SerialName("variantKey") val variantKey: String,
+        @SerialName("versionCode") val versionCode: Int,
+        @SerialName("versionName") val versionName: String,
+        @SerialName("minSdk") val minSdk: Int,
+        @SerialName("targetSdk") val targetSdk: Int,
+        val architectures: List<String> = emptyList(),
+        val category: String,
+        val tags: List<String> = emptyList(),
+        val description: String,
+        val developer: String? = null,
+        val source: String? = null,
+        @SerialName("supportedDevices") val supportedDevices: List<String> = emptyList(),
+        @SerialName("isWearOS") val isWearOS: Boolean = false,
+        @SerialName("isApks") val isApks: Boolean = false,
+        @SerialName("supportedLanguages") val supportedLanguages: List<String> = emptyList(),
+        @SerialName("supportedDensities") val supportedDensities: List<String> = emptyList(),
+        @SerialName("iconKey") val iconKey: String,
+        @SerialName("apkKey") val apkKey: String,
+        @SerialName("screenshotKeys") val screenshotKeys: List<String> = emptyList(),
+        @SerialName("downloadLines") val downloadLines: List<String> = emptyList(),
+        val size: Long,
+        val uploader: LingMarketUploader,
+        val status: String,
+        @SerialName("auditLog") val auditLog: List<LingMarketAuditLog> = emptyList(),
+        val downloads: Int,
+        @SerialName("viewCount") val viewCount: Int,
+        @SerialName("ratingAvg") val ratingAvg: Float = 0f,
+        @SerialName("ratingCount") val ratingCount: Int = 0,
+        @SerialName("lastVersionUpdateAt") val lastVersionUpdateAt: String,
+        @SerialName("createdAt") val createdAt: String,
+        @SerialName("updatedAt") val updatedAt: String,
+        @SerialName("__v") val version: Int = 0
+    )
+
+    @Serializable
+    data class LingMarketAppMinimal(
+        @SerialName("_id") val id: String,
+        val name: String,
+        @SerialName("versionCode") val versionCode: Int,
+        @SerialName("versionName") val versionName: String,
+        @SerialName("iconKey") val iconKey: String,
+        // 可选：其他你可能需要的字段
+        val packageName: String? = null,
+        val category: String? = null,
+        val downloads: Int? = null,
+        @SerialName("viewCount") val viewCount: Int? = null
+    ) 
 
     // 应用版本
     @Serializable
@@ -296,10 +306,10 @@ data class LingMarketAppMinimal(
 
     // 应用列表响应
     @Serializable
-data class LingMarketAppListResponse(
-    val apps: List<LingMarketAppMinimal>,  // 改为使用 LingMarketAppMinimal
-    val pagination: LingMarketPagination
-)
+    data class LingMarketAppListResponse(
+        val apps: List<LingMarketAppMinimal>,  // 改为使用 LingMarketAppMinimal
+        val pagination: LingMarketPagination
+    )
 
     // 评论请求
     @Serializable
@@ -320,6 +330,15 @@ data class LingMarketAppListResponse(
         @SerialName("commentId") val commentId: String? = null,
         @SerialName("replyId") val replyId: String? = null
     )
+    
+    // 文件URL响应数据模型
+@Serializable
+data class LingMarketFileUrlResponse(
+    val key: String,
+    val url: String,
+    @SerialName("expiresIn") val expiresIn: Int,
+    @SerialName("expiresAt") val expiresAt: String
+)
 
     // ===== API 方法 =====
 
@@ -407,6 +426,17 @@ data class LingMarketAppListResponse(
         val requestBody = LoginRequest(username, password)
         
         return postJson(url, requestBody)
+    }
+
+    /**
+     * 获取用户详情
+     * 根据请求示例：GET /users/{userId}
+     */
+    suspend fun getUserDetail(userId: String): Result<LingMarketBaseResponse<LingMarketUser>> {
+        val token = getToken()
+        val url = "users/$userId"
+        
+        return get(url, token)
     }
 
     /**
@@ -514,16 +544,16 @@ data class LingMarketAppListResponse(
     }
 
     /**
-     * 获取应用评论列表（根据示例，可能需要单独的端点）
-     * 注意：从示例中未看到专门的评论列表API，评论可能包含在应用详情中
+     * 获取应用评论列表
+     * 根据请求示例：GET /apps/{appId}/comments?page=1&limit=20
+     * 注意：响应格式为 {"comments":[...], "pagination": {...}}
      */
     suspend fun getAppComments(
         appId: String,
         page: Int = 1,
         limit: Int = 20
-    ): Result<LingMarketBaseResponse<List<LingMarketComment>>> {
+    ): Result<CommentListResponse> {
         val token = getToken()
-        // 根据示例，可能需要猜测端点格式
         val url = "apps/$appId/comments?page=$page&limit=$limit"
         
         return get(url, token)
@@ -547,7 +577,27 @@ data class LingMarketAppListResponse(
     // 辅助方法：为请求添加Bearer认证
     private fun HttpRequestBuilder.bearerAuth(token: String) {
         header(HttpHeaders.Authorization, "Bearer $token")
-    }
+    }    
+
+// ===== API 方法 =====
+
+/**
+ * 获取文件下载URL
+ * 根据请求示例：GET /files/url/{type}/{key}
+ * type: APK (或 ICON 等)
+ * key: 文件key，如 "APK/d8460c09-443a-4dd4-8137-5c06c9e04807.apk"
+ */
+suspend fun getFileDownloadUrl(
+    fileKey: String,
+    type: String = "APK"
+): Result<LingMarketFileUrlResponse> {
+    val token = getToken()
+    // 从 fileKey 中提取文件名（去掉前面的 "APK/" 或 "icons/" 等前缀）
+    val fileName = fileKey.substringAfterLast('/')
+    val url = "files/url/$type/$fileName"
+    
+    return get(url, token)
+}
 
     /**
      * 获取灵应用商店 Token
@@ -570,21 +620,29 @@ data class LingMarketAppListResponse(
     }
 
    // ===== API Service 接口（兼容现有模式） =====
-interface LingMarketApiService {
-    suspend fun login(username: String, password: String): Result<LingMarketBaseResponse<LoginResponseData>>
-    suspend fun getCategories(includeInactive: Boolean): Result<List<LingMarketCategory>>
-    suspend fun getAppsByCategory(category: String, page: Int, limit: Int): Result<LingMarketAppListResponse>
-    suspend fun getAppDetail(appId: String): Result<LingMarketApp>
-    suspend fun searchApps(query: String, page: Int, limit: Int): Result<LingMarketAppListResponse>
-    suspend fun getRecentlyUpdatedApps(page: Int, limit: Int): Result<LingMarketAppListResponse>
-    suspend fun postAppComment(appId: String, content: String): Result<LingMarketBaseResponse<LingMarketComment>>
-    suspend fun postCommentReply(appId: String, commentId: String, content: String): Result<LingMarketBaseResponse<LingMarketReply>>
-    suspend fun deleteComment(appId: String, commentId: String): Result<DeleteResponse>
-}
+    interface LingMarketApiService {
+        suspend fun login(username: String, password: String): Result<LingMarketBaseResponse<LoginResponseData>>
+        suspend fun getUserDetail(userId: String): Result<LingMarketBaseResponse<LingMarketUser>>
+        suspend fun getCategories(includeInactive: Boolean): Result<List<LingMarketCategory>>
+        suspend fun getAppsByCategory(category: String, page: Int, limit: Int): Result<LingMarketAppListResponse>
+        suspend fun getAppDetail(appId: String): Result<LingMarketApp>
+        suspend fun searchApps(query: String, page: Int, limit: Int): Result<LingMarketAppListResponse>
+        suspend fun getRecentlyUpdatedApps(page: Int, limit: Int): Result<LingMarketAppListResponse>
+        suspend fun postAppComment(appId: String, content: String): Result<LingMarketBaseResponse<LingMarketComment>>
+        suspend fun postCommentReply(appId: String, commentId: String, content: String): Result<LingMarketBaseResponse<LingMarketReply>>
+        suspend fun deleteComment(appId: String, commentId: String): Result<DeleteResponse>
+        suspend fun getAppComments(appId: String, page: Int, limit: Int): Result<CommentListResponse>
+        suspend fun getFileDownloadUrl(fileKey: String, type: String): Result<LingMarketClient.LingMarketFileUrlResponse>
+        suspend fun getCommentReplies(appId: String, commentId: String, page: Int, limit: Int): Result<LingMarketBaseResponse<List<LingMarketReply>>>
+    }
 
     object LingMarketApiServiceImpl : LingMarketApiService {
         override suspend fun login(username: String, password: String): Result<LingMarketBaseResponse<LoginResponseData>> {
             return this@LingMarketClient.login(username, password)
+        }
+
+        override suspend fun getUserDetail(userId: String): Result<LingMarketBaseResponse<LingMarketUser>> {
+            return this@LingMarketClient.getUserDetail(userId)
         }
 
         override suspend fun getCategories(includeInactive: Boolean): Result<List<LingMarketCategory>> {
@@ -618,5 +676,16 @@ interface LingMarketApiService {
         override suspend fun deleteComment(appId: String, commentId: String): Result<DeleteResponse> {
             return this@LingMarketClient.deleteComment(appId, commentId)
         }
+
+        override suspend fun getAppComments(appId: String, page: Int, limit: Int): Result<CommentListResponse> {
+            return this@LingMarketClient.getAppComments(appId, page, limit)
+        }
+
+        override suspend fun getCommentReplies(appId: String, commentId: String, page: Int, limit: Int): Result<LingMarketBaseResponse<List<LingMarketReply>>> {
+            return this@LingMarketClient.getCommentReplies(appId, commentId, page, limit)
+        }
+        override suspend fun getFileDownloadUrl(fileKey: String, type: String): Result<LingMarketClient.LingMarketFileUrlResponse> {
+        return this@LingMarketClient.getFileDownloadUrl(fileKey, type)
+    }
     }
 }

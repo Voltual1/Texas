@@ -90,13 +90,46 @@ class LingMarketRepository : IAppStoreRepository {
     }
 
     override suspend fun getAppDetail(appId: String, versionId: Long): Result<UnifiedAppDetail> {
-        return try {
-            val result = LingMarketClient.getAppDetail(appId)
-            result.map { it.toUnifiedAppDetail() } // 使用映射函数
-        } catch (e: Exception) {
-            Result.failure(e)
+    return try {
+        val result = LingMarketClient.getAppDetail(appId)
+        result.map { appDetail ->
+            // 先转换为统一的模型
+            val unifiedDetail = appDetail.toUnifiedAppDetail()
+            
+            // 为灵应用商店获取可用的下载URL
+            if (unifiedDetail.store == AppStore.LING_MARKET) {
+                // 尝试获取APK文件的直接下载URL
+                val downloadResult = getLingMarketDownloadUrl(appDetail.apkKey)
+                return@map if (downloadResult.isSuccess) {
+                    // 如果成功获取直接下载URL，更新统一模型中的downloadUrl
+                    val downloadUrl = downloadResult.getOrNull()
+                    unifiedDetail.copy(downloadUrl = downloadUrl)
+                } else {
+                    // 如果失败，保持原样（仍然包含apkKey，但ViewModel需要特殊处理）
+                    unifiedDetail
+                }
+            } else {
+                unifiedDetail
+            }
         }
+    } catch (e: Exception) {
+        Result.failure(e)
     }
+}
+
+/**
+ * 获取灵应用商店文件的直接下载URL
+ */
+private suspend fun getLingMarketDownloadUrl(fileKey: String): Result<String> {
+    return try {
+        val result = LingMarketClient.getFileDownloadUrl(fileKey)
+        result.map { response ->
+            response.url
+        }
+    } catch (e: Exception) {
+        Result.failure(e)
+    }
+}
 
     override suspend fun getAppComments(appId: String, versionId: Long, page: Int): Result<Pair<List<UnifiedComment>, Int>> {
         return try {
