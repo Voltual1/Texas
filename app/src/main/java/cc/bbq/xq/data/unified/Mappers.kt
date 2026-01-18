@@ -320,7 +320,7 @@ fun LingMarketClient.LingMarketUserLite.toUnifiedUser(): UnifiedUser {
     )
 }
 
-fun LingMarketClient.LingMarketApp.toUnifiedAppItem(): UnifiedAppItem {
+fun LingMarketClient.LingMarketAppMinimal.toUnifiedAppItem(): UnifiedAppItem {
     return UnifiedAppItem(
         uniqueId = "${AppStore.LING_MARKET}-${this.id}-${this.versionCode}",
         navigationId = this.id,

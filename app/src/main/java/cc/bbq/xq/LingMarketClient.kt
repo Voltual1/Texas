@@ -210,6 +210,19 @@ data class LingMarketApp(
     @SerialName("updatedAt") val updatedAt: String,
     @SerialName("__v") val version: Int = 0
 )
+@Serializable
+data class LingMarketAppMinimal(
+    @SerialName("_id") val id: String,
+    val name: String,
+    @SerialName("versionCode") val versionCode: Int,
+    @SerialName("versionName") val versionName: String,
+    @SerialName("iconKey") val iconKey: String,
+    // 可选：其他你可能需要的字段
+    val packageName: String? = null,
+    val category: String? = null,
+    val downloads: Int? = null,
+    @SerialName("viewCount") val viewCount: Int? = null
+) 
 
     // 应用版本
     @Serializable
