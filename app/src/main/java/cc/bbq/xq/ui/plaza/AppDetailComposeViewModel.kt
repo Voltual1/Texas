@@ -26,6 +26,7 @@ import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import org.koin.android.annotation.KoinViewModel
+import cc.bbq.xq.LingMarketClient
 import cc.bbq.xq.service.download.DownloadService
 
 @KoinViewModel

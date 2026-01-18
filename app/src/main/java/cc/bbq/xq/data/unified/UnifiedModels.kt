@@ -34,6 +34,7 @@ data class UnifiedComment(
 /**
  * 统一的应用详情模型
  */
+
 data class UnifiedAppDetail(
     val id: String,
     val store: AppStore,
@@ -55,7 +56,7 @@ data class UnifiedAppDetail(
     val isFavorite: Boolean,
     val favoriteCount: Int,
     val reviewCount: Int,
-    val downloadUrl: String?,
+    val downloadUrl: String?, // 直接可用的下载URL
     val raw: Any
 )
 

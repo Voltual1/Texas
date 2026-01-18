@@ -132,30 +132,26 @@ private suspend fun getLingMarketDownloadUrl(fileKey: String): Result<String> {
 }
 
     override suspend fun getAppComments(appId: String, versionId: Long, page: Int): Result<Pair<List<UnifiedComment>, Int>> {
-        return try {
-            val result = LingMarketClient.getAppComments(appId, page = page, limit = 20)
-            result.map { response ->
-                if (response.isSuccess) {
-                    val comments = response.data?.map { comment ->
-                        UnifiedComment(
-                            id = comment.id,
-                            content = comment.content,
-                            sendTime = comment.createdAt.toLongOrNull() ?: 0L,
-                            sender = comment.user.toUnifiedUser(), // 使用映射函数
-                            childCount = comment.replyCount,
-                            raw = comment
-                        )
-                    } ?: emptyList()
-                    
-                    Pair(comments, 1)
-                } else {
-                    Pair(emptyList(), 0)
-                }
+    return try {
+        val result = LingMarketClient.getAppComments(appId, page = page, limit = 20)
+        result.map { response ->
+            // 直接使用 CommentListResponse，它包含 comments 和 pagination
+            val comments = response.comments.map { comment ->
+                UnifiedComment(
+                    id = comment.id,
+                    content = comment.content,
+                    sendTime = comment.createdAt.toLongOrNull() ?: 0L,
+                    sender = comment.user.toUnifiedUser(),
+                    childCount = comment.replyCount,
+                    raw = comment
+                )
             }
-        } catch (e: Exception) {
-            Result.failure(Exception("灵应用商店暂不支持评论功能"))
+            Pair(comments, response.pagination.pages)
         }
+    } catch (e: Exception) {
+        Result.failure(Exception("获取评论失败: ${e.message}"))
     }
+}
 
     override suspend fun postComment(appId: String, versionId: Long, content: String, parentCommentId: String?, mentionUserId: String?): Result<Unit> {
         return Result.failure(NotImplementedError("灵应用商店暂不支持评论功能"))
