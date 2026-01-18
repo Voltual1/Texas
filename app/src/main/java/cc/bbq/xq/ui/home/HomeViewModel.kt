@@ -65,7 +65,11 @@ data class HomeUiState(
     // 新增：弦应用商店用户信息
     val sineShopUserInfo: SineShopClient.SineShopUserInfo? = null,
     // 新增：弦应用商店登录提示
-    val sineShopLoginPrompt: Boolean = true
+    val sineShopLoginPrompt: Boolean = true,
+        // 新增：灵应用商店用户信息
+    val lingMarketUserInfo: LingMarketClient.LingMarketUser? = null,
+    // 新增：灵应用商店登录提示
+    val lingMarketLoginPrompt: Boolean = true
 )
 
 @KoinViewModel
@@ -162,6 +166,85 @@ class HomeViewModel : ViewModel() {
                 uiState.value = uiState.value.copy(
                     isLoading = false,
                     dataLoadState = DataLoadState.Error
+                )
+            }
+        }
+    }
+    
+    // 新增：加载灵应用商店用户信息
+    private fun loadLingMarketUserInfo(context: Context) {
+        viewModelScope.launch {
+            try {
+                // 获取灵应用商店token
+                val lingMarketTokenFlow = AuthManager.getLingMarketToken(context)
+                val lingMarketToken = lingMarketTokenFlow.first()
+
+                // 如果没有token，则显示登录提示
+                if (lingMarketToken.isNullOrEmpty()) {
+                    uiState.value = uiState.value.copy(
+                        lingMarketLoginPrompt = true,
+                        lingMarketUserInfo = null
+                    )
+                    return@launch
+                }
+
+                // 调用获取用户个人资料的API
+                val userProfileResult = withContext(Dispatchers.IO) {
+                    LingMarketClient.getUserProfile()
+                }
+
+                userProfileResult.onSuccess { response ->
+                    if (response.isSuccess) {
+                        uiState.value = uiState.value.copy(
+                            lingMarketUserInfo = response.data,
+                            lingMarketLoginPrompt = false
+                        )
+                    } else {
+                        // API返回错误，可能需要重新登录
+                        println("Failed to load LingMarket user profile: ${response.msg}")
+                        uiState.value = uiState.value.copy(
+                            lingMarketLoginPrompt = true,
+                            lingMarketUserInfo = null
+                        )
+                    }
+                }.onFailure { e ->
+                    println("Failed to load LingMarket user info: ${e.message}")
+                    uiState.value = uiState.value.copy(
+                        lingMarketLoginPrompt = true,
+                        lingMarketUserInfo = null
+                    )
+                }
+            } catch (e: Exception) {
+                println("Error loading LingMarket user info: ${e.message}")
+                uiState.value = uiState.value.copy(
+                    lingMarketLoginPrompt = true,
+                    lingMarketUserInfo = null
+                )
+            }
+        }
+    }
+    
+    // 新增：显式检查和更新灵应用商店登录状态的方法
+    fun checkAndUpdateLingMarketLoginState(context: Context) {
+        viewModelScope.launch {
+            try {
+                // 获取灵应用商店token
+                val lingMarketTokenFlow = AuthManager.getLingMarketToken(context)
+                val lingMarketToken = lingMarketTokenFlow.first()
+
+                // 更新登录状态
+                val isLoggedIn = !lingMarketToken.isNullOrEmpty()
+                uiState.value = uiState.value.copy(lingMarketLoginPrompt = !isLoggedIn)
+
+                // 如果已登录，加载用户信息
+                if (isLoggedIn) {
+                    loadLingMarketUserInfo(context)
+                }
+            } catch (e: Exception) {
+                println("Error checking LingMarket login state: ${e.message}")
+                uiState.value = uiState.value.copy(
+                    lingMarketLoginPrompt = true,
+                    lingMarketUserInfo = null
                 )
             }
         }

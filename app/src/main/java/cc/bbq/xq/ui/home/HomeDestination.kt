@@ -39,6 +39,9 @@ fun HomeDestination(
         val userCredentialsFlow = AuthManager.getCredentials(context)
         val userCredentials = userCredentialsFlow.first()
         val isLoggedIn = userCredentials != null
+        
+        // 新增：检查灵应用商店登录状态
+        viewModel.checkAndUpdateLingMarketLoginState(context)
 
         viewModel.updateLoginState(isLoggedIn)
         if (isLoggedIn && uiState.dataLoadState == DataLoadState.NotLoaded) {
@@ -46,6 +49,10 @@ fun HomeDestination(
         }
 
         viewModel.checkAndUpdateSineShopLoginState(context)
+    }
+    
+    val onLingMarketLoginClick = remember {
+        { navController.navigate(Login.route) }
     }
 
     val onAvatarClick = remember {
@@ -101,7 +108,11 @@ fun HomeDestination(
             ),
             sineShopUserInfo = uiState.sineShopUserInfo,
             sineShopLoginPrompt = uiState.sineShopLoginPrompt,
+                        // 新增：灵应用商店用户信息和登录提示
+            lingMarketUserInfo = uiState.lingMarketUserInfo,
+            lingMarketLoginPrompt = uiState.lingMarketLoginPrompt,
             onSineShopLoginClick = onSineShopLoginClick,
+                        onLingMarketLoginClick = onLingMarketLoginClick, // 新增：灵应用商店登录点击
             onPaymentCenterClick = { navController.navigate(PaymentCenterAdvanced.route) },
             onAvatarClick = onAvatarClick,
             onAvatarLongClick = onAvatarLongClick,

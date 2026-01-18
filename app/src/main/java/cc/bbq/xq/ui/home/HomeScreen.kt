@@ -81,10 +81,13 @@ fun HomeScreen(
     state: HomeState,
     sineShopUserInfo: SineShopClient.SineShopUserInfo?,
     sineShopLoginPrompt: Boolean,
+        // 新增：灵应用商店参数
+    lingMarketUserInfo: LingMarketClient.LingMarketUser?,
     onSineShopLoginClick: () -> Unit,
     onAvatarClick: () -> Unit,
     onAvatarLongClick: () -> Unit,
     onMessageCenterClick: () -> Unit,
+    onLingMarketLoginClick: () -> Unit, // 新增：灵应用商店登录点击
     onBrowseHistoryClick: () -> Unit,
     onMyLikesClick: () -> Unit,
     onFollowersClick: () -> Unit,
@@ -108,7 +111,8 @@ fun HomeScreen(
     snackbarHostState: SnackbarHostState,
     navController: NavController // 添加 navController 参数
 ) {
-    val pagerState = rememberPagerState(pageCount = { 2 })
+    // 修改页面数量为3
+    val pagerState = rememberPagerState(pageCount = { 3 })
 
     LaunchedEffect(Unit) {
         viewModel.setSnackbarHostState(snackbarHostState)
@@ -140,7 +144,7 @@ fun HomeScreen(
                     onRecalculateDays = onRecalculateDays,
                     onAboutClick = onAboutClick,
                     onAccountProfileClick = onAccountProfileClick,
-                    onSineShopLoginClick = onSineShopLoginClick, // 传递新参数
+                    onSineShopLoginClick = onSineShopLoginClick,
                     viewModel = viewModel,
                     snackbarHostState = snackbarHostState
                 )
@@ -154,22 +158,17 @@ fun HomeScreen(
                         userInfo = sineShopUserInfo,
                         modifier = Modifier.fillMaxSize(),
                         onNavigateToResourcePlaza = { mode ->
-                            // 根据模式导航到不同的资源广场
                             when (mode) {
                                 "my_upload" -> {
-                                    // 导航到弦应用商店的我的上传
                                     navController.navigate(ResourcePlaza(isMyResource = true, mode = "my_upload").createRoute())
                                 }
                                 "my_favourite" -> {
-                                    // 导航到弦应用商店的我的收藏
                                     navController.navigate(ResourcePlaza(isMyResource = true, mode = "my_favourite").createRoute())
                                 }
                                 "my_history" -> {
-                                    // 导航到弦应用商店的历史足迹
                                     navController.navigate(ResourcePlaza(isMyResource = true, mode = "my_history").createRoute())
                                 }
                                 else -> {
-                                    // 默认导航到公共资源广场
                                     navController.navigate(ResourcePlaza(false).createRoute())
                                 }
                             }
@@ -182,6 +181,43 @@ fun HomeScreen(
                     )
                 }
             }
+            2 -> {
+                // 新增：灵应用商店个人主页
+                if (lingMarketLoginPrompt) {
+                    LingMarketLoginPrompt(onLingMarketLoginClick = onLingMarketLoginClick)
+                } else {
+                    LingMarketProfileScreen(
+                        userInfo = lingMarketUserInfo,
+                        modifier = Modifier.fillMaxSize(),
+                        navController = navController
+                    )
+                }
+            }
+        }
+    }
+}
+
+// 新增：灵应用商店登录提示
+@Composable
+fun LingMarketLoginPrompt(onLingMarketLoginClick: () -> Unit) {
+    Column(
+        modifier = Modifier.fillMaxSize(),
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Text(
+            text = "您尚未登录灵应用商店，请登录后使用完整功能",
+            style = MaterialTheme.typography.bodyLarge,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            textAlign = TextAlign.Center,
+            modifier = Modifier.padding(bottom = 24.dp)
+        )
+
+        TextButton(
+            onClick = onLingMarketLoginClick,
+            modifier = Modifier.padding(horizontal = 32.dp)
+        ) {
+            Text("立即登录", style = MaterialTheme.typography.bodyLarge)
         }
     }
 }

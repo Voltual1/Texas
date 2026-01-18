@@ -574,6 +574,16 @@ data class LingMarketFileUrlResponse(
         
         return get(url, token)
     }
+    
+    /**
+ * 获取当前登录用户的个人资料
+ */
+suspend fun getUserProfile(): Result<LingMarketBaseResponse<LingMarketUser>> {
+    val token = getToken()
+    val url = "users/profile"
+    
+    return get(url, token)
+}
 
     // 辅助方法：为请求添加Bearer认证
     private fun HttpRequestBuilder.bearerAuth(token: String) {
@@ -633,6 +643,7 @@ suspend fun getFileDownloadUrl(
         suspend fun postCommentReply(appId: String, commentId: String, content: String): Result<LingMarketBaseResponse<LingMarketReply>>
         suspend fun deleteComment(appId: String, commentId: String): Result<DeleteResponse>
         suspend fun getAppComments(appId: String, page: Int, limit: Int): Result<CommentListResponse>
+        suspend fun getUserProfile(): Result<LingMarketBaseResponse<LingMarketUser>>
         suspend fun getFileDownloadUrl(fileKey: String, type: String): Result<LingMarketClient.LingMarketFileUrlResponse>
         suspend fun getCommentReplies(appId: String, commentId: String, page: Int, limit: Int): Result<LingMarketBaseResponse<List<LingMarketReply>>>
     }
@@ -641,6 +652,10 @@ suspend fun getFileDownloadUrl(
         override suspend fun login(username: String, password: String): Result<LingMarketBaseResponse<LoginResponseData>> {
             return this@LingMarketClient.login(username, password)
         }
+        
+        override suspend fun getUserProfile(): Result<LingMarketBaseResponse<LingMarketUser>> {
+        return this@LingMarketClient.getUserProfile()
+    }
 
         override suspend fun getUserDetail(userId: String): Result<LingMarketBaseResponse<LingMarketUser>> {
             return this@LingMarketClient.getUserDetail(userId)
