@@ -296,6 +296,14 @@ fun LingMarketClient.LingMarketUploader.toUnifiedUser(): UnifiedUser {
     )
 }
 
+fun LingMarketClient.LingMarketCategory.toUnifiedCategory(): UnifiedCategory {
+    return UnifiedCategory(
+        id = this.name,           // 使用 name 字段作为 id因为弦和灵的id含义不同
+        name = this.displayName,  // 使用 displayName 作为显示名称
+        icon = this.icon
+    )
+}
+
 fun LingMarketClient.LingMarketUser.toUnifiedUser(): UnifiedUser {
     return UnifiedUser(
         id = this.id,
