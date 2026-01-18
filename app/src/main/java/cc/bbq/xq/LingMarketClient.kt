@@ -239,29 +239,29 @@ data class LingMarketApp(
 
     // 应用版本
     @Serializable
-    data class LingMarketAppVersion(
-        @SerialName("_id") val id: String,
-        val app: String,
-        @SerialName("versionCode") val versionCode: Int,
-        @SerialName("versionName") val versionName: String,
-        @SerialName("apkKey") val apkKey: String,
-        @SerialName("iconKey") val iconKey: String,
-        @SerialName("metaId") val metaId: String,
-        @SerialName("isApks") val isApks: Boolean,
-        @SerialName("supportedLanguages") val supportedLanguages: List<String>,
-        @SerialName("supportedDensities") val supportedDensities: List<String>,
-        val architectures: List<String>,
-        @SerialName("downloadLines") val downloadLines: List<String>,
-        @SerialName("splitContributions") val splitContributions: List<String>,
-        val size: Long,
-        val changelog: String,
-        @SerialName("isActive") val isActive: Boolean,
-        val downloads: Int,
-        @SerialName("createdAt") val createdAt: String,
-        @SerialName("updatedAt") val updatedAt: String,
-        @SerialName("__v") val version: Int = 0,
-        val uploader: String
-    )
+data class LingMarketAppVersion(
+    @SerialName("_id") val id: String,
+    val app: String,
+    @SerialName("versionCode") val versionCode: Int,
+    @SerialName("versionName") val versionName: String,
+    @SerialName("apkKey") val apkKey: String,
+    @SerialName("iconKey") val iconKey: String,
+    @SerialName("metaId") val metaId: String,
+    @SerialName("isApks") val isApks: Boolean? = null, // 改为可空
+    @SerialName("supportedLanguages") val supportedLanguages: List<String>,
+    @SerialName("supportedDensities") val supportedDensities: List<String>,
+    val architectures: List<String>,
+    @SerialName("downloadLines") val downloadLines: List<String>,
+    @SerialName("splitContributions") val splitContributions: List<String>,
+    val size: Long,
+    val changelog: String,
+    @SerialName("isActive") val isActive: Boolean,
+    val downloads: Int,
+    @SerialName("createdAt") val createdAt: String,
+    @SerialName("updatedAt") val updatedAt: String,
+    @SerialName("__v") val version: Int = 0,
+    val uploader: String
+)
 
     // 变体信息
     @Serializable
