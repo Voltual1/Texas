@@ -177,11 +177,6 @@ private suspend fun getLingMarketDownloadUrl(fileKey: String): Result<String> {
         return Result.failure(NotImplementedError("灵应用商店暂不支持删除评论"))
     }
     
-    // 保留原有的 deleteComment 方法（仅 commentId）
-override suspend fun deleteComment(commentId: String): Result<Unit> {
-    return Result.failure(NotImplementedError("灵应用商店删除评论需要appId，请使用 deleteComment(appId: String, commentId: String)"))
-}
-
 // 新增：支持 appId 的评论删除方法
 override suspend fun deleteComment(appId: String, commentId: String): Result<Unit> {
     return try {

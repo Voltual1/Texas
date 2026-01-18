@@ -361,7 +361,12 @@ class XiaoQuRepository(private val apiClient: KtorClient.ApiService) : IAppStore
 
 override suspend fun getMyReviews(page: Int): Result<Pair<List<UnifiedComment>, Int>> {
         return Result.failure(Exception("小趣空间暂不支持获取我的评价功能。"))
-    }
+    }    
+
+override suspend fun deleteComment(appId: String, commentId: String): Result<Unit> {
+    // 对于小趣空间，appId 参数不是必需的，但为了接口一致性，我们实现它
+    return deleteComment(commentId)
+}
     
     // 添加 getMyComments 方法
 override suspend fun getMyComments(page: Int): Result<Pair<List<UnifiedComment>, Int>> {

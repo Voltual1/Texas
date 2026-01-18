@@ -31,7 +31,21 @@ class SineShopRepository : IAppStoreRepository {
         } catch (e: Exception) {
             Result.failure(e)
         }
+    }    
+
+override suspend fun deleteComment(commentId: String): Result<Unit> {
+    return try {
+        SineShopClient.deleteSineShopComment(commentId = commentId.toInt())
+    } catch (e: Exception) {
+        Result.failure(e)
     }
+}
+
+// 添加新的 deleteComment(appId: String, commentId: String) 方法
+override suspend fun deleteComment(appId: String, commentId: String): Result<Unit> {
+    // 对于弦应用商店，appId 参数不是必需的，但为了接口一致性，我们实现它
+    return deleteComment(commentId)
+}
 
     // 恢复原样：使用 tag 参数
     override suspend fun getApps(categoryId: String?, page: Int, userId: String?): Result<Pair<List<UnifiedAppItem>, Int>> {
@@ -162,15 +176,7 @@ override suspend fun deleteReview(reviewId: String): Result<Unit> {
         } catch (e: Exception) {
             Result.failure(e)
         }
-    }
-
-    override suspend fun deleteComment(commentId: String): Result<Unit> {
-        return try {
-            SineShopClient.deleteSineShopComment(commentId = commentId.toInt())
-        } catch (e: Exception) {
-            Result.failure(e)
-        }
-    }
+    }    
     
     override suspend fun toggleFavorite(appId: String, isCurrentlyFavorite: Boolean): Result<Boolean> {
         return Result.failure(UnsupportedOperationException("弦应用商店不支持收藏功能。"))

@@ -29,6 +29,13 @@ override suspend fun getMyComments(page: Int): Result<Pair<List<UnifiedComment>,
     return Result.failure(NotImplementedError("弦开放平台不支持获取我的评论"))
 }
 
+override suspend fun deleteComment(commentId: String): Result<Unit> = Result.failure(Exception("Not supported"))
+
+// 添加新的 deleteComment(appId: String, commentId: String) 方法
+override suspend fun deleteComment(appId: String, commentId: String): Result<Unit> {
+    return Result.failure(Exception("弦开放平台不支持评论功能"))
+}
+
 override suspend fun getMyReviews(page: Int): Result<Pair<List<UnifiedComment>, Int>> {
         return Result.failure(Exception("弦开放平台暂不支持获取我的评价功能。"))
     }
