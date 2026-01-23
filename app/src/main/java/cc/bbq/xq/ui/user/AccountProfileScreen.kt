@@ -225,7 +225,7 @@ fun ProfileFields(
         OutlinedTextField(
             value = deviceName,
             onValueChange = onDeviceNameChange,
-            label = { Text("识别设备名称") },
+            label = { Text("设备名称（仅本地存储不会云同步）") },
             modifier = Modifier.fillMaxWidth(),
             singleLine = true,
             supportingText = { Text("该名称仅用于区分您的不同设备") }
