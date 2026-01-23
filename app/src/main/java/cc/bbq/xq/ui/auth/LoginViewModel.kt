@@ -86,8 +86,8 @@ class LoginViewModel(
                 AppStore.SIENE_SHOP -> loginSineShop()
                 AppStore.SINE_OPEN_MARKET -> loginSineOpenMarket()
                 AppStore.LING_MARKET -> loginLingMarket() // 新增灵应用商店
-                AppStore.LOCAL -> {
-                    _errorMessage.value = "不支持本地登录"
+                else -> {
+                    _errorMessage.value = "不支持登录"
                 }
             }
         } catch (e: Exception) {

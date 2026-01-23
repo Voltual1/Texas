@@ -525,17 +525,8 @@ var showMoreMenu by remember { mutableStateOf(false) }
                                             }
                                         )
                                     }
-                                    AppStore.SIENE_SHOP -> {
-                                        // 弦应用商店：暂不显示特殊选项
-                                    }
-                                    AppStore.SINE_OPEN_MARKET -> {
-                                        // 弦开放市场：无特殊选项
-                                    }
                                     else -> {
                                         // 本地商店：无特殊选项
-                                    }
-                                    AppStore.LING_MARKET -> {
-                                        // 灵应用商店：无特殊选项
                                     }
                                 }
                             }
@@ -743,15 +734,7 @@ if (appDetail.store == AppStore.XIAOQU_SPACE) {
                                 label = "下载次数",
                                 value = "${appDetail.downloadCount} 次"
                             )
-                        }
-                        else -> {
-Text(
-                    text = "⚠️什么都没有(||๐_๐)",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.error,
-                    fontSize = 12.sp,
-                    lineHeight = 14.sp
-                )                        }
+                        }                        
 // 修改 AppDetailContent 函数中的灵应用商店信息显示部分
 AppStore.LING_MARKET -> {
     val raw = appDetail.raw as? LingMarketClient.LingMarketApp
@@ -854,6 +837,14 @@ AppStore.LING_MARKET -> {
         )
     }
 }
+else -> {
+Text(
+                    text = "⚠️什么都没有(||๐_๐)",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.error//,
+//                    fontSize = 12.sp,
+//                    lineHeight = 14.sp
+                )                        }
 }      }
                 }
             }
@@ -1023,16 +1014,7 @@ item {
                                 Spacer(Modifier.width(16.dp))
                                 Text(appDetail.user.displayName, style = MaterialTheme.typography.titleMedium)
                             }
-                        }
-                        else -> {
-                            Text(
-                    text = "⚠什么都没有!﹁_﹂",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.error,
-                    fontSize = 12.sp,
-                    lineHeight = 14.sp
-                )
-                        }
+                        }                        
                         AppStore.LING_MARKET -> {
                             Row(
                                 modifier = Modifier
@@ -1055,6 +1037,15 @@ item {
                                 Spacer(Modifier.width(16.dp))
                                 Text(appDetail.user.displayName, style = MaterialTheme.typography.titleMedium)
                             }
+                        }
+                        else -> {
+                            Text(
+                    text = "⚠什么都没有!﹁_﹂",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.error//,
+//                    fontSize = 12.sp,
+//                    lineHeight = 14.sp
+                )
                         }
                     }
                 }
