@@ -373,7 +373,6 @@ fun LingMarketClient.LingMarketApp.toUnifiedAppDetail(): UnifiedAppDetail {
     )
 }
 
-// LingMarketClient.LingMarketUser 到 UnifiedUserDetail 的映射
 fun LingMarketClient.LingMarketUser.toUnifiedUserDetail(): UnifiedUserDetail {
     return UnifiedUserDetail(
         id = this.id.toLongOrNull() ?: 0L,
