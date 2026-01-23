@@ -17,6 +17,7 @@ import cc.bbq.xq.data.repository.SineOpenMarketRepository // 添加这个导入
 import cc.bbq.xq.data.db.DownloadTaskRepository
 import cc.bbq.xq.ui.auth.LoginViewModel
 import cc.bbq.xq.ui.billing.BillingViewModel
+import org.koin.android.ext.koin.androidContext
 import cc.bbq.xq.ui.community.CommunityViewModel
 import cc.bbq.xq.ui.community.FollowingPostsViewModel
 import cc.bbq.xq.ui.community.HotPostsViewModel

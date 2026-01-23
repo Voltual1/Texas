@@ -9,6 +9,7 @@ import io.ktor.client.request.forms.*
 import io.ktor.http.*
 import io.ktor.utils.io.streams.asInput
 import kotlinx.coroutines.flow.first
+import cc.bbq.xq.AppStore
 import io.ktor.client.call.*
 import java.io.File
 import org.koin.core.annotation.Single
