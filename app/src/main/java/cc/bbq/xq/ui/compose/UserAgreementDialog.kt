@@ -44,13 +44,9 @@ fun UserAgreementDialog(
     val scope = rememberCoroutineScope()
     val agreementDataStore = remember { UserAgreementDataStore(context) }
 
-    // 当前显示的协议索引
     var currentAgreementIndex by remember { mutableStateOf(0) }
-
-    // 协议内容状态
     val agreementContents = remember { mutableStateMapOf<Int, String>() }
 
-    // 协议标题列表
     val agreementTitles = listOf(
         "《OpenQu 用户协议》",
         "《小趣空间用户协议》", 
@@ -58,7 +54,6 @@ fun UserAgreementDialog(
         "《弦-应用商店隐私政策》"
     )
 
-    // 协议资源ID列表
     val agreementResourceIds = listOf(
         R.raw.useragreement,
         R.raw.xiaoquuseragreement,
@@ -66,7 +61,6 @@ fun UserAgreementDialog(
         R.raw.sineprivacypolicy
     )
 
-    // 加载协议内容
     LaunchedEffect(Unit) {
         agreementResourceIds.forEachIndexed { index, resId ->
             val content = withContext(Dispatchers.IO) {
@@ -76,120 +70,164 @@ fun UserAgreementDialog(
         }
     }
 
-    // 动画方向
     var animationForward by remember { mutableStateOf(true) }
 
     Dialog(onDismissRequest = { /* 禁止点击外部取消 */ }) {
         Card(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp),
-            shape = MaterialTheme.shapes.medium
+                // 限制最大高度为屏幕的 85%，防止小屏手机下按钮溢出屏幕
+                .fillMaxHeight(0.85f)
+                .padding(vertical = 24.dp, horizontal = 16.dp),
+            shape = MaterialTheme.shapes.extraLarge // 使用更现代的圆角
         ) {
             Column(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp),
+                    .fillMaxSize()
+                    .padding(20.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
+                // 固定头部：主标题
                 Text(
-                    text = "请阅读并同意以下协议",
+                    text = "服务协议与隐私政策",
                     textAlign = TextAlign.Center,
                     modifier = Modifier.fillMaxWidth(),
-                    style = MaterialTheme.typography.headlineSmall
+                    style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Bold)
                 )
-                Spacer(modifier = Modifier.height(8.dp))
+                
+                Spacer(modifier = Modifier.height(16.dp))
 
-                // 修复：添加动画切换效果
-                AnimatedContent(
-                    targetState = currentAgreementIndex,
-                    transitionSpec = {
-                        materialSharedAxisX(
-                            forward = animationForward,
-                            slideDistance = 30,
-                            durationMillis = 500
-                        )
-                    },
-                    label = "协议切换动画"
-                ) { targetIndex ->
-                    val currentContent = agreementContents[targetIndex] ?: "加载中..."
-                    
-                    Column(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-                        Text(
-                            text = agreementTitles[targetIndex],
-                            textAlign = TextAlign.Center,
-                            modifier = Modifier.fillMaxWidth(),
-                            style = TextStyle(
-                                fontWeight = FontWeight.Bold,
-                                fontSize = 18.sp,
-                                color = MaterialTheme.colorScheme.primary
+                // 弹性区域：包含协议标题和协议文本
+                // 使用 weight(1f) 确保这部分占据剩余空间，当内容过多时内部滚动
+                Box(
+                    modifier = Modifier
+                        .weight(1f) 
+                        .fillMaxWidth()
+                ) {
+                    AnimatedContent(
+                        targetState = currentAgreementIndex,
+                        transitionSpec = {
+                            materialSharedAxisX(
+                                forward = animationForward,
+                                slideDistance = 30,
+                                durationMillis = 400
                             )
-                        )
-
-                        Spacer(modifier = Modifier.height(8.dp))
+                        },
+                        label = "协议切换动画"
+                    ) { targetIndex ->
+                        val currentContent = agreementContents[targetIndex] ?: "正在加载协议内容..."
                         
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(300.dp)
-                        ) {
+                        Column(modifier = Modifier.fillMaxSize()) {
+                            Text(
+                                text = agreementTitles[targetIndex],
+                                textAlign = TextAlign.Center,
+                                modifier = Modifier.fillMaxWidth(),
+                                style = TextStyle(
+                                    fontWeight = FontWeight.SemiBold,
+                                    fontSize = 16.sp,
+                                    color = MaterialTheme.colorScheme.primary
+                                )
+                            )
+
+                            Spacer(modifier = Modifier.height(12.dp))
+                            
+                            // 内部滚动区域
                             val scrollState = rememberScrollState()
+                            // 每次切换协议时重置滚动位置
+                            LaunchedEffect(targetIndex) {
+                                scrollState.scrollTo(0)
+                            }
+
                             MarkDownText(
                                 content = currentContent,
                                 modifier = Modifier
                                     .fillMaxSize()
                                     .verticalScroll(scrollState)
+                                    .padding(bottom = 8.dp)
                             )
                         }
                     }
                 }
 
-                Spacer(modifier = Modifier.height(8.dp))
+                Spacer(modifier = Modifier.height(16.dp))
 
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceAround
-                ) {
-                    if (currentAgreementIndex > 0) {
-                        Button(
-                            onClick = {
-                                animationForward = false
-                                currentAgreementIndex--
-                            },
-                        ) {
-                            Text(text = "上一个")
-                        }
+                // 固定底部：按钮区域
+                // 增加 Divider 分割感，提示上方可滑动
+                Divider(modifier = Modifier.padding(bottom = 12.dp), alpha = 0.1f)
+
+                Column(modifier = Modifier.fillMaxWidth()) {
+    HorizontalDivider(
+        modifier = Modifier.padding(bottom = 16.dp),
+        thickness = 1.dp,
+        color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
+    )
+
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(bottom = 8.dp),
+        horizontalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        // 次要操作：使用 FilledTonalButton，视觉压力较小
+        if (currentAgreementIndex > 0) {
+            FilledTonalButton(
+                onClick = {
+                    animationForward = false
+                    currentAgreementIndex--
+                },
+                modifier = Modifier.weight(1f),
+                shape = MaterialTheme.shapes.medium // M3 默认通常是圆角矩形
+            ) {
+                Text(text = "上一个")
+            }
+        } else {
+            // 如果没有“上一个”，可以放一个占位符或者让“同意”按钮独占
+            // 这里选择让“同意”按钮在第一页也保持比例，或者你可以去掉这部分让同意按钮全宽
+            Spacer(modifier = Modifier.weight(1f))
+        }
+
+        // 主要操作：使用 Filled Button，背景色为 Primary
+        Button(
+            onClick = {
+                scope.launch {
+                    saveAgreementState(agreementDataStore, currentAgreementIndex)
+                    if (currentAgreementIndex < agreementTitles.size - 1) {
+                        animationForward = true
+                        currentAgreementIndex++
                     } else {
-                        Spacer(modifier = Modifier.width(80.dp)) // 占位保持布局平衡
+                        onAgreed()
                     }
-
-                    Button(
-                        onClick = {
-                            scope.launch {
-                                when (currentAgreementIndex) {
-                                    0 -> agreementDataStore.setUserAgreementAccepted(true)
-                                    1 -> agreementDataStore.setXiaoquUserAgreementAccepted(true)
-                                    2 -> agreementDataStore.setSineUserAgreementAccepted(true)
-                                    3 -> agreementDataStore.setSinePrivacyPolicyAccepted(true)
-                                }
-
-                                if (currentAgreementIndex < agreementTitles.size - 1) {
-                                    animationForward = true
-                                    currentAgreementIndex++
-                                } else {
-                                    onAgreed()
-                                }
-                            }
-                        },
-                    ) {
-                        Text(text = if (currentAgreementIndex < agreementTitles.size - 1) "同意并继续" else "同意")
+                }
+            },
+            modifier = Modifier.weight(1f),
+            shape = MaterialTheme.shapes.medium,
+            colors = ButtonDefaults.buttonColors(
+                containerColor = MaterialTheme.colorScheme.primary,
+                contentColor = MaterialTheme.colorScheme.onPrimary
+            )
+        ) {
+            Text(
+                text = if (currentAgreementIndex < agreementTitles.size - 1) "同意并继续" else "确认合规",
+                style = MaterialTheme.typography.labelLarge,
+                maxLines = 1
+            )
+        }
+    }
+}
                     }
                 }
             }
         }
+    }
+}
+
+// 抽离存储逻辑提高可读性
+private suspend fun saveAgreementState(ds: UserAgreementDataStore, index: Int) {
+    when (index) {
+        0 -> ds.setUserAgreementAccepted(true)
+        1 -> ds.setXiaoquUserAgreementAccepted(true)
+        2 -> ds.setSineUserAgreementAccepted(true)
+        3 -> ds.setSinePrivacyPolicyAccepted(true)
     }
 }
 
