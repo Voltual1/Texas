@@ -1,4 +1,3 @@
-// /app/src/main/java/cc/bbq/xq/ui/user/AccountProfileScreen.kt
 package cc.bbq.xq.ui.user
 
 import android.app.Activity
@@ -41,11 +40,11 @@ fun AccountProfileScreen(
 ) {
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
-    
+
     // 观察 ViewModel 状态
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val deviceName by viewModel.deviceName.collectAsStateWithLifecycle()
-    
+
     // 本地 UI 状态
     var nickname by rememberSaveable { mutableStateOf("") }
     var qqNumber by rememberSaveable { mutableStateOf("") }
@@ -55,55 +54,42 @@ fun AccountProfileScreen(
     var localDeviceName by rememberSaveable { mutableStateOf("") }
     var showProgressDialog by rememberSaveable { mutableStateOf(false) }
     var progressMessage by rememberSaveable { mutableStateOf("") }
-    
+
     // 初始化加载
     LaunchedEffect(store) {
         viewModel.loadUserProfile(store)
     }
-    
-    // 更新本地状态当 ViewModel 状态变化时
-LaunchedEffect(uiState, deviceName) {
-    when (val state = uiState) {
-        is UserProfileUiState.Success -> {
+
+    // 更新本地状态
+    LaunchedEffect(uiState, deviceName) {
+        val state = uiState
+        if (state is UserProfileUiState.Success) {
             val userDetail = state.userDetail
             when (state.store) {
                 AppStore.XIAOQU_SPACE -> {
                     nickname = userDetail?.displayName ?: ""
-                    displayName = userDetail?.displayName ?: ""
+                    // QQ号通常不在 userDetail 直接返回，或根据你的 API 结构赋值
                 }
-                AppStore.SIENE_SHOP -> {
-                    displayName = userDetail?.displayName ?: ""
-                    description = userDetail?.description ?: ""
-                }
-                AppStore.LING_MARKET -> {
+                AppStore.SIENE_SHOP, AppStore.LING_MARKET -> {
                     displayName = userDetail?.displayName ?: ""
                     description = userDetail?.description ?: ""
                 }
-                else -> {
-                    // 其他平台不需要设置
-                }
+                else -> {}
             }
         }
-        else -> {
-            // 处理其他状态
-        }
+        localDeviceName = deviceName
     }
-    localDeviceName = deviceName
-}
-    
+
     // 错误处理
     LaunchedEffect(uiState) {
         if (uiState is UserProfileUiState.Error) {
-            val errorState = uiState as UserProfileUiState.Error
-            coroutineScope.launch {
-                snackbarHostState.showSnackbar(
-                    message = errorState.message,
-                    duration = SnackbarDuration.Short
-                )
-            }
+            snackbarHostState.showSnackbar(
+                message = (uiState as UserProfileUiState.Error).message,
+                duration = SnackbarDuration.Short
+            )
         }
     }
-    
+
     Scaffold(
         snackbarHost = { BBQSnackbarHost(snackbarHostState) },
         modifier = modifier.fillMaxSize(),
@@ -115,6 +101,7 @@ LaunchedEffect(uiState, deviceName) {
                 .padding(16.dp)
                 .verticalScroll(rememberScrollState())
         ) {
+            // --- 表单部分 ---
             when (store) {
                 AppStore.XIAOQU_SPACE -> {
                     OutlinedTextField(
@@ -123,9 +110,7 @@ LaunchedEffect(uiState, deviceName) {
                         label = { Text("修改昵称") },
                         modifier = Modifier.fillMaxWidth()
                     )
-
                     Spacer(modifier = Modifier.height(16.dp))
-
                     OutlinedTextField(
                         value = qqNumber,
                         onValueChange = { qqNumber = it },
@@ -133,43 +118,22 @@ LaunchedEffect(uiState, deviceName) {
                         modifier = Modifier.fillMaxWidth()
                     )
                 }
-                AppStore.SIENE_SHOP -> {
+                AppStore.SIENE_SHOP, AppStore.LING_MARKET -> {
                     OutlinedTextField(
                         value = displayName,
                         onValueChange = { displayName = it },
-                        label = { Text("外显名称") },
+                        label = { Text(if (store == AppStore.LING_MARKET) "昵称" else "外显名称") },
                         modifier = Modifier.fillMaxWidth()
                     )
-
                     Spacer(modifier = Modifier.height(16.dp))
-
                     OutlinedTextField(
                         value = description,
                         onValueChange = { description = it },
-                        label = { Text("个人描述") },
+                        label = { Text(if (store == AppStore.LING_MARKET) "个性签名" else "个人描述") },
                         modifier = Modifier.fillMaxWidth()
                     )
                 }
-                AppStore.LING_MARKET -> {
-                    OutlinedTextField(
-                        value = displayName,
-                        onValueChange = { displayName = it },
-                        label = { Text("昵称") },
-                        modifier = Modifier.fillMaxWidth()
-                    )
-
-                    Spacer(modifier = Modifier.height(16.dp))
-
-                    OutlinedTextField(
-                        value = description,
-                        onValueChange = { description = it },
-                        label = { Text("个性签名") },
-                        modifier = Modifier.fillMaxWidth()
-                    )
-                }
-                else -> {
-                    // 其他平台不需要显示输入字段
-                }
+                else -> {}
             }
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -186,35 +150,25 @@ LaunchedEffect(uiState, deviceName) {
             AvatarUploadSection(
                 avatarUri = avatarUri,
                 userDetail = (uiState as? UserProfileUiState.Success)?.userDetail,
-                store = store,
                 onAvatarSelected = { uri ->
+                    avatarUri = uri
                     coroutineScope.launch {
                         uploadAvatar(
                             context = context,
                             uri = uri,
                             store = store,
                             viewModel = viewModel,
-                            onProgress = { message ->
-                                showProgressDialog = true
-                                progressMessage = message
+                            onProgress = { 
+                                progressMessage = it
+                                showProgressDialog = true 
                             },
                             onComplete = {
                                 showProgressDialog = false
-                                coroutineScope.launch {
-                                    snackbarHostState.showSnackbar(
-                                        message = "头像上传成功",
-                                        duration = SnackbarDuration.Short
-                                    )
-                                }
+                                snackbarHostState.showSnackbar("头像上传成功")
                             },
-                            onError = { error ->
+                            onError = { 
                                 showProgressDialog = false
-                                coroutineScope.launch {
-                                    snackbarHostState.showSnackbar(
-                                        message = error,
-                                        duration = SnackbarDuration.Short
-                                    )
-                                }
+                                snackbarHostState.showSnackbar(it)
                             }
                         )
                     }
@@ -223,67 +177,49 @@ LaunchedEffect(uiState, deviceName) {
 
             Spacer(modifier = Modifier.height(24.dp))
 
+            // --- 保存按钮 
             Button(
-    onClick = {
-        val params = when (store) {
-            AppStore.XIAOQU_SPACE -> {
-                UpdateUserProfileParams(
-                    nickname = nickname,
-                    qqNumber = qqNumber,
-                    deviceName = localDeviceName
-                )
-            }
-            AppStore.SIENE_SHOP -> {
-                UpdateUserProfileParams(
-                    displayName = displayName,
-                    description = description,
-                    deviceName = localDeviceName
-                )
-            }
-            AppStore.LING_MARKET -> {
-                UpdateUserProfileParams(
-                    nickname = displayName, // 灵应用商店使用 nickname 字段
-                    description = description, // 灵应用商店的 bio 字段
-                    deviceName = localDeviceName
-                )
-            }
-            else -> {
-                UpdateUserProfileParams(
-                    deviceName = localDeviceName
-                )
-            }
-        }
-        
-        viewModel.updateUserProfile(
-            store = store,
-            params = params,
-            onSuccess = {
-                coroutineScope.launch {
-                    snackbarHostState.showSnackbar(
-                        message = "修改保存成功",
-                        duration = SnackbarDuration.Short
+                onClick = {
+                    val params = when (store) {
+                        AppStore.XIAOQU_SPACE -> UpdateUserProfileParams(
+                            nickname = nickname,
+                            qqNumber = qqNumber,
+                            deviceName = localDeviceName
+                        )
+                        AppStore.SIENE_SHOP -> UpdateUserProfileParams(
+                            displayName = displayName,
+                            description = description,
+                            deviceName = localDeviceName
+                        )
+                        AppStore.LING_MARKET -> UpdateUserProfileParams(
+                            nickname = displayName,
+                            description = description,
+                            deviceName = localDeviceName
+                        )
+                        else -> UpdateUserProfileParams(deviceName = localDeviceName)
+                    }
+
+                    viewModel.updateUserProfile(
+                        store = store,
+                        params = params,
+                        onSuccess = {
+                            coroutineScope.launch { snackbarHostState.showSnackbar("修改保存成功") }
+                        },
+                        onError = { error ->
+                            coroutineScope.launch { snackbarHostState.showSnackbar(error) }
+                        }
                     )
-                }
-            },
-            onError = { error ->
-                coroutineScope.launch {
-                    snackbarHostState.showSnackbar(
-                        message = error,
-                        duration = SnackbarDuration.Short
-                    )
-                }
-            }
-        )
-    },
-    modifier = Modifier.fillMaxWidth(),
-    enabled = uiState !is UserProfileUiState.Loading
-) {
+                },
+                modifier = Modifier.fillMaxWidth(),
+                enabled = uiState !is UserProfileUiState.Loading
+            ) {
+                if (uiState is UserProfileUiState.Loading) {
                     CircularProgressIndicator(
                         modifier = Modifier.size(16.dp),
-                        strokeWidth = 2.dp
+                        strokeWidth = 2.dp,
+                        color = MaterialTheme.colorScheme.onPrimary
                     )
-                } 
-                else -> {
+                } else {
                     Text("保存修改")
                 }
             }
@@ -291,81 +227,67 @@ LaunchedEffect(uiState, deviceName) {
 
         if (showProgressDialog) {
             AlertDialog(
-                onDismissRequest = {},
+                onDismissRequest = { },
                 title = { Text("上传中") },
                 text = { Text(progressMessage) },
                 confirmButton = {}
             )
         }
-    
+    }
 }
 
 @Composable
 fun AvatarUploadSection(
     avatarUri: Uri?,
     userDetail: cc.bbq.xq.data.unified.UnifiedUserDetail?,
-    store: AppStore,
     onAvatarSelected: (Uri) -> Unit
 ) {
     val context = LocalContext.current
     val launcher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.StartActivityForResult()
     ) { result ->
-        if (result.resultCode == Activity.RESULT_OK && result.data != null) {
-            val uri = result.data?.data
-            if (uri != null) {
-                onAvatarSelected(uri)
-            }
+        if (result.resultCode == Activity.RESULT_OK) {
+            result.data?.data?.let { onAvatarSelected(it) }
         }
-    }
-
-    val startImagePicker = {
-        ImagePicker.with(context as Activity)
-            .crop()
-            .compress(1024)
-            .maxResultSize(1080, 1080)
-            .createIntent { intent ->
-                launcher.launch(intent)
-            }
     }
 
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier.fillMaxWidth()
     ) {
-        when {
-            avatarUri != null -> {
+        val painter = when {
+            avatarUri != null -> rememberAsyncImagePainter(avatarUri)
+            !userDetail?.avatarUrl.isNullOrEmpty() -> rememberAsyncImagePainter(userDetail?.avatarUrl)
+            else -> null
+        }
+
+        Box(
+            modifier = Modifier
+                .size(120.dp)
+                .clip(CircleShape),
+            contentAlignment = Alignment.Center
+        ) {
+            if (painter != null) {
                 Image(
-                    painter = rememberAsyncImagePainter(model = avatarUri),
+                    painter = painter,
                     contentDescription = "用户头像",
-                    modifier = Modifier
-                        .size(120.dp)
-                        .clip(CircleShape),
+                    modifier = Modifier.fillMaxSize(),
                     contentScale = ContentScale.Crop
                 )
-            }
-            userDetail?.avatarUrl != null && userDetail.avatarUrl.isNotEmpty() -> {
-                Image(
-                    painter = rememberAsyncImagePainter(model = userDetail.avatarUrl),
-                    contentDescription = "用户头像",
-                    modifier = Modifier
-                        .size(120.dp)
-                        .clip(CircleShape),
-                    contentScale = ContentScale.Crop
-                )
-            }
-            else -> {
-                Icon(
-                    Icons.Filled.Person,
-                    contentDescription = "选择头像",
-                    modifier = Modifier.size(120.dp)
-                )
+            } else {
+                Icon(Icons.Filled.Person, contentDescription = null, modifier = Modifier.size(80.dp))
             }
         }
 
         Spacer(modifier = Modifier.height(8.dp))
 
-        Button(onClick = { startImagePicker() }) {
+        Button(onClick = {
+            ImagePicker.with(context as Activity)
+                .crop()
+                .compress(1024)
+                .maxResultSize(1080, 1080)
+                .createIntent { launcher.launch(it) }
+        }) {
             Text("选择头像")
         }
     }
@@ -376,23 +298,20 @@ suspend fun uploadAvatar(
     uri: Uri,
     store: AppStore,
     viewModel: UserProfileViewModel,
-    onProgress: (String) -> Unit = {},
-    onComplete: () -> Unit = {},
-    onError: (String) -> Unit = {}
+    onProgress: (String) -> Unit,
+    onComplete: () -> Unit,
+    onError: (String) -> Unit
 ) {
     try {
-        onProgress("上传头像中...")
-
+        onProgress("正在获取文件...")
         val realPath = FileUtil.getRealPathFromURI(context, uri)
         if (realPath == null) {
             onError("无法获取图片路径")
             return
         }
-
-        val file = File(realPath)
         viewModel.uploadAvatar(
             store = store,
-            imageFile = file,
+            imageFile = File(realPath),
             onProgress = onProgress,
             onSuccess = onComplete,
             onError = onError
