@@ -153,6 +153,21 @@ private suspend fun getLingMarketDownloadUrl(fileKey: String): Result<String> {
     }
 }
 
+// 新增：获取当前用户详情
+    override suspend fun getCurrentUserDetail(): Result<UnifiedUserDetail> {
+        return Result.failure(NotImplementedError("灵应用商店暂不支持获取用户信息"))
+    }
+    
+    // 新增：更新用户资料
+    override suspend fun updateUserProfile(params: UpdateUserProfileParams): Result<Unit> {
+        return Result.failure(NotImplementedError("灵应用商店暂不支持更新用户资料"))
+    }
+    
+    // 新增：上传头像
+    override suspend fun uploadAvatar(imageBytes: ByteArray, filename: String): Result<String> {
+        return Result.failure(NotImplementedError("灵应用商店暂不支持上传头像"))
+    }
+
     override suspend fun postComment(appId: String, versionId: Long, content: String, parentCommentId: String?, mentionUserId: String?): Result<Unit> {
     return try {
         val result = if (parentCommentId == null) {

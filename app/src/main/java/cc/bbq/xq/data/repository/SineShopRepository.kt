@@ -80,6 +80,62 @@ override suspend fun deleteComment(appId: String, commentId: String): Result<Uni
         }
     }
     
+    // 新增：获取当前用户详情
+    override suspend fun getCurrentUserDetail(): Result<UnifiedUserDetail> {
+        return try {
+            val result = SineShopClient.getUserInfo()
+            result.map { userInfo ->
+                userInfo.toUnifiedUserDetail()
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+    
+    // 新增：更新用户资料
+    override suspend fun updateUserProfile(params: UpdateUserProfileParams): Result<Unit> {
+        return try {
+            if (params.displayName.isNullOrEmpty() && params.description.isNullOrEmpty()) {
+                return Result.success(Unit) // 没有需要更新的字段
+            }
+            
+            val result = SineShopClient.editUserInfo(
+                displayName = params.displayName ?: "",
+                describe = params.description ?: ""
+            )
+            
+            result.map { success ->
+                if (success) {
+                    Unit
+                } else {
+                    throw Exception("用户信息更新失败")
+                }
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+    
+    // 新增：上传头像
+    override suspend fun uploadAvatar(imageBytes: ByteArray, filename: String): Result<String> {
+        return try {
+            val result = SineShopClient.uploadAvatar(
+                imageData = imageBytes,
+                filename = filename
+            )
+            
+            result.map { success ->
+                if (success) {
+                    "上传成功"
+                } else {
+                    throw Exception("头像上传失败")
+                }
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+    
 // 简化后的 getMyComments 方法
 override suspend fun getMyComments(page: Int): Result<Pair<List<UnifiedComment>, Int>> {
     return try {

@@ -20,6 +20,8 @@ import cc.bbq.xq.ui.billing.BillingViewModel
 import cc.bbq.xq.ui.community.CommunityViewModel
 import cc.bbq.xq.ui.community.FollowingPostsViewModel
 import cc.bbq.xq.ui.community.HotPostsViewModel
+import cc.bbq.xq.data.DeviceNameDataStore
+import cc.bbq.xq.ui.user.UserProfileViewModel
 import cc.bbq.xq.ui.community.MyLikesViewModel
 import cc.bbq.xq.ui.payment.PaymentViewModel
 import cc.bbq.xq.ui.user.MyReviewsViewModel
@@ -107,6 +109,11 @@ val appModule = module {
     
     single { SearchHistoryDataStore(androidApplication()) }
     single { StorageSettingsDataStore(androidApplication()) }
+    // 新增 UserProfileViewModel
+    viewModel { UserProfileViewModel(get(), get()) }
+    
+    // 新增 DeviceNameDataStore
+    single { DeviceNameDataStore(androidContext()) }
 
     // Repositories - 修改 DownloadTaskRepository 的定义
     single { XiaoQuRepository(KtorClient.ApiServiceImpl) }

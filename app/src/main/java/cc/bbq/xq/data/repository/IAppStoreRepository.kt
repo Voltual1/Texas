@@ -27,4 +27,7 @@ suspend fun deleteReview(reviewId: String): Result<Unit>
     suspend fun uploadApk(file: File, serviceType: String): Result<String>    
     // 新增：支持 appId 的评论删除方法
     suspend fun deleteComment(appId: String, commentId: String): Result<Unit>
+    suspend fun getCurrentUserDetail(): Result<UnifiedUserDetail>
+    suspend fun updateUserProfile(params: UpdateUserProfileParams): Result<Unit>
+    suspend fun uploadAvatar(imageBytes: ByteArray, filename: String): Result<String>
 }

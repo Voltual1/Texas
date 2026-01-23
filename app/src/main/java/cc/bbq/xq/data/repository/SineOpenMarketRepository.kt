@@ -28,6 +28,21 @@ override suspend fun getMyComments(page: Int): Result<Pair<List<UnifiedComment>,
     return Result.failure(NotImplementedError("弦开放平台不支持获取我的评论"))
 }
 
+// 新增：获取当前用户详情
+    override suspend fun getCurrentUserDetail(): Result<UnifiedUserDetail> {
+        return Result.failure(NotImplementedError("弦开放平台不支持获取用户信息"))
+    }
+    
+    // 新增：更新用户资料
+    override suspend fun updateUserProfile(params: UpdateUserProfileParams): Result<Unit> {
+        return Result.failure(NotImplementedError("弦开放平台不支持更新用户资料"))
+    }
+    
+    // 新增：上传头像
+    override suspend fun uploadAvatar(imageBytes: ByteArray, filename: String): Result<String> {
+        return Result.failure(NotImplementedError("弦开放平台不支持上传头像"))
+    }
+
 override suspend fun deleteComment(commentId: String): Result<Unit> = Result.failure(Exception("Not supported"))
 
 // 添加新的 deleteComment(appId: String, commentId: String) 方法
