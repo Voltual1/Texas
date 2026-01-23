@@ -189,37 +189,27 @@ class HomeViewModel : ViewModel() {
                 return@launch
             }
 
-            // 调用获取用户个人资料的API
-            // 明确指定类型参数
-            val userProfileResult: Result<LingMarketClient.LingMarketBaseResponse<LingMarketClient.LingMarketUser>> = 
-                withContext(Dispatchers.IO) {
-                    LingMarketClient.getUserProfile()
-                }
+            // 调用获取用户个人资料的API - 现在直接返回 LingMarketUser
+            val userProfileResult = withContext(Dispatchers.IO) {
+                LingMarketClient.LingMarketApiServiceImpl.getUserProfile()
+            }
 
-            userProfileResult.onSuccess { response ->
-                // LingMarketBaseResponse 应该有 isSuccess 属性
-                if (response.code == null || response.code == 200) { // 根据实际情况检查成功条件
-                    uiState.value = uiState.value.copy(
-                        lingMarketUserInfo = response.data,
-                        lingMarketLoginPrompt = false
-                    )
-                } else {
-                    // API返回错误，可能需要重新登录
-                    println("Failed to load LingMarket user profile: ${response.msg}")
-                    uiState.value = uiState.value.copy(
-                        lingMarketLoginPrompt = true,
-                        lingMarketUserInfo = null
-                    )
-                }
+            userProfileResult.onSuccess { user ->
+                // 成功获取用户信息
+                uiState.value = uiState.value.copy(
+                    lingMarketUserInfo = user,
+                    lingMarketLoginPrompt = false
+                )
+                println("✅ LingMarket user info loaded: ${user.nickname}")
             }.onFailure { e ->
-                println("Failed to load LingMarket user info: ${e.message}")
+                println("❌ Failed to load LingMarket user info: ${e.message}")
                 uiState.value = uiState.value.copy(
                     lingMarketLoginPrompt = true,
                     lingMarketUserInfo = null
                 )
             }
         } catch (e: Exception) {
-            println("Error loading LingMarket user info: ${e.message}")
+            println("❌ Error loading LingMarket user info: ${e.message}")
             uiState.value = uiState.value.copy(
                 lingMarketLoginPrompt = true,
                 lingMarketUserInfo = null

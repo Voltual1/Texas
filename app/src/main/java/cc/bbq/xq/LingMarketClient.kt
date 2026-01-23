@@ -439,15 +439,19 @@ data class LingMarketFileUrlResponse(
     }
 
     /**
-     * 获取用户详情
-     * 根据请求示例：GET /users/{userId}
-     */
-    suspend fun getUserDetail(userId: String): Result<LingMarketBaseResponse<LingMarketUser>> {
-        val token = getToken()
-        val url = "users/$userId"
-        
-        return get(url, token)
+ * 获取当前登录用户的个人资料
+ * 注意：此API直接返回用户对象，不是LingMarketBaseResponse格式
+ */
+suspend fun getUserProfile(): Result<LingMarketUser> {  // 直接返回 LingMarketUser，不是 LingMarketBaseResponse<LingMarketUser>
+    val token = getToken() ?: return Result.failure(IOException("No token available"))
+    val url = "users/profile"
+    
+    return safeApiCall<LingMarketUser> {  // 明确指定反序列化类型为 LingMarketUser
+        httpClient.get(url) {
+            bearerAuth(token)
+        }
     }
+}
 
     /**
      * 获取应用分类列表
@@ -690,7 +694,7 @@ suspend fun getFileDownloadUrl(
         suspend fun deleteComment(appId: String, commentId: String): Result<DeleteResponse>
         suspend fun getAppComments(appId: String, page: Int, limit: Int): Result<CommentListResponse>
         suspend fun uploadAvatar(imageData: ByteArray, filename: String): Result<AvatarUploadResponse>
-        suspend fun getUserProfile(): Result<LingMarketBaseResponse<LingMarketUser>>
+        suspend fun getUserProfile(): Result<LingMarketUser>  // 修改返回类型
         suspend fun getFileDownloadUrl(fileKey: String, type: String): Result<LingMarketClient.LingMarketFileUrlResponse>
         suspend fun getCommentReplies(appId: String, commentId: String, page: Int, limit: Int): Result<LingMarketBaseResponse<List<LingMarketReply>>>
     }
@@ -700,7 +704,7 @@ suspend fun getFileDownloadUrl(
             return this@LingMarketClient.login(username, password)
         }
         
-        override suspend fun getUserProfile(): Result<LingMarketBaseResponse<LingMarketUser>> {
+        override suspend fun getUserProfile(): Result<LingMarketUser> {
         return this@LingMarketClient.getUserProfile()
     }
     
