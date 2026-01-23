@@ -282,7 +282,8 @@ LaunchedEffect(uiState, deviceName) {
                         modifier = Modifier.size(16.dp),
                         strokeWidth = 2.dp
                     )
-                } else {
+                } 
+                else {
                     Text("保存修改")
                 }
             }
@@ -296,7 +297,7 @@ LaunchedEffect(uiState, deviceName) {
                 confirmButton = {}
             )
         }
-    }
+    
 }
 
 @Composable
