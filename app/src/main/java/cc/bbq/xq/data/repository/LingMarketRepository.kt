@@ -153,19 +153,58 @@ private suspend fun getLingMarketDownloadUrl(fileKey: String): Result<String> {
     }
 }
 
-// 新增：获取当前用户详情
+    
+    // 获取当前用户详情
     override suspend fun getCurrentUserDetail(): Result<UnifiedUserDetail> {
-        return Result.failure(NotImplementedError("灵应用商店暂不支持获取用户信息"))
+        return try {
+            val result = LingMarketClient.getUserProfile()
+            result.map { user ->
+                user.toUnifiedUserDetail()
+            }
+        } catch (e: Exception) {
+            Result.failure(Exception("获取用户信息失败: ${e.message}"))
+        }
     }
     
-    // 新增：更新用户资料
+    // 更新用户资料
     override suspend fun updateUserProfile(params: UpdateUserProfileParams): Result<Unit> {
-        return Result.failure(NotImplementedError("灵应用商店暂不支持更新用户资料"))
+        return try {
+            // 灵应用商店只需要 nickname 和 bio（个性签名）
+            // 注意：我们将 description 映射到 bio
+            val nickname = params.nickname ?: params.displayName ?: ""
+            val bio = params.description
+            
+            if (nickname.isEmpty()) {
+                return Result.failure(Exception("昵称不能为空"))
+            }
+            
+            val result = LingMarketClient.updateUserProfile(nickname, bio)
+            result.map { response ->
+                if (response.isSuccess) {
+                    Unit
+                } else {
+                    throw Exception(response.msg ?: "更新失败")
+                }
+            }
+        } catch (e: Exception) {
+            Result.failure(Exception("更新用户资料失败: ${e.message}"))
+        }
     }
     
-    // 新增：上传头像
+    // 上传头像
     override suspend fun uploadAvatar(imageBytes: ByteArray, filename: String): Result<String> {
-        return Result.failure(NotImplementedError("灵应用商店暂不支持上传头像"))
+        return try {
+            val result = LingMarketClient.uploadAvatar(imageBytes, filename)
+            result.map { response ->
+                if (response.isSuccess) {
+                    response.avatarUrl ?: "上传成功"
+                } else {
+                    throw Exception("头像上传失败: ${response.msg}")
+                }
+            }
+        } catch (e: Exception) {
+            Result.failure(Exception("上传头像失败: ${e.message}"))
+        }
     }
 
     override suspend fun postComment(appId: String, versionId: Long, content: String, parentCommentId: String?, mentionUserId: String?): Result<Unit> {

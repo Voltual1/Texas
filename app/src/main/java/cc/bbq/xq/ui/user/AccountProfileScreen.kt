@@ -62,30 +62,34 @@ fun AccountProfileScreen(
     }
     
     // 更新本地状态当 ViewModel 状态变化时
-    LaunchedEffect(uiState, deviceName) {
-        when (val state = uiState) {
-            is UserProfileUiState.Success -> {
-                val userDetail = state.userDetail
-                when (state.store) {
-                    AppStore.XIAOQU_SPACE -> {
-                        nickname = userDetail?.displayName ?: ""
-                        displayName = userDetail?.displayName ?: ""
-                    }
-                    AppStore.SIENE_SHOP -> {
-                        displayName = userDetail?.displayName ?: ""
-                        description = userDetail?.description ?: ""
-                    }
-                    else -> {
-                        // 其他平台不需要设置
-                    }
+LaunchedEffect(uiState, deviceName) {
+    when (val state = uiState) {
+        is UserProfileUiState.Success -> {
+            val userDetail = state.userDetail
+            when (state.store) {
+                AppStore.XIAOQU_SPACE -> {
+                    nickname = userDetail?.displayName ?: ""
+                    displayName = userDetail?.displayName ?: ""
+                }
+                AppStore.SIENE_SHOP -> {
+                    displayName = userDetail?.displayName ?: ""
+                    description = userDetail?.description ?: ""
+                }
+                AppStore.LING_MARKET -> {
+                    displayName = userDetail?.displayName ?: ""
+                    description = userDetail?.description ?: ""
+                }
+                else -> {
+                    // 其他平台不需要设置
                 }
             }
-            else -> {
-                // 处理其他状态
-            }
         }
-        localDeviceName = deviceName
+        else -> {
+            // 处理其他状态
+        }
     }
+    localDeviceName = deviceName
+}
     
     // 错误处理
     LaunchedEffect(uiState) {
@@ -146,6 +150,23 @@ fun AccountProfileScreen(
                         modifier = Modifier.fillMaxWidth()
                     )
                 }
+                AppStore.LING_MARKET -> {
+                    OutlinedTextField(
+                        value = displayName,
+                        onValueChange = { displayName = it },
+                        label = { Text("昵称") },
+                        modifier = Modifier.fillMaxWidth()
+                    )
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    OutlinedTextField(
+                        value = description,
+                        onValueChange = { description = it },
+                        label = { Text("个性签名") },
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
                 else -> {
                     // 其他平台不需要显示输入字段
                 }
@@ -203,40 +224,60 @@ fun AccountProfileScreen(
             Spacer(modifier = Modifier.height(24.dp))
 
             Button(
-                onClick = {
-                    val params = UpdateUserProfileParams(
-                        nickname = if (store == AppStore.XIAOQU_SPACE) nickname else null,
-                        qqNumber = if (store == AppStore.XIAOQU_SPACE) qqNumber else null,
-                        displayName = if (store == AppStore.SIENE_SHOP) displayName else null,
-                        description = if (store == AppStore.SIENE_SHOP) description else null,
-                        deviceName = localDeviceName
+    onClick = {
+        val params = when (store) {
+            AppStore.XIAOQU_SPACE -> {
+                UpdateUserProfileParams(
+                    nickname = nickname,
+                    qqNumber = qqNumber,
+                    deviceName = localDeviceName
+                )
+            }
+            AppStore.SIENE_SHOP -> {
+                UpdateUserProfileParams(
+                    displayName = displayName,
+                    description = description,
+                    deviceName = localDeviceName
+                )
+            }
+            AppStore.LING_MARKET -> {
+                UpdateUserProfileParams(
+                    nickname = displayName, // 灵应用商店使用 nickname 字段
+                    description = description, // 灵应用商店的 bio 字段
+                    deviceName = localDeviceName
+                )
+            }
+            else -> {
+                UpdateUserProfileParams(
+                    deviceName = localDeviceName
+                )
+            }
+        }
+        
+        viewModel.updateUserProfile(
+            store = store,
+            params = params,
+            onSuccess = {
+                coroutineScope.launch {
+                    snackbarHostState.showSnackbar(
+                        message = "修改保存成功",
+                        duration = SnackbarDuration.Short
                     )
-                    
-                    viewModel.updateUserProfile(
-                        store = store,
-                        params = params,
-                        onSuccess = {
-                            coroutineScope.launch {
-                                snackbarHostState.showSnackbar(
-                                    message = "修改保存成功",
-                                    duration = SnackbarDuration.Short
-                                )
-                            }
-                        },
-                        onError = { error ->
-                            coroutineScope.launch {
-                                snackbarHostState.showSnackbar(
-                                    message = error,
-                                    duration = SnackbarDuration.Short
-                                )
-                            }
-                        }
+                }
+            },
+            onError = { error ->
+                coroutineScope.launch {
+                    snackbarHostState.showSnackbar(
+                        message = error,
+                        duration = SnackbarDuration.Short
                     )
-                },
-                modifier = Modifier.fillMaxWidth(),
-                enabled = uiState !is UserProfileUiState.Loading
-            ) {
-                if (uiState is UserProfileUiState.Loading) {
+                }
+            }
+        )
+    },
+    modifier = Modifier.fillMaxWidth(),
+    enabled = uiState !is UserProfileUiState.Loading
+) {
                     CircularProgressIndicator(
                         modifier = Modifier.size(16.dp),
                         strokeWidth = 2.dp

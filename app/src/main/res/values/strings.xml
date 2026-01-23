@@ -86,6 +86,10 @@
     <string name="user_info_change_failed">用户信息修改失败</string>
     <string name="not_logged_in">请先登录</string>
     <string name="unsupported_platform">不支持的平台</string>
+<string name="ling_market_nickname_hint">昵称</string>
+<string name="ling_market_bio_hint">个性签名</string>
+<string name="ling_market_avatar_upload_success">头像上传成功</string>
+<string name="ling_market_profile_update_success">个人资料更新成功</string>
     
 
     

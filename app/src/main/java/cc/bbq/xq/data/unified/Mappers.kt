@@ -375,6 +375,19 @@ fun LingMarketClient.LingMarketApp.toUnifiedAppDetail(): UnifiedAppDetail {
     )
 }
 
+// LingMarketClient.LingMarketUser 到 UnifiedUserDetail 的映射
+fun LingMarketClient.LingMarketUser.toUnifiedUserDetail(): UnifiedUserDetail {
+    return UnifiedUserDetail(
+        id = this.id.toLongOrNull() ?: 0L,
+        username = this.username,
+        displayName = this.nickname,
+        avatarUrl = this.avatarUrl,
+        description = this.bio,
+        store = AppStore.LING_MARKET,
+        raw = this
+    )
+}
+
 // 添加辅助函数：格式化文件大小
 private fun formatSize(bytes: Int): String {
     return when {

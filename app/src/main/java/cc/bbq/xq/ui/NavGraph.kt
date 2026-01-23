@@ -49,6 +49,7 @@ import cc.bbq.xq.ui.message.MessageCenterScreen
 import cc.bbq.xq.ui.message.MessageViewModel
 import cc.bbq.xq.ui.payment.PaymentCenterScreen
 import cc.bbq.xq.ui.payment.PaymentType
+import cc.bbq.xq.ui.user.UserProfileViewModel
 import cc.bbq.xq.ui.payment.PaymentViewModel
 import cc.bbq.xq.ui.player.PlayerScreen
 import cc.bbq.xq.ui.player.PlayerViewModel

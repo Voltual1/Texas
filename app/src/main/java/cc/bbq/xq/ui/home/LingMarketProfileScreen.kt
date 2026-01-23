@@ -128,7 +128,7 @@ fun LingMarketProfileScreen(
         // 功能列表
         FunctionCard(
             icon = Icons.Filled.Edit,
-            label = "编辑个人资料（没做）",
+            label = "编辑个人资料",
             onClick = { navController.navigate(AccountProfile.createRoute(AppStore.LING_MARKET)) }
         )
     }

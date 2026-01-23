@@ -129,7 +129,8 @@ object LingMarketClient {
         val status: String? = null, // 从请求示例看，用户详情可能没有status
         @SerialName("createdAt") val createdAt: String,
         @SerialName("__v") val version: Int? = 0, // 从请求示例看，用户详情可能没有version
-        @SerialName("avatarUrl") val avatarUrl: String? = null
+        @SerialName("avatarUrl") val avatarUrl: String? = null,
+        val bio: String? = null  // 新增：个性签名字段
     )
 
     // 精简用户信息（用于评论/回复）
@@ -350,6 +351,22 @@ data class LingMarketFileUrlResponse(
     @SerialName("expiresAt") val expiresAt: String
 )
 
+// 添加：更新个人资料请求模型
+@Serializable
+data class UpdateProfileRequest(
+    val nickname: String,
+    val bio: String? = null
+)
+
+// 添加：更新个人资料响应模型  
+@Serializable
+data class UpdateProfileResponse(
+    @SerialName("message") val msg: String,
+    val user: LingMarketUser
+) {
+    val isSuccess: Boolean get() = msg.contains("成功")
+}
+
     // ===== API 方法 =====
 
     /**
@@ -427,6 +444,40 @@ data class LingMarketFileUrlResponse(
             }
         }
     }
+    
+    /**
+ * 更新用户个人资料（昵称和个性签名）
+ */
+suspend fun updateUserProfile(nickname: String, bio: String? = null): Result<UpdateProfileResponse> {
+    val token = getToken() ?: return Result.failure(IOException("No token available"))
+    val url = "users/profile"
+    val requestBody = UpdateProfileRequest(nickname, bio)
+    
+    return safeApiCall<UpdateProfileResponse> {
+        httpClient.put(url) {
+            contentType(ContentType.Application.Json)
+            setBody(requestBody)
+            bearerAuth(token)
+        }
+    }
+}
+
+/**
+ * 发起 PUT 请求（JSON 格式）
+ */
+private suspend inline fun <reified T> putJson(
+    url: String,
+    body: Any? = null,
+    token: String? = null
+): Result<T> {
+    return safeApiCall {
+        httpClient.put(url) {
+            contentType(ContentType.Application.Json)
+            body?.let { setBody(it) }
+            token?.let { bearerAuth(it) }
+        }
+    }
+}
 
     /**
      * 登录灵应用商店
@@ -687,6 +738,8 @@ suspend fun getFileDownloadUrl(
         suspend fun getUserDetail(userId: String): Result<LingMarketBaseResponse<LingMarketUser>>
         suspend fun getCategories(includeInactive: Boolean): Result<List<LingMarketCategory>>
         suspend fun getAppsByCategory(category: String, page: Int, limit: Int): Result<LingMarketAppListResponse>
+        // 新增：更新用户个人资料
+    suspend fun updateUserProfile(nickname: String, bio: String?): Result<UpdateProfileResponse>
         suspend fun getAppDetail(appId: String): Result<LingMarketApp>
         suspend fun searchApps(query: String, page: Int, limit: Int): Result<LingMarketAppListResponse>
         suspend fun getRecentlyUpdatedApps(page: Int, limit: Int): Result<LingMarketAppListResponse>
@@ -752,6 +805,10 @@ suspend fun getFileDownloadUrl(
         override suspend fun getAppComments(appId: String, page: Int, limit: Int): Result<CommentListResponse> {
             return this@LingMarketClient.getAppComments(appId, page, limit)
         }
+        
+        override suspend fun updateUserProfile(nickname: String, bio: String?): Result<UpdateProfileResponse> {
+        return this@LingMarketClient.updateUserProfile(nickname, bio)
+    }
 
         override suspend fun getCommentReplies(appId: String, commentId: String, page: Int, limit: Int): Result<LingMarketBaseResponse<List<LingMarketReply>>> {
             return this@LingMarketClient.getCommentReplies(appId, commentId, page, limit)
