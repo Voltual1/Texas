@@ -437,22 +437,18 @@ data class LingMarketFileUrlResponse(
         
         return postJson(url, requestBody)
     }
-
-    /**
- * 获取当前登录用户的个人资料
- * 注意：此API直接返回用户对象，不是LingMarketBaseResponse格式
- */
-suspend fun getUserProfile(): Result<LingMarketUser> {  // 直接返回 LingMarketUser，不是 LingMarketBaseResponse<LingMarketUser>
-    val token = getToken() ?: return Result.failure(IOException("No token available"))
-    val url = "users/profile"
     
-    return safeApiCall<LingMarketUser> {  // 明确指定反序列化类型为 LingMarketUser
-        httpClient.get(url) {
-            bearerAuth(token)
-        }
+    /**
+     * 获取用户详情
+     * 根据请求示例：GET /users/{userId}
+     */
+    suspend fun getUserDetail(userId: String): Result<LingMarketBaseResponse<LingMarketUser>> {
+        val token = getToken()
+        val url = "users/$userId"
+        
+        return get(url, token)
     }
-}
-
+   
     /**
      * 获取应用分类列表
      */
@@ -629,12 +625,17 @@ suspend fun uploadAvatar(
     
     /**
  * 获取当前登录用户的个人资料
+ * 注意：此API直接返回用户对象，不是LingMarketBaseResponse格式
  */
-suspend fun getUserProfile(): Result<LingMarketBaseResponse<LingMarketUser>> {
-    val token = getToken()
+suspend fun getUserProfile(): Result<LingMarketUser> {  // 直接返回 LingMarketUser，不是 LingMarketBaseResponse<LingMarketUser>
+    val token = getToken() ?: return Result.failure(IOException("No token available"))
     val url = "users/profile"
     
-    return get(url, token)
+    return safeApiCall<LingMarketUser> {  // 明确指定反序列化类型为 LingMarketUser
+        httpClient.get(url) {
+            bearerAuth(token)
+        }
+    }
 }
 
     // 辅助方法：为请求添加Bearer认证
