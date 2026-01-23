@@ -35,6 +35,7 @@ import java.io.File
 fun AccountProfileScreen(
     snackbarHostState: SnackbarHostState,
     store: AppStore,
+        modifier: Modifier = Modifier,
     viewModel: UserProfileViewModel
 ) {
     val context = LocalContext.current
@@ -42,6 +43,7 @@ fun AccountProfileScreen(
     val state by viewModel.uiState.collectAsStateWithLifecycle()
 
     var nickname by remember { mutableStateOf("") }
+var qqNumber by remember { mutableStateOf("") }
     var description by remember { mutableStateOf("") }
     var localDeviceName by remember { mutableStateOf("") }
 
@@ -80,14 +82,16 @@ fun AccountProfileScreen(
             Spacer(Modifier.height(32.dp))
 
             ProfileFields(
-                store = store,
-                nickname = nickname,
-                onNicknameChange = { nickname = it },
-                description = description,
-                onDescriptionChange = { description = it },
-                deviceName = localDeviceName,
-                onDeviceNameChange = { localDeviceName = it }
-            )
+    store = store,
+    nickname = nickname,
+    onNicknameChange = { nickname = it },
+    qqNumber = qqNumber,           // <--- 补上这一行
+    onQqChange = { qqNumber = it }, // <--- 补上这一行
+    description = description,
+    onDescriptionChange = { description = it },
+    deviceName = localDeviceName,
+    onDeviceNameChange = { localDeviceName = it }
+)
 
             Button(
                 onClick = {
