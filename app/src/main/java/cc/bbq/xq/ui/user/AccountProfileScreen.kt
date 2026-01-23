@@ -33,7 +33,6 @@ import java.io.File
 
 @Composable
 fun AccountProfileScreen(
-    modifier: Modifier = Modifier,
     snackbarHostState: SnackbarHostState,
     store: AppStore,
     viewModel: UserProfileViewModel
@@ -42,103 +41,72 @@ fun AccountProfileScreen(
     val coroutineScope = rememberCoroutineScope()
     val state by viewModel.uiState.collectAsStateWithLifecycle()
 
-    // 编辑状态缓存
     var nickname by remember { mutableStateOf("") }
     var description by remember { mutableStateOf("") }
     var localDeviceName by remember { mutableStateOf("") }
-    var qqNumber by remember { mutableStateOf("") }
 
-    // 数据同步：从 ViewModel 状态同步到本地输入框
     LaunchedEffect(state.userDetail, state.deviceName) {
         state.userDetail?.let {
             nickname = it.displayName ?: ""
             description = it.description ?: ""
-            // 如果你的 UnifiedUserDetail 里有 QQ 字段可以赋值给 qqNumber
         }
         localDeviceName = state.deviceName
     }
 
-    // 初始化
     LaunchedEffect(store) {
         viewModel.loadUserProfile(store)
     }
 
     Scaffold(
-        snackbarHost = { BBQSnackbarHost(snackbarHostState) },
-        modifier = modifier.fillMaxSize(),
-    ) { paddingValues ->
-        Column(
-            modifier = Modifier
-                .padding(paddingValues)
-                .fillMaxSize()
-                .padding(horizontal = 20.dp)
-                .verticalScroll(rememberScrollState()),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Spacer(modifier = Modifier.height(24.dp))
-
-            // --- 头像展示与上传 ---
+        snackbarHost = { BBQSnackbarHost(snackbarHostState) }
+    ) { padding ->
+        Column(modifier = Modifier.padding(padding).verticalScroll(rememberScrollState()).padding(20.dp)) {
+            
             AvatarSection(
                 currentUrl = state.userDetail?.avatarUrl,
                 onImageSelected = { uri ->
                     coroutineScope.launch(Dispatchers.IO) {
                         val path = FileUtil.getRealPathFromURI(context, uri)
                         if (path != null) {
-                            viewModel.uploadAvatar(store, File(path)) { error ->
-                                coroutineScope.launch {
-                                    snackbarHostState.showSnackbar(error ?: "头像上传成功")
-                                }
+                            // 修复：这里改为两个参数 (success, msg)
+                            viewModel.uploadAvatar(store, File(path)) { _, msg ->
+                                coroutineScope.launch { snackbarHostState.showSnackbar(msg) }
                             }
                         }
                     }
                 }
             )
 
-            Spacer(modifier = Modifier.height(32.dp))
+            Spacer(Modifier.height(32.dp))
 
-            // --- 动态字段表单 ---
             ProfileFields(
                 store = store,
                 nickname = nickname,
                 onNicknameChange = { nickname = it },
-                qqNumber = qqNumber,
-                onQqChange = { qqNumber = it },
                 description = description,
                 onDescriptionChange = { description = it },
                 deviceName = localDeviceName,
                 onDeviceNameChange = { localDeviceName = it }
             )
 
-            Spacer(modifier = Modifier.height(40.dp))
-
-            // --- 保存按钮 ---
             Button(
                 onClick = {
                     val params = UpdateUserProfileParams(
                         nickname = nickname,
-                        displayName = nickname,
                         description = description,
-                        qqNumber = qqNumber,
                         deviceName = localDeviceName
                     )
-                    viewModel.updateProfile(store, params) { error ->
-                        coroutineScope.launch {
-                            snackbarHostState.showSnackbar(error ?: "个人资料已更新")
-                        }
+                    // 修复：这里改为两个参数 (success, msg)
+                    viewModel.updateProfile(store, params) { _, msg ->
+                        coroutineScope.launch { snackbarHostState.showSnackbar(msg) }
                     }
                 },
-                modifier = Modifier.fillMaxWidth().height(50.dp),
-                shape = MaterialTheme.shapes.medium,
+                modifier = Modifier.fillMaxWidth().padding(top = 32.dp),
                 enabled = !state.isLoading
             ) {
-                if (state.isLoading) {
-                    CircularProgressIndicator(size = 24.dp, color = MaterialTheme.colorScheme.onPrimary)
-                } else {
-                    Text("保存所有修改")
-                }
+                if (state.isLoading) CircularProgressIndicator(Modifier.size(24.dp))
+                else Text("保存修改")
             }
-            
-            Spacer(modifier = Modifier.height(24.dp))
         }
     }
 }
