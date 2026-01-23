@@ -328,3 +328,34 @@ fun AvatarUploadSection(
         }
     }
 }
+
+suspend fun uploadAvatar(
+    context: Context,
+    uri: Uri,
+    store: AppStore,
+    viewModel: UserProfileViewModel,
+    onProgress: (String) -> Unit = {},
+    onComplete: () -> Unit = {},
+    onError: (String) -> Unit = {}
+) {
+    try {
+        onProgress("上传头像中...")
+
+        val realPath = FileUtil.getRealPathFromURI(context, uri)
+        if (realPath == null) {
+            onError("无法获取图片路径")
+            return
+        }
+
+        val file = File(realPath)
+        viewModel.uploadAvatar(
+            store = store,
+            imageFile = file,
+            onProgress = onProgress,
+            onSuccess = onComplete,
+            onError = onError
+        )
+    } catch (e: Exception) {
+        onError("上传错误: ${e.message}")
+    }
+}

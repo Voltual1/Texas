@@ -99,6 +99,8 @@ fun AppNavHost(
 //    val userDetailViewModel: UserDetailViewModel = org.koin.androidx.compose.koinViewModel()
     val myPostsViewModel: MyPostsViewModel = org.koin.androidx.compose.koinViewModel()
     val appDetailViewModel: AppDetailComposeViewModel = org.koin.androidx.compose.koinViewModel()
+    val userProfileViewModel: UserProfileViewModel = koinViewModel()
+   
 
     NavHost(
         navController = navController,
@@ -385,11 +387,12 @@ composable(route = AccountProfile.route, arguments = AccountProfileArgs.argument
         AppStore.valueOf(storeName)
     } catch (e: IllegalArgumentException) {
         AppStore.XIAOQU_SPACE
-    }
+    }    
     
     AccountProfileScreen(
         modifier = Modifier.fillMaxSize(),
         snackbarHostState = snackbarHostState,
+        viewModel = userProfileViewModel,//新增viewmodel
         store = store // 传递 store 参数
     )
 }
