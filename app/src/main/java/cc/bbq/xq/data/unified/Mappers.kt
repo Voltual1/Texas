@@ -284,13 +284,11 @@ fun SineShopClient.SineShopReview.toUnifiedReview(): UnifiedComment {
 
 // 辅助函数：构建完整的图标URL
 private fun buildFullIconUrl(iconKey: String): String {
-    return if (iconKey.startsWith("http")) {
-        // 如果已经是完整URL，直接返回
-        iconKey
-    } else {
-        // 拼接基础URL
-        LingMarketClient.ICON_BASE_URL + iconKey
-    }
+    val baseUrl = LingMarketClient.ICON_BASE_URL.removeSuffix("/")
+    val cleanIconKey = iconKey.removePrefix("/")
+    
+    // 始终拼接，无论输入是什么
+    return "$baseUrl/$cleanIconKey"
 }
 
 fun LingMarketClient.LingMarketUploader.toUnifiedUser(): UnifiedUser {
