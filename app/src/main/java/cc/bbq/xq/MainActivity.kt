@@ -108,7 +108,7 @@ class MainActivity : ComponentActivity() {
                 sineUserAgreementAccepted, 
                 sinePrivacyPolicyAccepted,
                 wysappmarketUserAgreementAccepted,
-                wysappmarketPrivacyPolicyKeyAccepted,
+                wysappmarketPrivacyPolicyAccepted,
                 isAgreementDataLoaded
             ) {
                 // 只有在数据加载完成后才决定是否显示对话框
