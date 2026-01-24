@@ -1,6 +1,7 @@
 package cc.bbq.xq.data.repository
 
 import cc.bbq.xq.WysAppMarketClient
+import cc.bbq.xq.WysAppMarketClient.WysAppListItem
 import cc.bbq.xq.data.unified.*
 import java.io.File
 import kotlin.math.ceil
@@ -75,7 +76,7 @@ class WysAppMarketRepository : IAppStoreRepository {
     // 辅助工具：处理微思特有的客户端分页
     // ==========================================================
 
-    private fun processClientPagination(apps: List<cc.bbq.xq.WysAppItem>, page: Int): Pair<List<UnifiedAppItem>, Int> {
+    private fun processClientPagination(apps: List<WysAppListItem>, page: Int): Pair<List<UnifiedAppItem>, Int> {
         val totalApps = apps.size
         val totalPages = ceil(totalApps.toDouble() / PAGE_SIZE).toInt()
         val startIndex = (page - 1) * PAGE_SIZE
