@@ -142,7 +142,7 @@ object WysAppMarketClient {
         val family: String,
         val uplog: String,
         val upnote: String,
-        val link: String,
+        val link: String?,
         val auditor: Int,
         val username: String,
         val collect: Int,
