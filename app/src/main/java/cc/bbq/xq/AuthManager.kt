@@ -12,6 +12,8 @@ import android.content.Context
 import android.util.Base64
 import androidx.datastore.core.DataStore
 import androidx.datastore.dataStore
+import com.google.crypto.tink.Aead
+import com.google.crypto.tink.getPrimitive 
 import cc.bbq.xq.data.proto.UserCredentials
 import cc.bbq.xq.data.proto.UserCredentialsSerializer
 import com.google.crypto.tink.Aead
@@ -47,8 +49,9 @@ fun initialize(context: Context) {
         .build()
         .keysetHandle
 
-    // 修复处：使用 getPrimitive 的现代替代方案
-    aead = keysetHandle.getPrimitive(Aead::class.java) 
+
+    // 新的推荐写法
+aead = keysetHandle.getPrimitive()
 }
 
     // --- 2. 保存逻辑 (保持原方法签名) ---

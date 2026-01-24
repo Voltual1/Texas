@@ -196,6 +196,9 @@ class AppDetailComposeViewModel(
                 // 弦应用商店分享链接格式：sinemarket://app/{appId}
                 "sinemarket://app/${detail.id}"
             }
+            AppStore.WYSAPPMARKET -> {                
+                "https://apk.wysteam.cn/app/?id=${detail.id}"
+            }            
             else -> null
         }
     }
