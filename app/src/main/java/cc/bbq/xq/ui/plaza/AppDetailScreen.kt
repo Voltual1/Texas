@@ -236,7 +236,7 @@ val shareUrl = "https://apk.wysteam.cn/app/?id=${detail.id}"
                     coroutineScope.launch {
                         snackbarHostState.showSnackbar("已复制分享链接: $shareUrl")
                     }                                    }
-                                    }
+                                    
                 else -> {
                     // 暂不支持分享
                     coroutineScope.launch {
