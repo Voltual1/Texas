@@ -283,15 +283,12 @@ fun SineShopClient.SineShopReview.toUnifiedReview(): UnifiedComment {
 
 // --- LingMarketClient (灵应用商店) Mappers ---
 
-// 辅助函数：构建完整的图标URL
-private fun buildFullIconUrl(iconKey: String): String {
-    val baseUrl = LingMarketClient.ICON_BASE_URL.removeSuffix("/")
+private fun buildLingMarketIconUrl(iconKey: String): String {
+    // 专门为灵应用商店构建图标URL
+    val baseUrl = LingMarketClient.LINGMARKET_ICON_BASE_URL.removeSuffix("/")
     val cleanIconKey = iconKey.removePrefix("/")
-    
-    // 始终拼接，无论输入是什么
     return "$baseUrl/$cleanIconKey"
 }
-
 fun LingMarketClient.LingMarketUploader.toUnifiedUser(): UnifiedUser {
     return UnifiedUser(
         id = this.id,
@@ -331,7 +328,7 @@ fun LingMarketClient.LingMarketAppMinimal.toUnifiedAppItem(): UnifiedAppItem {
         navigationVersionId = this.versionCode.toLong(),
         store = AppStore.LING_MARKET,
         name = this.name,
-        iconUrl = buildFullIconUrl(this.iconKey),
+        iconUrl = buildLingMarketIconUrl(this.iconKey),
         versionName = this.versionName
     )
 }
@@ -355,7 +352,7 @@ fun LingMarketClient.LingMarketApp.toUnifiedAppDetail(): UnifiedAppDetail {
         name = this.name,
         versionCode = this.versionCode.toLong(),
         versionName = this.versionName,
-        iconUrl = buildFullIconUrl(this.iconKey),
+        iconUrl = buildLingMarketIconUrl(this.iconKey),
         type = this.category,
         previews = this.screenshotKeys,
         description = this.description,
@@ -397,6 +394,12 @@ private fun formatSize(bytes: Int): String {
 
 // --- WysAppMarketClient (微思应用商店) Mappers ---
 
+private fun buildWysAppMarketIconUrl(logo: String): String {
+    // 专门为微思应用商店构建图标URL
+    val baseUrl = WysAppMarketClient.WYSAPPMARKET_ICON_BASE_URL.removeSuffix("/")
+    val cleanIconKey = logo.removePrefix("/")
+    return "$baseUrl/$cleanIconKey"
+}
 /**
  * 微思应用商店应用列表项转统一应用项
  */
@@ -407,7 +410,7 @@ fun WysAppMarketClient.WysAppListItem.toUnifiedAppItem(): UnifiedAppItem {
         navigationVersionId = this.verid.toLong(),
         store = AppStore.WYSAPPMARKET,
         name = this.name,
-        iconUrl = this.logo,
+        iconUrl = buildWysAppMarketIconUrl(this.logo),
         versionName = this.version
     )
 }
@@ -450,9 +453,9 @@ fun WysAppMarketClient.WysAppDetail.toUnifiedAppDetail(): UnifiedAppDetail {
         name = this.name,
         versionCode = this.verid.toLong(),
         versionName = this.version,
-        iconUrl = this.logo,
+        iconUrl = buildWysAppMarketIconUrl(this.logo),
         type = this.family, // 使用家族作为类型
-        previews = this.image,
+        previews = buildWysAppMarketIconUrl(this.image),
         description = this.content,
         updateLog = this.uplog,
         developer = this.developer,

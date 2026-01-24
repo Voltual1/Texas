@@ -33,7 +33,8 @@ object WysAppMarketClient {
     private const val RETRY_DELAY = 1000L
     private const val REQUEST_TIMEOUT = 30000L
     private const val CONNECT_TIMEOUT = 30000L
-    private const val SOCKET_TIMEOUT = 30000L   
+    private const val SOCKET_TIMEOUT = 30000L
+    internal const val WYSAPPMARKET_ICON_BASE_URL = "https://image.apk.wysteam.cn/"   
 
     // Ktor HttpClient 实例
     val httpClient = HttpClient(OkHttp) {
@@ -44,6 +45,12 @@ object WysAppMarketClient {
         // 默认请求配置
         client.defaultRequest {
             url(BASE_URL)
+            // 注意：只需指定必要的业务 Header。
+        // 避免手动设置 Content-Type 或 Accept 字符串，建议使用 ContentType 对象                
+        /* * ⚠️ 警示：不要在这里手动添加 "Accept-Encoding: gzip"。
+         * Ktor 的 HttpClient 会根据底层的引擎（如 OkHttp）自动处理压缩。
+         * 手动强制指定会导致 Ktor 无法正确拦截响应流进行自动解压，从而拿到乱码。
+         */
             header(HttpHeaders.Accept, ContentType.Application.Json.toString())
         }
 
@@ -54,6 +61,10 @@ object WysAppMarketClient {
                 isLenient = true
                 explicitNulls = false
             })
+            /*
+         * ContentNegotiation 插件会自动处理 "Accept" 和 "Content-Type" Header。
+         * 除非有特殊的非标 API 要求，否则不要在其他地方手动覆盖这些值。
+         */
         }
 
         // 日志配置
