@@ -54,11 +54,11 @@ class UserAgreementDataStore(context: Context) {
             preferences[PreferencesKeys.sinePrivacyPolicyKey] ?: false
         }
         
-    val wysappmarketUserAgreement: Flow<Boolean> = agreementDataStore.data
+    val wysappmarketUserAgreementFlow: Flow<Boolean> = agreementDataStore.data
         .map { preferences ->
             preferences[PreferencesKeys.wysappmarketUserAgreementKey] ?: false
         }
-    val wysappmarketPrivacyPolicy: Flow<Boolean> = agreementDataStore.data
+    val wysappmarketPrivacyPolicyFlow: Flow<Boolean> = agreementDataStore.data
         .map { preferences ->
             preferences[PreferencesKeys.wysappmarketPrivacyPolicyKey] ?: false
         }

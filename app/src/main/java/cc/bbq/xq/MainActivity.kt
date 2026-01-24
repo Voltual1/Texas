@@ -91,6 +91,8 @@ class MainActivity : ComponentActivity() {
             val xiaoquUserAgreementAccepted by userAgreementDataStore.xiaoquUserAgreementFlow.collectAsState(initial = false)
             val sineUserAgreementAccepted by userAgreementDataStore.sineUserAgreementFlow.collectAsState(initial = false)
             val sinePrivacyPolicyAccepted by userAgreementDataStore.sinePrivacyPolicyFlow.collectAsState(initial = false)
+            val wysappmarketPrivacyPolicyAccepted by userAgreementDataStore.wysappmarketPrivacyPolicyFlow.collectAsState(initial = false)
+            val wysappmarketUserAgreementAccepted by userAgreementDataStore.wysappmarketUserAgreementFlow.collectAsState(initial = false)
 
             // 修复：在 LaunchedEffect 中标记数据已加载
             LaunchedEffect(Unit) {
@@ -105,6 +107,8 @@ class MainActivity : ComponentActivity() {
                 xiaoquUserAgreementAccepted, 
                 sineUserAgreementAccepted, 
                 sinePrivacyPolicyAccepted,
+                wysappmarketUserAgreementAccepted,
+                wysappmarketPrivacyPolicyKeyAccepted,
                 isAgreementDataLoaded
             ) {
                 // 只有在数据加载完成后才决定是否显示对话框
