@@ -100,6 +100,7 @@ class MainActivity : ComponentActivity() {
                 delay(100)
                 isAgreementDataLoaded = true
             }
+            
 
             // 计算是否显示协议对话框
             val showAgreementDialog = remember(
