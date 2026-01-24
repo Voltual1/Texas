@@ -11,6 +11,8 @@ package cc.bbq.xq
 import android.content.Context
 import android.util.Base64
 import androidx.datastore.core.DataStore
+import com.google.crypto.tink.Aead
+import com.google.crypto.tink.RegistryConfiguration
 import androidx.datastore.dataStore
 import cc.bbq.xq.data.proto.UserCredentials
 import cc.bbq.xq.data.proto.UserCredentialsSerializer
@@ -39,17 +41,18 @@ object AuthManager {
 
     // --- 1. 初始化 (必须在 Application 调用) ---
 fun initialize(context: Context) {
-        AeadConfig.register()
-        val keysetHandle = AndroidKeysetManager.Builder()
-            .withSharedPref(context, KEYSET_NAME, PREF_FILE_NAME)
-            .withKeyTemplate(KeyTemplates.get("AES256_GCM"))
-            .withMasterKeyUri(MASTER_KEY_URI)
-            .build()
-            .keysetHandle
+    AeadConfig.register()
+    val keysetHandle = AndroidKeysetManager.Builder()
+        .withSharedPref(context, KEYSET_NAME, PREF_FILE_NAME)
+        .withKeyTemplate(KeyTemplates.get("AES256_GCM"))
+        .withMasterKeyUri(MASTER_KEY_URI)
+        .build()
+        .keysetHandle
 
-        // 核心修正：显式指定泛型类型为 Aead
-        aead = keysetHandle.getPrimitive<Aead>() 
-    }
+    // 使用 RegistryConfiguration.get() 作为第一个参数
+    // 这样可以消除 getPrimitive(Class) 的弃用警告
+    aead = keysetHandle.getPrimitive(RegistryConfiguration.get(), Aead::class.java)
+}
 
     // --- 2. 保存逻辑 (保持原方法签名) ---
     suspend fun saveCredentials(

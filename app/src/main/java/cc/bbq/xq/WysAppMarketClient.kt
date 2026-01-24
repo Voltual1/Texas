@@ -46,8 +46,8 @@ object WysAppMarketClient {
     private const val SOCKET_TIMEOUT = 30000L
     internal const val WYSAPPMARKET_ICON_BASE_URL = "https://image.apk.wysteam.cn/"
 
-    // 默认设备型号（参考Python原型）
-    private const val DEFAULT_DEVICE_MODEL = "V2072A"
+
+    private const val DEFAULT_DEVICE_MODEL = "OpenQu"
     private const val DEFAULT_BUILD_NUMBER = "2131558406"
     
     // Ktor HttpClient 实例
