@@ -1,0 +1,4 @@
+<resources>
+    <color name="icon_transparent">#00000000</color>
+    <color name="icon_almost_transparent">#01000000</color>
+</resources>
