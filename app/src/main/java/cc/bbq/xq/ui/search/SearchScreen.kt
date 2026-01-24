@@ -331,11 +331,18 @@ private fun SearchHeader(
                         "已保存${allUserFilters.size}个用户"
                     }
                     
+                    val contentColor = if (isUserFilterMode) {
+    MaterialTheme.colorScheme.onPrimaryContainer
+} else {
+    MaterialTheme.colorScheme.onSurfaceVariant
+}
+                    
                     AssistChip(
                         onClick = { showFilterMenu = true },
                         label = {
                             Text(
                                 text = chipText,
+                                color = contentColor,
                                 maxLines = 1
                             )
                         },
