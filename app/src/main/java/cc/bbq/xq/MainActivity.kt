@@ -118,7 +118,10 @@ class MainActivity : ComponentActivity() {
                     !(userAgreementAccepted && 
                       xiaoquUserAgreementAccepted && 
                       sineUserAgreementAccepted && 
-                      sinePrivacyPolicyAccepted)
+                      sinePrivacyPolicyAccepted)&&
+                      wysappmarketUserAgreementAccepted&&
+                      wysappmarketPrivacyPolicyAccepted
+
                 }
             }
 
