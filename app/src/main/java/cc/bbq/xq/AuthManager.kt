@@ -19,7 +19,6 @@ import cc.bbq.xq.data.proto.UserCredentialsSerializer
 import com.google.crypto.tink.Aead
 import com.google.crypto.tink.KeyTemplates
 import com.google.crypto.tink.aead.AeadConfig
-import com.google.crypto.tink.getPrimitive 
 import com.google.crypto.tink.integration.android.AndroidKeysetManager
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
@@ -41,18 +40,19 @@ object AuthManager {
 
     // --- 1. 初始化 (必须在 Application 调用) ---
 fun initialize(context: Context) {
-    AeadConfig.register()
-    val keysetHandle = AndroidKeysetManager.Builder()
-        .withSharedPref(context, KEYSET_NAME, PREF_FILE_NAME)
-        .withKeyTemplate(KeyTemplates.get("AES256_GCM"))
-        .withMasterKeyUri(MASTER_KEY_URI)
-        .build()
-        .keysetHandle
+        AeadConfig.register()
+        
+        // Android 下管理 Keyset 的标准做法
+        val keysetHandle = AndroidKeysetManager.Builder()
+            .withSharedPref(context, KEYSET_NAME, PREF_FILE_NAME)
+            .withKeyTemplate(KeyTemplates.get("AES256_GCM"))
+            .withMasterKeyUri(MASTER_KEY_URI)
+            .build()
+            .keysetHandle
 
-    // 使用 RegistryConfiguration.get() 作为第一个参数
-    // 这样可以消除 getPrimitive(Class) 的弃用警告
-    aead = keysetHandle.getPrimitive(RegistryConfiguration.get(), Aead::class.java)
-}
+        //  按照官方示例，传入配置和 class 类型
+        aead = keysetHandle.getPrimitive(RegistryConfiguration.get(), Aead::class.java)
+    }
 
     // --- 2. 保存逻辑 (保持原方法签名) ---
     suspend fun saveCredentials(
