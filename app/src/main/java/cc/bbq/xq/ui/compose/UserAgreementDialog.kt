@@ -2,13 +2,14 @@ package cc.bbq.xq.ui.compose
 
 import androidx.compose.animation.*
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.rememberScrollState // 必须
+import androidx.compose.foundation.verticalScroll     // 必须
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Shape  // 修复：正确的导入
+import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.platform.LocalConfiguration // 建议增加，用于处理屏幕适配
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -16,26 +17,25 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
-import cc.bbq.xq.ui.theme.AppShapes  // 修复：正确的导入
+import cc.bbq.xq.ui.theme.AppShapes
 import cc.bbq.xq.R
 import cc.bbq.xq.data.UserAgreementDataStore
 import cc.bbq.xq.ui.animation.materialSharedAxisX
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.launch // 必须：用于 onClick 中的滚动动画
 import kotlinx.coroutines.withContext
 
 @OptIn(ExperimentalAnimationApi::class)
 @Composable
 fun UserAgreementDialog(
     onDismissRequest: () -> Unit,
-    shape: Shape = AppShapes.medium,  // 使用自定义形状
+    shape: Shape = AppShapes.medium,
     onAgreed: () -> Unit
 ) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     val agreementDataStore = remember { UserAgreementDataStore(context) }
 
-    // 状态管理
     var currentAgreementIndex by remember { mutableStateOf(0) }
     val agreementContents = remember { mutableStateMapOf<Int, String>() }
     var animationForward by remember { mutableStateOf(true) }
@@ -49,7 +49,6 @@ fun UserAgreementDialog(
         AgreementItem("《微思应用商店隐私协议》", R.raw.wysappmarketprivacypolicy)
     )
 
-    // 异步加载
     LaunchedEffect(Unit) {
         agreements.forEachIndexed { index, item ->
             val content = withContext(Dispatchers.IO) {
@@ -60,23 +59,26 @@ fun UserAgreementDialog(
     }
 
     Dialog(
-        onDismissRequest = { /* 强制流程，不可外部点击取消 */ },
-        properties = DialogProperties(usePlatformDefaultWidth = false) // 允许自定义宽度适配
+        onDismissRequest = { /* 强制流程 */ },
+        properties = DialogProperties(usePlatformDefaultWidth = false)
     ) {
         Card(
             modifier = Modifier
-                .fillMaxWidth(0.9f) // 占据屏幕宽度的 90%
-                .fillMaxHeight(0.85f) // 关键优化：限制最大高度，防止按钮溢出屏幕
-                .padding(vertical = 24.dp),
-            shape = shape,  // 使用传入的形状参数
+                .fillMaxWidth(0.9f)
+                .padding(vertical = 24.dp), // 删除了 fillMaxHeight(0.85f)，让卡片随内容自适应
+            shape = shape,
             colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
         ) {
+            // 关键修改：使整个 Column 可滚动，就像 UpdateDialog 一样
+            val mainScrollState = rememberScrollState()
+            
             Column(
                 modifier = Modifier
-                    .fillMaxSize()
+                    .fillMaxWidth()
+                    .verticalScroll(mainScrollState) // 整体滚动，确保按钮不被挤出
                     .padding(24.dp)
             ) {
-                // 1. 头部：总标题
+                // 1. 头部
                 Text(
                     text = "服务协议与隐私政策",
                     style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Bold),
@@ -94,89 +96,81 @@ fun UserAgreementDialog(
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // 2. 中间：内容区域（使用 weight 确保其可弹性缩放）
-                Box(modifier = Modifier.weight(1f).fillMaxWidth()) {
-                    AnimatedContent(
-                        targetState = currentAgreementIndex,
-                        transitionSpec = {
-                            materialSharedAxisX(forward = animationForward, slideDistance = 30)
-                        },
-                        label = "AgreementTransition"
-                    ) { targetIndex ->
-                        Column(modifier = Modifier.fillMaxSize()) {
-                            Text(
-                                text = agreements[targetIndex].title,
-                                style = MaterialTheme.typography.titleMedium.copy(
-                                    color = MaterialTheme.colorScheme.primary,
-                                    fontWeight = FontWeight.SemiBold
-                                ),
-                                modifier = Modifier.fillMaxWidth(),
-                                textAlign = TextAlign.Center
-                            )
+                // 2. 中间：内容区域 (动画切换)
+                AnimatedContent(
+                    targetState = currentAgreementIndex,
+                    transitionSpec = {
+                        materialSharedAxisX(forward = animationForward, slideDistance = 30)
+                    },
+                    label = "AgreementTransition"
+                ) { targetIndex ->
+                    Column(modifier = Modifier.fillMaxWidth()) {
+                        Text(
+                            text = agreements[targetIndex].title,
+                            style = MaterialTheme.typography.titleMedium.copy(
+                                color = MaterialTheme.colorScheme.primary,
+                                fontWeight = FontWeight.SemiBold
+                            ),
+                            modifier = Modifier.fillMaxWidth(),
+                            textAlign = TextAlign.Center
+                        )
 
-                            Spacer(modifier = Modifier.height(12.dp))
+                        Spacer(modifier = Modifier.height(12.dp))
 
-                            val scrollState = rememberScrollState()
-                            // 切换协议时自动回顶
-                            LaunchedEffect(targetIndex) { scrollState.scrollTo(0) }
-
-                            MarkDownText(
-                                content = agreementContents[targetIndex] ?: "正在加载...",
-                                modifier = Modifier
-                                    .fillMaxSize()
-                                    .verticalScroll(scrollState)
-                            )
-                        }
+                        // 注意：这里不再使用独立的 verticalScroll，避免嵌套滚动冲突
+                        MarkDownText(
+                            content = agreementContents[targetIndex] ?: "正在加载...",
+                            modifier = Modifier.fillMaxWidth()
+                        )
                     }
                 }
 
                 // 3. 底部：按钮区域
-                Column(modifier = Modifier.fillMaxWidth()) {
-                    HorizontalDivider(
-                        modifier = Modifier.padding(vertical = 16.dp),
-                        color = MaterialTheme.colorScheme.outlineVariant
-                    )
+                HorizontalDivider(
+                    modifier = Modifier.padding(vertical = 16.dp),
+                    color = MaterialTheme.colorScheme.outlineVariant
+                )
 
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(12.dp)
-                    ) {
-                        // 上一个按钮：使用 Tonal 样式
-                        if (currentAgreementIndex > 0) {
-                            FilledTonalButton(
-                                onClick = {
-                                    animationForward = false
-                                    currentAgreementIndex--
-                                },
-                                modifier = Modifier.weight(1f)
-                            ) {
-                                Text("上一个")
-                            }
-                        } else {
-                            // 第一页时占位，保持右侧按钮比例一致
-                            Spacer(modifier = Modifier.weight(1f))
-                        }
-
-                        // 同意按钮：使用 Filled 样式
-                        Button(
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    if (currentAgreementIndex > 0) {
+                        FilledTonalButton(
                             onClick = {
-                                scope.launch {
-                                    saveAgreement(agreementDataStore, currentAgreementIndex)
-                                    if (currentAgreementIndex < agreements.size - 1) {
-                                        animationForward = true
-                                        currentAgreementIndex++
-                                    } else {
-                                        onAgreed()
-                                    }
-                                }
+                                animationForward = false
+                                currentAgreementIndex--
+                                // 切换协议后自动滚回卡片顶部
+                                scope.launch { mainScrollState.animateScrollTo(0) }
                             },
                             modifier = Modifier.weight(1f)
                         ) {
-                            Text(
-                                text = if (currentAgreementIndex < agreements.size - 1) "同意并继续" else "同意并进入",
-                                maxLines = 1
-                            )
+                            Text("上一个")
                         }
+                    } else {
+                        Spacer(modifier = Modifier.weight(1f))
+                    }
+
+                    Button(
+                        onClick = {
+                            scope.launch {
+                                saveAgreement(agreementDataStore, currentAgreementIndex)
+                                if (currentAgreementIndex < agreements.size - 1) {
+                                    animationForward = true
+                                    currentAgreementIndex++
+                                    // 切换协议后自动滚回卡片顶部
+                                    mainScrollState.animateScrollTo(0)
+                                } else {
+                                    onAgreed()
+                                }
+                            }
+                        },
+                        modifier = Modifier.weight(1f)
+                    ) {
+                        Text(
+                            text = if (currentAgreementIndex < agreements.size - 1) "同意并继续" else "同意并进入",
+                            maxLines = 1
+                        )
                     }
                 }
             }
