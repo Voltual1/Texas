@@ -179,51 +179,7 @@ class AppDetailComposeViewModel(
                 _snackbarEvent.tryEmit("该商店不支持更新功能")
             }
         }
-    }
-
-    
-    // 分享链接
-    fun generateShareLink(): String? {
-        val detail = _appDetail.value ?: return null
-        
-        return when (detail.store) {
-            AppStore.XIAOQU_SPACE -> {
-                // 小趣空间分享链接从 raw 数据获取
-                val raw = detail.raw as? cc.bbq.xq.KtorClient.AppDetail
-                raw?.posturl
-            }
-            AppStore.SIENE_SHOP -> {
-                // 弦应用商店分享链接格式：sinemarket://app/{appId}
-                "sinemarket://app/${detail.id}"
-            }
-            AppStore.WYSAPPMARKET -> {                
-                "https://apk.wysteam.cn/app/?id=${detail.id}"
-            }            
-            else -> null
-        }
-    }
-    
-    // 复制分享链接到剪贴板
-fun copyShareLink(context: Context): Boolean {
-    val link = generateShareLink()
-    return if (!link.isNullOrBlank()) {
-        // 复制到剪贴板
-        val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-        val clip = ClipData.newPlainText("应用分享链接", link)
-        clipboard.setPrimaryClip(clip)
-        
-        // 发送 Snackbar 事件
-        viewModelScope.launch {
-            _snackbarEvent.emit("已复制分享链接")
-        }
-        true
-    } else {
-        viewModelScope.launch {
-            _snackbarEvent.emit("无法生成分享链接")
-        }
-        false
-    }
-}
+    }        
 
     fun refresh() {
         loadData()
