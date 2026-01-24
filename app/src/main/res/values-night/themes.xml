@@ -8,7 +8,6 @@
     </style>
 
     <style name="Theme.BBQ.Main" parent="Theme.Material3.DayNight.NoActionBar">
-        <resources>
         <item name="android:statusBarColor">@android:color/transparent</item>
         <item name="android:navigationBarColor">@android:color/transparent</item>
         <item name="android:windowLightStatusBar">false</item>        
