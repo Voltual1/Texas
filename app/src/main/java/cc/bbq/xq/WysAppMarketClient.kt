@@ -23,6 +23,11 @@ import io.ktor.http.*
 import io.ktor.serialization.kotlinx.json.*
 import kotlinx.coroutines.delay
 import kotlinx.serialization.SerialName
+import kotlinx.serialization.KSerializer
+import kotlinx.serialization.descriptors.SerialDescriptor
+import kotlinx.serialization.encoding.Decoder
+import kotlinx.serialization.encoding.Encoder
+import kotlinx.serialization.json.*
 import java.net.URLEncoder
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
@@ -121,6 +126,7 @@ object WysAppMarketClient {
         @SerialName("devid") val developerId: Int,
         val version: String,
         val logo: String,
+        @Serializable(with = SmartListSerializer::class)
         val image: List<String>? = null,
         @SerialName("sys") val osCompatibility: Int,
         @SerialName("display") val displayCompatibility: Int,
@@ -171,7 +177,30 @@ object WysAppMarketClient {
         // 辅助属性：获取目标Android版本显示名称
         val targetSdkDisplay: String
             get() = AndroidSdkVersion.fromApiLevel(targetSdk).displayName
+    }    
+
+object SmartListSerializer : KSerializer<List<String>> {
+    // 借用 List<String> 的 descriptor
+    override val descriptor: SerialDescriptor = 
+        JsonElement.serializer().descriptor 
+
+    override fun deserialize(decoder: Decoder): List<String> {
+        val input = decoder as? JsonDecoder ?: throw Exception("This serializer only works with JSON")
+        val element = input.decodeJsonElement()
+
+        return when (element) {
+            // 如果是正常的数组: ["url1", "url2"]
+            is JsonArray -> {
+                element.map { it.jsonPrimitive.content }
+            }
+            // 如果是坑爹的对象: {"1": "url1", "2": "url2"}
+            is JsonObject -> {
+                element.values.map { it.jsonPrimitive.content }
+            }
+            else -> emptyList()
+        }
     }
+}
     
     // 下载源响应模型
     @Serializable

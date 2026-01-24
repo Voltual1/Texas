@@ -1086,6 +1086,26 @@ item {
                                 Text(appDetail.user.displayName, style = MaterialTheme.typography.titleMedium)
                             }
                         }
+                        AppStore.WYSAPPMARKET -> {
+    // 微思应用商店显示上传者信息
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(16.dp)
+            .clickable {
+                val userId = appDetail.user.id.toLongOrNull()
+                if (userId != null) {
+                    navController.navigate(UserDetail(userId, appDetail.store).createRoute())
+                }
+            },
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Column {
+            Text(appDetail.user.displayName, style = MaterialTheme.typography.titleMedium)
+            Text("上传者", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        }
+    }
+}
                         else -> {
                             Text(
                     text = "⚠什么都没有!﹁_﹂",
