@@ -54,7 +54,7 @@ fun AboutScreen(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Image(
-            painter = painterResource(R.drawable.xiaoqu),
+            painter = painterResource(R.drawable.fire),
             contentDescription = stringResource(R.string.app_name),
             modifier = Modifier
                 .size(100.dp)
