@@ -30,8 +30,8 @@ class UserAgreementDataStore(context: Context) {
         val xiaoquUserAgreementKey = booleanPreferencesKey("xiaoqu_user_agreement")
         val sineUserAgreementKey = booleanPreferencesKey("sine_user_agreement")
         val sinePrivacyPolicyKey = booleanPreferencesKey("sine_privacy_policy")
-        val wysappmarketUserAgreementKey("wysappmarket_user_agreement")
-        val wysappmarketPrivacyPolicyKey("wysappmarket_privacy_policy")
+        val wysappmarketUserAgreementKey= booleanPreferencesKey("wysappmarket_user_agreement")
+        val wysappmarketPrivacyPolicyKey= booleanPreferencesKey("wysappmarket_privacy_policy")
     }
 
     val userAgreementFlow: Flow<Boolean> = agreementDataStore.data

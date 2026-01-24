@@ -45,7 +45,7 @@ fun UserAgreementDialog(
         AgreementItem("《小趣空间用户协议》", R.raw.xiaoquuseragreement),
         AgreementItem("《弦-应用商店用户协议》", R.raw.sineuseragreement),
         AgreementItem("《弦-应用商店隐私政策》", R.raw.sineprivacypolicy),
-        AgreementItem("《微思应用商店用户协议》", R.raw.wysappmarketuseragreement)
+        AgreementItem("《微思应用商店用户协议》", R.raw.wysappmarketuseragreement),
         AgreementItem("《微思应用商店隐私协议》", R.raw.wysappmarketprivacypolicy)
     )
 
