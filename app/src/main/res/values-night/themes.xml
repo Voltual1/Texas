@@ -8,7 +8,9 @@
     </style>
 
     <style name="Theme.BBQ.Main" parent="Theme.Material3.DayNight.NoActionBar">
-        <item name="android:windowBackground">@color/your_dark_bg_color</item>
-        <item name="android:windowLightStatusBar">false</item>
+        <resources>
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:navigationBarColor">@android:color/transparent</item>
+        <item name="android:windowLightStatusBar">false</item>        
         </style>
 </resources>
