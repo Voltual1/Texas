@@ -569,7 +569,6 @@ fun MainComposeApp(snackbarHostState: SnackbarHostState) {
                     )
                 }
             },
-            // 将 SnackbarHost 替换为 BBQSnackbarHost
             snackbarHost = { BBQSnackbarHost(hostState = snackbarHostState) },
 
             content = { innerPadding ->
