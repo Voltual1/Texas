@@ -446,6 +446,9 @@ fun WysAppMarketClient.WysAppDetail.toUnifiedAppDetail(): UnifiedAppDetail {
         if (keyword.isNotEmpty()) tags.add(keyword.trim())
     }
 
+    // 构建预览图URL列表 - 修正这里
+    val previewsList = this.image?.map { buildWysAppMarketIconUrl(it) }
+
     return UnifiedAppDetail(
         id = this.id.toString(),
         store = AppStore.WYSAPPMARKET,
@@ -455,7 +458,7 @@ fun WysAppMarketClient.WysAppDetail.toUnifiedAppDetail(): UnifiedAppDetail {
         versionName = this.version,
         iconUrl = buildWysAppMarketIconUrl(this.logo),
         type = this.family, // 使用家族作为类型
-        previews = buildWysAppMarketIconUrl(this.image),
+        previews = previewsList, // 修正：传递转换后的列表
         description = this.content,
         updateLog = this.uplog,
         developer = this.developer,
