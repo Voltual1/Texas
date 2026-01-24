@@ -1,7 +1,5 @@
-// /app/src/main/java/cc/bbq/xq/data/repository/SineOpenMarketRepository.kt
 package cc.bbq.xq.data.repository
 
-import cc.bbq.xq.AppStore
 import cc.bbq.xq.OpenMarketSineWorldClient
 import cc.bbq.xq.data.unified.*
 import java.io.File
@@ -10,58 +8,29 @@ import org.koin.core.annotation.Single
 @Single
 class SineOpenMarketRepository : IAppStoreRepository {
 
-    // 弦开放平台不支持这些读操作，返回空或错误
+    // --- 读操作：弦开放平台主要用于发布，此处返回空结果 ---
+    
     override suspend fun getCategories(): Result<List<UnifiedCategory>> = Result.success(emptyList())
-    override suspend fun getApps(categoryId: String?, page: Int, userId: String?): Result<Pair<List<UnifiedAppItem>, Int>> = Result.success(Pair(emptyList(), 0))
-    override suspend fun searchApps(query: String, page: Int, userId: String?): Result<Pair<List<UnifiedAppItem>, Int>> = Result.success(Pair(emptyList(), 0))
-    override suspend fun getAppDetail(appId: String, versionId: Long): Result<UnifiedAppDetail> = Result.failure(Exception("Not supported"))
-    override suspend fun getAppComments(appId: String, versionId: Long, page: Int): Result<Pair<List<UnifiedComment>, Int>> = Result.failure(Exception("Not supported"))
-    override suspend fun postComment(appId: String, versionId: Long, content: String, parentCommentId: String?, mentionUserId: String?): Result<Unit> = Result.failure(Exception("Not supported"))
-    override suspend fun toggleFavorite(appId: String, isCurrentlyFavorite: Boolean): Result<Boolean> = Result.failure(Exception("Not supported"))
-    override suspend fun deleteApp(appId: String, versionId: Long): Result<Unit> = Result.failure(Exception("Not supported"))
-    override suspend fun getAppDownloadSources(appId: String, versionId: Long): Result<List<UnifiedDownloadSource>> = Result.failure(Exception("Not supported"))
-    override suspend fun deleteReview(reviewId: String): Result<Unit> {
-    return Result.failure(Exception("弦开放平台不支持评价功能。"))
-}
-    // 添加 getMyComments 方法
-override suspend fun getMyComments(page: Int): Result<Pair<List<UnifiedComment>, Int>> {
-    return Result.failure(NotImplementedError("弦开放平台不支持获取我的评论"))
-}
-
-// 新增：获取当前用户详情
-    override suspend fun getCurrentUserDetail(): Result<UnifiedUserDetail> {
-        return Result.failure(NotImplementedError("弦开放平台不支持获取用户信息"))
-    }
     
-    // 新增：更新用户资料
-    override suspend fun updateUserProfile(params: UpdateUserProfileParams): Result<Unit> {
-        return Result.failure(NotImplementedError("弦开放平台不支持更新用户资料"))
-    }
+    override suspend fun getApps(categoryId: String?, page: Int, userId: String?): Result<Pair<List<UnifiedAppItem>, Int>> = 
+        Result.success(Pair(emptyList(), 0))
+        
+    override suspend fun searchApps(query: String, page: Int, userId: String?): Result<Pair<List<UnifiedAppItem>, Int>> = 
+        Result.success(Pair(emptyList(), 0))
+
+    // --- 上传操作：该仓库直接返回路径，由 releaseApp 统一处理文件 ---
     
-    // 新增：上传头像
-    override suspend fun uploadAvatar(imageBytes: ByteArray, filename: String): Result<String> {
-        return Result.failure(NotImplementedError("弦开放平台不支持上传头像"))
-    }
-
-override suspend fun deleteComment(commentId: String): Result<Unit> = Result.failure(Exception("Not supported"))
-
-// 添加新的 deleteComment(appId: String, commentId: String) 方法
-override suspend fun deleteComment(appId: String, commentId: String): Result<Unit> {
-    return Result.failure(Exception("弦开放平台不支持评论功能"))
-}
-
-override suspend fun getMyReviews(page: Int): Result<Pair<List<UnifiedComment>, Int>> {
-        return Result.failure(Exception("弦开放平台暂不支持获取我的评价功能。"))
-    }
-    // 不需要单独的图片上传接口，图片随表单一起提交
     override suspend fun uploadImage(file: File, type: String): Result<String> = Result.success(file.absolutePath)
+    
     override suspend fun uploadApk(file: File, serviceType: String): Result<String> = Result.success(file.absolutePath)
+
+    // --- 核心功能：发布应用 ---
 
     override suspend fun releaseApp(params: UnifiedAppReleaseParams): Result<Unit> {
         return try {
-            if (params.iconFile == null) throw Exception("必须提供图标文件")
-            if (params.apkFile == null) throw Exception("必须提供APK文件")
-            if (params.screenshots.isNullOrEmpty()) throw Exception("至少提供一张截图")
+            val iconFile = params.iconFile ?: throw Exception("必须提供图标文件")
+            val apkFile = params.apkFile ?: throw Exception("必须提供APK文件")
+            val screenshots = params.screenshots.takeIf { !it.isNullOrEmpty() } ?: throw Exception("至少提供一张截图")
 
             // 1. 构造预上传信息
             val preUploadInfo = OpenMarketSineWorldClient.AppReleaseInfo(
@@ -82,21 +51,23 @@ override suspend fun getMyReviews(page: Int): Result<Pair<List<UnifiedComment>, 
                 keyword = params.keyword ?: "",
                 appIsWearos = params.isWearOs ?: 0,
                 appAbi = params.abi ?: 0,
-                downloadSize = (params.sizeInMb * 1024 * 1024).toLong(), // MB 转 Byte
-                iconFile = params.iconFile,
-                screenshotFiles = params.screenshots
+                downloadSize = (params.sizeInMb * 1024 * 1024).toLong(),
+                iconFile = iconFile,
+                screenshotFiles = screenshots
             )
 
-            // 2. 执行预上传
+            // 2. 执行预上传并获取 Token
             val preResult = OpenMarketSineWorldClient.preUpload(preUploadInfo).getOrThrow()
-            val uploadToken = preResult.uploadToken
-
+            
             // 3. 上传 APK
-            OpenMarketSineWorldClient.uploadApk(params.apkFile, uploadToken).getOrThrow()
+            OpenMarketSineWorldClient.uploadApk(apkFile, preResult.uploadToken).getOrThrow()
 
             Result.success(Unit)
         } catch (e: Exception) {
             Result.failure(e)
         }
     }
+
+    // 注意：所有的 deleteComment, getAppDetail, toggleFavorite, updateUserProfile 等
+    // 统统删掉了！它们会自动使用 IAppStoreRepository 里的默认“不支持”实现。
 }
