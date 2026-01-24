@@ -25,6 +25,13 @@ import cc.bbq.xq.SineShopClient.SineShopDownloadSource
 import cc.bbq.xq.SineShopClient.SineShopUserInfo
 import cc.bbq.xq.LingMarketClient
 import cc.bbq.xq.WysAppMarketClient
+// 新增导入
+import cc.bbq.xq.AppVersionType
+import cc.bbq.xq.CpuArch
+import cc.bbq.xq.OsCompatibility
+import cc.bbq.xq.DisplayCompatibility
+import cc.bbq.xq.AndroidSdkVersion
+import cc.bbq.xq.AppFamily
 
 // --- KtorClient (小趣空间) Mappers ---
 
@@ -383,15 +390,6 @@ fun LingMarketClient.LingMarketUser.toUnifiedUserDetail(): UnifiedUserDetail {
     )
 }
 
-// 添加辅助函数：格式化文件大小
-private fun formatSize(bytes: Int): String {
-    return when {
-        bytes >= 1024 * 1024 -> String.format("%.2f MB", bytes / (1024.0 * 1024.0))
-        bytes >= 1024 -> String.format("%.2f KB", bytes / 1024.0)
-        else -> "$bytes B"
-    }
-}
-
 // --- WysAppMarketClient (微思应用商店) Mappers ---
 
 private fun buildWysAppMarketIconUrl(logo: String): String {
@@ -400,6 +398,7 @@ private fun buildWysAppMarketIconUrl(logo: String): String {
     val cleanIconKey = logo.removePrefix("/")
     return "$baseUrl/$cleanIconKey"
 }
+
 /**
  * 微思应用商店应用列表项转统一应用项
  */
@@ -417,6 +416,7 @@ fun WysAppMarketClient.WysAppListItem.toUnifiedAppItem(): UnifiedAppItem {
 
 /**
  * 微思应用商店应用详情转统一应用详情
+ * 将魔法数字转换为枚举的显示名称并存储在统一模型中
  */
 fun WysAppMarketClient.WysAppDetail.toUnifiedAppDetail(): UnifiedAppDetail {
     // 格式化文件大小
@@ -446,8 +446,17 @@ fun WysAppMarketClient.WysAppDetail.toUnifiedAppDetail(): UnifiedAppDetail {
         if (keyword.isNotEmpty()) tags.add(keyword.trim())
     }
 
-    // 构建预览图URL列表 - 修正这里
+    // 构建预览图URL列表
     val previewsList = this.image?.map { buildWysAppMarketIconUrl(it) }
+
+    // 使用枚举转换魔法数字
+    val versionType = AppVersionType.fromValue(this.type)
+    val cpuArch = CpuArch.fromValue(this.cpuArch)
+    val osCompatibility = OsCompatibility.fromValue(this.osCompatibility)
+    val displayCompatibility = DisplayCompatibility.fromValue(this.displayCompatibility)
+    val minSdkVersion = AndroidSdkVersion.fromApiLevel(this.minSdk)
+    val targetSdkVersion = AndroidSdkVersion.fromApiLevel(this.targetSdk)
+    val appFamily = AppFamily.fromDisplayName(this.family)
 
     return UnifiedAppDetail(
         id = this.id.toString(),
@@ -457,8 +466,8 @@ fun WysAppMarketClient.WysAppDetail.toUnifiedAppDetail(): UnifiedAppDetail {
         versionCode = this.verid.toLong(),
         versionName = this.version,
         iconUrl = buildWysAppMarketIconUrl(this.logo),
-        type = this.family, // 使用家族作为类型
-        previews = previewsList, // 修正：传递转换后的列表
+        type = appFamily.displayName, // 使用转换后的分类显示名称
+        previews = previewsList,
         description = this.content,
         updateLog = this.uplog,
         developer = this.developer,
@@ -473,9 +482,18 @@ fun WysAppMarketClient.WysAppDetail.toUnifiedAppDetail(): UnifiedAppDetail {
         downloadCount = this.downloadCount,
         isFavorite = false,
         favoriteCount = 0,
-        reviewCount = 0, // 微思应用商店没有评论功能
+        reviewCount = 0,
         downloadUrl = this.link,
-        raw = this
+        raw = this,
+        // 新增的微思应用商店专用字段
+        minsdkDisplay = minSdkVersion.displayName,
+        targetsdkDisplay = targetSdkVersion.displayName,
+        cpuArchDisplay = cpuArch.displayName,
+        osCompatibilityDisplay = osCompatibility.displayName,
+        displayCompatibilityDisplay = displayCompatibility.displayName,
+        watchCount = this.watch,
+        upnote = this.upnote,
+        versionTypeDisplay = versionType.displayName
     )
 }
 
@@ -483,7 +501,6 @@ fun WysAppMarketClient.DownloadSource.toUnifiedDownloadSource(): UnifiedDownload
     return UnifiedDownloadSource(
         name = this.name,
         url = this.url,
-        // 根据类型判断是否为官方线路，这里假设 type=0 是官方线路
         isOfficial = this.type == 0
     )
 }

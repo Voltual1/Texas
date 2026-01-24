@@ -837,6 +837,53 @@ AppStore.LING_MARKET -> {
         )
     }
 }
+AppStore.WYSAPPMARKET -> {
+    // 直接使用 UnifiedAppDetail 中转换好的字段
+    InfoRow(
+        label = "包名",
+        value = appDetail.packageName
+    )
+    InfoRow(
+        label = "版本类型",
+        value = appDetail.versionTypeDisplay
+    )
+    InfoRow(
+        label = "最低版本",
+        value = appDetail.minsdkDisplay
+    )
+    InfoRow(
+        label = "目标版本",
+        value = appDetail.targetsdkDisplay
+    )
+    InfoRow(
+        label = "CPU架构",
+        value = appDetail.cpuArchDisplay
+    )
+    InfoRow(
+        label = "系统兼容",
+        value = appDetail.osCompatibilityDisplay
+    )
+    InfoRow(
+        label = "屏幕兼容",
+        value = appDetail.displayCompatibilityDisplay
+    )
+    InfoRow(
+        label = "浏览次数",
+        value = "${appDetail.watchCount ?: 0}"
+    )
+    InfoRow(
+        label = "下载次数",
+        value = "${appDetail.downloadCount}"
+    )
+    InfoRow(
+        label = "上传时间",
+        value = if (appDetail.uploadTime > 0) formatTimestamp(appDetail.uploadTime) else "未知"
+    )
+    InfoRow(
+        label = "上传留言",
+        value = appDetail.upnote ?: "无"
+    )
+}
 else -> {
 Text(
                     text = "⚠️什么都没有(||๐_๐)",

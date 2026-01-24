@@ -73,7 +73,16 @@ data class UnifiedAppDetail(
     val favoriteCount: Int,
     val reviewCount: Int,
     val downloadUrl: String?, // 直接可用的下载URL
-    val raw: Any
+    val raw: Any,
+    // 新增微思应用商店专用字段
+    val minsdkDisplay: String? = null,
+    val targetsdkDisplay: String? = null,
+    val cpuArchDisplay: String? = null,
+    val osCompatibilityDisplay: String? = null,
+    val displayCompatibilityDisplay: String? = null,
+    val watchCount: Int? = null,
+    val upnote: String? = null,
+    val versionTypeDisplay: String? = null
 )
 
 /**

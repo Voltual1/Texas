@@ -82,12 +82,14 @@ enum class CpuArch(val value: Int, val displayName: String) {
 }
 
 /**
- * 操作系统兼容性（对应详情响应中的 sys 字段）
- * 已知：0 = Android + WearOS全兼容, 1 = 仅 Android
+ * 系统兼容性（对应详情响应中的 sys 字段）
+ * 已知：0 = Android + WearOS全兼容, 1 = 仅 Android, 2 = 仅 WearOS, 3 = Android + WearOS良好
  */
 enum class OsCompatibility(val value: Int, val displayName: String) {
     ANDROID_WEAROS(0, "Android + WearOS全兼容"),
     ANDROID_ONLY(1, "仅 Android"),
+    WEAROS_ONLY(2, "仅 WearOS"),
+    ANDROID_WEAROS_GOOD(3, "Android + WearOS良好"),
     UNKNOWN(-1, "未知");
     
     companion object {
@@ -99,11 +101,12 @@ enum class OsCompatibility(val value: Int, val displayName: String) {
 
 /**
  * 屏幕兼容性（对应详情响应中的 display 字段）
- * 已知：0 = 全兼容, 1 = 仅方屏, 3 = 适配良好
+ * 已知：0 = 全兼容, 1 = 仅方屏, 2 = 仅圆屏, 3 = 适配良好
  */
 enum class DisplayCompatibility(val value: Int, val displayName: String) {
     UNIVERSAL(0, "全兼容"),
     SQUARE_ONLY(1, "仅方屏"),
+    ROUND_ONLY(2, "仅圆屏"),
     WELL_ADAPTED(3, "适配良好"),
     UNKNOWN(-1, "未知");
     
