@@ -111,10 +111,8 @@ val appModule = module {
     
     single { SearchHistoryDataStore(androidApplication()) }
     single { StorageSettingsDataStore(androidApplication()) }
-    // 新增 UserProfileViewModel
     viewModel { UserProfileViewModel(get(), get()) }
     
-    // 新增 DeviceNameDataStore
     single { DeviceNameDataStore(androidContext()) }
 
     // Repositories - 修改 DownloadTaskRepository 的定义
