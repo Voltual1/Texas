@@ -15,6 +15,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
+import cc.bbq.xq.ui.theme.Shape
 import cc.bbq.xq.R
 import cc.bbq.xq.data.UserAgreementDataStore
 import cc.bbq.xq.ui.animation.materialSharedAxisX
@@ -26,6 +27,7 @@ import kotlinx.coroutines.withContext
 @Composable
 fun UserAgreementDialog(
     onDismissRequest: () -> Unit,
+    shape: Shape = AppShapes.medium,
     onAgreed: () -> Unit
 ) {
     val context = LocalContext.current
@@ -56,6 +58,7 @@ fun UserAgreementDialog(
 
     Dialog(
         onDismissRequest = { /* 强制流程，不可外部点击取消 */ },
+        shape = shape,
         properties = DialogProperties(usePlatformDefaultWidth = false) // 允许自定义宽度适配
     ) {
         Card(
