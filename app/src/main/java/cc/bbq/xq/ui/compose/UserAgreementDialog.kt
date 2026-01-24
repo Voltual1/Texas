@@ -8,6 +8,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Shape  // 修复：正确的导入
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -15,7 +16,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
-import cc.bbq.xq.ui.theme.Shape
+import cc.bbq.xq.ui.theme.AppShapes  // 修复：正确的导入
 import cc.bbq.xq.R
 import cc.bbq.xq.data.UserAgreementDataStore
 import cc.bbq.xq.ui.animation.materialSharedAxisX
@@ -27,7 +28,7 @@ import kotlinx.coroutines.withContext
 @Composable
 fun UserAgreementDialog(
     onDismissRequest: () -> Unit,
-    shape: Shape = AppShapes.medium,
+    shape: Shape = AppShapes.medium,  // 使用自定义形状
     onAgreed: () -> Unit
 ) {
     val context = LocalContext.current
@@ -58,7 +59,6 @@ fun UserAgreementDialog(
 
     Dialog(
         onDismissRequest = { /* 强制流程，不可外部点击取消 */ },
-        shape = shape,
         properties = DialogProperties(usePlatformDefaultWidth = false) // 允许自定义宽度适配
     ) {
         Card(
@@ -66,7 +66,7 @@ fun UserAgreementDialog(
                 .fillMaxWidth(0.9f) // 占据屏幕宽度的 90%
                 .fillMaxHeight(0.85f) // 关键优化：限制最大高度，防止按钮溢出屏幕
                 .padding(vertical = 24.dp),
-            shape = MaterialTheme.shapes.extraLarge,
+            shape = shape,  // 使用传入的形状参数
             colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
         ) {
             Column(
