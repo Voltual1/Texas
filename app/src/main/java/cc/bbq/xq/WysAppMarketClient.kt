@@ -1,12 +1,11 @@
-//Copyright (C) 2025 Voltual
+// Copyright (C) 2025 Voltual
 // 本程序是自由软件：你可以根据自由软件基金会发布的 GNU 通用公共许可证第3版
 //（或任意更新的版本）的条款重新分发和/或修改它。
-//本程序是基于希望它有用而分发的，但没有任何担保；甚至没有适销性或特定用途适用性的隐含担保。
+// 本程序是基于希望它有用而分发的，但没有任何担保；甚至没有适销性或特定用途适用性的隐含担保。
 // 有关更多细节，请参阅 GNU 通用公共许可证。
 //
 // 你应该已经收到了一份 GNU 通用公共许可证的副本
 // 如果没有，请查阅 <http://www.gnu.org/licenses/>. 
-
 
 @file:OptIn(kotlinx.serialization.ExperimentalSerializationApi::class)
 
@@ -27,6 +26,8 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import java.io.IOException
+import java.security.MessageDigest
+import java.util.*
 
 object WysAppMarketClient {
     private const val BASE_URL = "https://api.wysteam.cn"
@@ -35,8 +36,12 @@ object WysAppMarketClient {
     private const val REQUEST_TIMEOUT = 30000L
     private const val CONNECT_TIMEOUT = 30000L
     private const val SOCKET_TIMEOUT = 30000L
-    internal const val WYSAPPMARKET_ICON_BASE_URL = "https://image.apk.wysteam.cn/"   
+    internal const val WYSAPPMARKET_ICON_BASE_URL = "https://image.apk.wysteam.cn/"
 
+    // 默认设备型号（参考Python原型）
+    private const val DEFAULT_DEVICE_MODEL = "V2072A"
+    private const val DEFAULT_BUILD_NUMBER = "2131558406"
+    
     // Ktor HttpClient 实例
     val httpClient = HttpClient(OkHttp) {
         initConfig(this)
@@ -46,12 +51,6 @@ object WysAppMarketClient {
         // 默认请求配置
         client.defaultRequest {
             url(BASE_URL)
-            // 注意：只需指定必要的业务 Header。
-        // 避免手动设置 Content-Type 或 Accept 字符串，建议使用 ContentType 对象                
-        /* * ⚠️ 警示：不要在这里手动添加 "Accept-Encoding: gzip"。
-         * Ktor 的 HttpClient 会根据底层的引擎（如 OkHttp）自动处理压缩。
-         * 手动强制指定会导致 Ktor 无法正确拦截响应流进行自动解压，从而拿到乱码。
-         */
             header(HttpHeaders.Accept, ContentType.Application.Json.toString())
         }
 
@@ -62,10 +61,6 @@ object WysAppMarketClient {
                 isLenient = true
                 explicitNulls = false
             })
-            /*
-         * ContentNegotiation 插件会自动处理 "Accept" 和 "Content-Type" Header。
-         * 除非有特殊的非标 API 要求，否则不要在其他地方手动覆盖这些值。
-         */
         }
 
         // 日志配置
@@ -176,6 +171,34 @@ object WysAppMarketClient {
         val targetSdkDisplay: String
             get() = AndroidSdkVersion.fromApiLevel(targetSdk).displayName
     }
+    
+    // 下载源响应模型
+    @Serializable
+    data class DownloadSourceResponse(
+        val code: Int,
+        val id: String,
+        val sha256: String,
+        val data: List<DownloadSource>
+    ) {
+        val isSuccess: Boolean get() = code == ApiResponseCode.SUCCESS.code
+    }
+    
+    // 下载源项目
+    @Serializable
+    data class DownloadSource(
+        @SerialName("t") val type: Int,
+        @SerialName("u") val url: String,
+        @SerialName("n") val name: String
+    )
+    
+    // StartKey 响应模型
+    @Serializable
+    data class StartKeyResponse(
+        val code: Int,
+        @SerialName("startkey") val startKey: String?
+    ) {
+        val isSuccess: Boolean get() = code == ApiResponseCode.SUCCESS.code && startKey != null
+    }
 
     /**
      * 安全地执行 Ktor 请求，并处理异常和重试
@@ -237,7 +260,182 @@ object WysAppMarketClient {
         httpClient.close()
     }
 
-    // ===== API 方法 =====
+    // ===== 工具函数 =====
+    
+    /**
+     * 计算 SHA-256 哈希值
+     */
+    private fun sha256(input: String): String {
+        return try {
+            val digest = MessageDigest.getInstance("SHA-256")
+            val hashBytes = digest.digest(input.toByteArray(Charsets.UTF_8))
+            hashBytes.joinToString("") { "%02x".format(it) }
+        } catch (e: Exception) {
+            ""
+        }
+    }
+    
+    /**
+     * 获取当前时间戳（秒）
+     */
+    private fun getCurrentTimestamp(): Long {
+        return System.currentTimeMillis() / 1000
+    }
+    
+    /**
+     * URL 编码参数（参考Python原型）
+     */
+    private fun urlEncode(value: String): String {
+        return try {
+            URLEncoder.encode(value, "UTF-8")
+        } catch (e: Exception) {
+            value
+        }
+    }
+    
+    /**
+     * 构建签名（参考Python原型）
+     */
+    private fun buildSignature(timestamp: Long, vararg parts: String): String {
+        val raw = parts.joinToString("")
+        return sha256(raw)
+    }
+
+    // ===== 下载相关 API 方法 =====
+    
+    /**
+     * 获取 StartKey（参考Python原型的 get_startkey 方法）
+     * @param deviceModel 设备型号，默认为 V2072A
+     * @param buildNumber 构建号，默认为 2131558406
+     */
+    suspend fun getStartKey(
+        deviceModel: String = DEFAULT_DEVICE_MODEL,
+        buildNumber: String = DEFAULT_BUILD_NUMBER
+    ): Result<String> {
+        val timestamp = getCurrentTimestamp()
+        
+        // 构建签名：WYS + timestamp + APP + buildNumber + STORE + deviceModel
+        val signature = buildSignature(
+            timestamp, 
+            "WYS", 
+            timestamp.toString(), 
+            "APP${buildNumber}STORE", 
+            deviceModel
+        )
+        
+        // 构建URL（注意：|= 不编码）
+        val encodedDevice = urlEncode(deviceModel)
+        val url = "$BASE_URL/market/start/" +
+                  "?build=$buildNumber" +
+                  "&device=$encodedDevice" +
+                  "&_=$timestamp" +
+                  "&os=ce" +
+                  "&|=$signature"
+        
+        println("获取 StartKey URL: $url")
+        
+        return safeApiCall<StartKeyResponse> {
+            httpClient.get(url) {
+                header(HttpHeaders.UserAgent, "WysAppMarket/3.0 (Android; WearOS)")
+            }
+        }.map { response ->
+            if (response.isSuccess) {
+                response.startKey ?: throw IOException("StartKey为空")
+            } else {
+                throw IOException("获取StartKey失败，code: ${response.code}")
+            }
+        }
+    }
+    
+    /**
+     * 获取应用下载链接（参考Python原型的 get_download_links 方法）
+     * @param appId 应用ID
+     * @param startKey StartKey，如果为空则自动获取
+     * @param deviceModel 设备型号，用于自动获取StartKey时使用
+     */
+    suspend fun getDownloadSources(
+        appId: Int,
+        startKey: String? = null,
+        deviceModel: String = DEFAULT_DEVICE_MODEL
+    ): Result<DownloadSourceResponse> {
+        // 获取或使用提供的StartKey
+        val finalStartKey = if (startKey != null) {
+            startKey
+        } else {
+            // 自动获取StartKey
+            val startKeyResult = getStartKey(deviceModel)
+            if (startKeyResult.isSuccess) {
+                startKeyResult.getOrNull() ?: return Result.failure(
+                    IOException("无法获取StartKey")
+                )
+            } else {
+                return Result.failure(
+                    startKeyResult.exceptionOrNull() ?: IOException("获取StartKey失败")
+                )
+            }
+        }
+        
+        val timestamp = getCurrentTimestamp()
+        
+        // 构建签名：WYS + timestamp + APP0STORE + appId + " KEY=" + startKey
+        val signature = buildSignature(
+            timestamp,
+            "WYS",
+            timestamp.toString(),
+            "APP0STORE",
+            appId.toString(),
+            " KEY=",
+            finalStartKey
+        )
+        
+        // 构建URL
+        val encodedStartKey = urlEncode(finalStartKey)
+        val url = "$BASE_URL/market/app/down/" +
+                  "?|=$signature" +
+                  "&id=$appId" +
+                  "&token=0" +
+                  "&market=$encodedStartKey" +
+                  "&_=$timestamp"
+        
+        println("获取下载源 URL: $url")
+        
+        return safeApiCall<DownloadSourceResponse> {
+            httpClient.get(url) {
+                header(HttpHeaders.UserAgent, "WysAppMarket/3.0 (Android; WearOS)")
+            }
+        }.map { response ->
+            if (response.isSuccess) {
+                response
+            } else {
+                throw IOException("获取下载源失败，code: ${response.code}")
+            }
+        }
+    }
+    
+    /**
+     * 快速获取下载链接（简化版）
+     * @param appId 应用ID
+     * @param lineIndex 线路索引，默认为0（极速线路）
+     */
+    suspend fun getDownloadUrl(
+        appId: Int,
+        lineIndex: Int = 0
+    ): Result<String> {
+        return getDownloadSources(appId).map { response ->
+            val sources = response.data
+            if (sources.isEmpty()) {
+                throw IOException("没有可用的下载源")
+            }
+            
+            if (lineIndex >= 0 && lineIndex < sources.size) {
+                sources[lineIndex].url
+            } else {
+                sources.first().url
+            }
+        }
+    }
+
+    // ===== 原有的 API 方法 =====
     
     /**
      * 搜索应用
