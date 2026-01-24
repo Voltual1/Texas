@@ -182,6 +182,15 @@ object LingMarketClient {
         @SerialName("createdAt") val createdAt: String,
         @SerialName("__v") val version: Int = 0
     )
+    
+    @Serializable
+data class LingMarketAppVersionMinimal(
+    @SerialName("_id") val id: String,
+    @SerialName("versionCode") val versionCode: Int,
+    @SerialName("versionName") val versionName: String,
+    @SerialName("uploadedAt") val uploadedAt: String,
+    val downloads: Int = 0
+)
 
     // 应用信息
     @Serializable
@@ -219,7 +228,8 @@ data class LingMarketApp(
     @SerialName("createdAt") val createdAt: String,
     @SerialName("updatedAt") val updatedAt: String,
     @SerialName("__v") val version: Int = 0,
-    val versions: List<LingMarketAppVersion> = emptyList(),
+    // 修改为使用简化版本
+    val versions: List<LingMarketAppVersionMinimal> = emptyList(),
     val variants: List<LingMarketVariant> = emptyList(),
     val changelog: String? = null
 )
