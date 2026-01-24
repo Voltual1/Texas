@@ -5,7 +5,8 @@
 // 有关更多细节，请参阅 GNU 通用公共许可证。
 //
 // 你应该已经收到了一份 GNU 通用公共许可证的副本
-// 如果没有，请查阅 <http://www.gnu.org/licenses/>.
+// 如果没有，请查阅 <http://www.gnu.org/licenses/>. 
+
 
 @file:OptIn(kotlinx.serialization.ExperimentalSerializationApi::class)
 
