@@ -99,8 +99,7 @@ class MainActivity : ComponentActivity() {
                 // 等待一小段时间确保 DataStore 状态已加载
                 delay(100)
                 isAgreementDataLoaded = true
-            }
-            
+            }            
 
             // 计算是否显示协议对话框
             val showAgreementDialog = remember(
