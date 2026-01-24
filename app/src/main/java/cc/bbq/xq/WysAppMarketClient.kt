@@ -180,25 +180,33 @@ object WysAppMarketClient {
     }    
 
 object SmartListSerializer : KSerializer<List<String>> {
-    // 借用 List<String> 的 descriptor
-    override val descriptor: SerialDescriptor = 
-        JsonElement.serializer().descriptor 
+    // 使用内置的 ListSerializer 描述符，这样最标准
+    override val descriptor: SerialDescriptor = ListSerializer(String.serializer()).descriptor
 
     override fun deserialize(decoder: Decoder): List<String> {
-        val input = decoder as? JsonDecoder ?: throw Exception("This serializer only works with JSON")
+        val input = decoder as? JsonDecoder ?: throw Exception("只能在 JSON 格式下使用此解析器")
         val element = input.decodeJsonElement()
 
         return when (element) {
-            // 如果是正常的数组: ["url1", "url2"]
+            // 兼容数组: ["url1", "url2"]
             is JsonArray -> {
                 element.map { it.jsonPrimitive.content }
             }
-            // 如果是坑爹的对象: {"1": "url1", "2": "url2"}
+            // 兼容对象: {"1": "url1", "2": "url2"}
             is JsonObject -> {
                 element.values.map { it.jsonPrimitive.content }
             }
+            // 兜底：如果是 null 或其他类型
             else -> emptyList()
         }
+    }
+
+    // 关键修正：确保签名完全匹配 List<String>
+    override fun serialize(encoder: Encoder, value: List<String>) {
+        // 直接序列化为数组格式，保持数据规范化
+        val jsonEncoder = encoder as? JsonEncoder ?: throw Exception("只能在 JSON 格式下序列化")
+        val array = JsonArray(value.map { JsonPrimitive(it) })
+        jsonEncoder.encodeJsonElement(array)
     }
 }
     
