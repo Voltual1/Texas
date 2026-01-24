@@ -1,11 +1,11 @@
-# 小趣空间第三方客户端 (OpenQu)
+# 小趣空间第三方客户端 (浊燃)
 
 ![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)
 ![Kotlin](https://img.shields.io/badge/Kotlin-2.2.21-7F52FF.svg?logo=kotlin)
 ![Jetpack Compose](https://img.shields.io/badge/Jetpack%20Compose-Latest-4285F4.svg?logo=jetpackcompose)
 ![Android](https://img.shields.io/badge/Android-35-3DDC84.svg?logo=android)
 
-**小趣空间第三方客户端 (OpenQu)** 是对原 iApp 版本 "小趣空间" 的一次彻底的现代化重构。本项目旨在利用当前主流的 Android 开发技术栈，为用户提供一个更流畅、更美观、功能更完善的社区和资源分享平台。
+**小趣空间第三方客户端 (浊燃)** 是对原 iApp 版本 "小趣空间" 的一次彻底的现代化重构。本项目旨在利用当前主流的 Android 开发技术栈，为用户提供一个更流畅、更美观、功能更完善的社区和资源分享平台。
 
 项目完全开源，遵循 **GNU General Public License v3.0** 协议。所有数据和资源均来源于官方平台 `app.xiaoqu.online`，本项目仅作为其第三方客户端。
 
