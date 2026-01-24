@@ -33,27 +33,18 @@ object WysAppMarketClient {
     private const val RETRY_DELAY = 1000L
     private const val REQUEST_TIMEOUT = 30000L
     private const val CONNECT_TIMEOUT = 30000L
-    private const val SOCKET_TIMEOUT = 30000L
-    
-    // 用户代理信息 - 从请求示例中提取
-    private const val USER_AGENT = "WysAppMarket/3.0 (Android; WearOS)"
+    private const val SOCKET_TIMEOUT = 30000L   
 
     // Ktor HttpClient 实例
     val httpClient = HttpClient(OkHttp) {
         initConfig(this)
-        defaultRequest {
-            header(HttpHeaders.UserAgent, USER_AGENT)
-            header(HttpHeaders.Accept, "application/json")
-            header(HttpHeaders.AcceptEncoding, "gzip")
-        }
     }
 
     private fun initConfig(client: HttpClientConfig<OkHttpConfig>) {
         // 默认请求配置
         client.defaultRequest {
             url(BASE_URL)
-            header(HttpHeaders.Accept, "application/json")
-            header(HttpHeaders.UserAgent, USER_AGENT)
+            header(HttpHeaders.Accept, ContentType.Application.Json.toString())
         }
 
         // JSON 序列化配置
