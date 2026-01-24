@@ -11,7 +11,6 @@ package cc.bbq.xq
 import android.content.Context
 import android.util.Base64
 import androidx.datastore.core.DataStore
-import com.google.crypto.tink.Aead
 import com.google.crypto.tink.RegistryConfiguration
 import androidx.datastore.dataStore
 import cc.bbq.xq.data.proto.UserCredentials
