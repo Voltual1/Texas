@@ -47,7 +47,7 @@ object WysAppMarketClient {
     internal const val WYSAPPMARKET_ICON_BASE_URL = "https://image.apk.wysteam.cn/"
 
 
-    private const val DEFAULT_DEVICE_MODEL = "OpenQu"
+    private const val DEFAULT_DEVICE_MODEL = "浊燃"
     private const val DEFAULT_BUILD_NUMBER = "2131558406"
     
     // Ktor HttpClient 实例

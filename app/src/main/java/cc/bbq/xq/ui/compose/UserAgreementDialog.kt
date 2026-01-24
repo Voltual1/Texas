@@ -41,7 +41,7 @@ fun UserAgreementDialog(
     var animationForward by remember { mutableStateOf(true) }
 
     val agreements = listOf(
-        AgreementItem("《OpenQu 用户协议》", R.raw.useragreement),
+        AgreementItem("《浊燃 用户协议》", R.raw.useragreement),
         AgreementItem("《小趣空间用户协议》", R.raw.xiaoquuseragreement),
         AgreementItem("《弦-应用商店用户协议》", R.raw.sineuseragreement),
         AgreementItem("《弦-应用商店隐私政策》", R.raw.sineprivacypolicy),
