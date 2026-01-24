@@ -18,6 +18,7 @@ import cc.bbq.xq.data.db.DownloadTaskRepository
 import cc.bbq.xq.ui.auth.LoginViewModel
 import cc.bbq.xq.ui.billing.BillingViewModel
 import org.koin.android.ext.koin.androidContext
+import cc.bbq.xq.data.repository.WysAppMarketRepository
 import cc.bbq.xq.ui.community.CommunityViewModel
 import cc.bbq.xq.ui.community.FollowingPostsViewModel
 import cc.bbq.xq.ui.community.HotPostsViewModel
@@ -121,16 +122,18 @@ val appModule = module {
     single { SineShopRepository() }
     single { SineOpenMarketRepository() } // 添加 SINE_OPEN_MARKET 的仓库
     single { DownloadTaskRepository(get()) }  // 这里会自动使用上面定义的 DownloadTaskDao
+    single { WysAppMarketRepository() }
     
     single { LingMarketRepository() } // 新增灵应用商店
     
     // 修正：显式指定 Map 的类型参数
     single<Map<AppStore, IAppStoreRepository>> {
-        val map = mutableMapOf<AppStore, IAppStoreRepository>()
-        map[AppStore.XIAOQU_SPACE] = get<XiaoQuRepository>()
-        map[AppStore.SIENE_SHOP] = get<SineShopRepository>()
-        map[AppStore.SINE_OPEN_MARKET] = get<SineOpenMarketRepository>()
-        map[AppStore.LING_MARKET] = get<LingMarketRepository>()
-        map
-    }
+    val map = mutableMapOf<AppStore, IAppStoreRepository>()
+    map[AppStore.XIAOQU_SPACE] = get<XiaoQuRepository>()
+    map[AppStore.SIENE_SHOP] = get<SineShopRepository>()
+    map[AppStore.SINE_OPEN_MARKET] = get<SineOpenMarketRepository>()
+    map[AppStore.LING_MARKET] = get<LingMarketRepository>()
+    map[AppStore.WYSAPPMARKET] = get<WysAppMarketRepository>() // 新增
+    map
+}
 }

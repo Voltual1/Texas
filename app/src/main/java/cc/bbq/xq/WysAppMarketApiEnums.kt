@@ -132,20 +132,50 @@ enum class ApiResponseCode(val code: Int, val message: String) {
 
 /**
  * 应用分类/家族（对应详情响应中的 family 字段）
- * 已知："游戏娱乐"，可能还有更多...
+ * 所有已知分类：
+ * "应用商店" "其它软件" "人工智能" "社交互动" "游戏娱乐" "视听娱乐"
+ * "生活服务" "旅行交通" "金融购物" "工具效率" "学习教育" "图书阅读"
+ * "摄影摄像" "系统优化" "个性主题" "进阶搞机"
  */
 enum class AppFamily(val displayName: String) {
+    // 以下是所有已知分类
+    APP_STORE("应用商店"),
+    OTHER_SOFTWARE("其它软件"),
+    ARTIFICIAL_INTELLIGENCE("人工智能"),
+    SOCIAL_INTERACTION("社交互动"),
     GAME_ENTERTAINMENT("游戏娱乐"),
-    TOOLS("工具"),
-    SOCIAL("社交"),
-    MEDIA("影音图像"),
-    EDUCATION("教育"),
-    FINANCE("金融理财"),
+    AUDIO_VISUAL_ENTERTAINMENT("视听娱乐"),
+    LIFE_SERVICES("生活服务"),
+    TRAVEL_TRANSPORTATION("旅行交通"),
+    FINANCE_SHOPPING("金融购物"),
+    TOOL_EFFICIENCY("工具效率"),
+    STUDY_EDUCATION("学习教育"),
+    BOOK_READING("图书阅读"),
+    PHOTOGRAPHY_CAMERA("摄影摄像"),
+    SYSTEM_OPTIMIZATION("系统优化"),
+    PERSONAL_THEME("个性主题"),
+    ADVANCED_TECHNOLOGY("进阶搞机"),
+    
+    // 未知分类放在最后
     UNKNOWN("未知分类");
     
     companion object {
         fun fromDisplayName(name: String): AppFamily {
             return values().firstOrNull { it.displayName == name } ?: UNKNOWN
+        }
+        
+        /**
+         * 获取所有有效的分类（排除未知分类）
+         */
+        fun getAllValidCategories(): List<AppFamily> {
+            return values().filter { it != UNKNOWN }
+        }
+        
+        /**
+         * 获取所有分类的显示名称
+         */
+        fun getAllDisplayNames(): List<String> {
+            return getAllValidCategories().map { it.displayName }
         }
     }
 }

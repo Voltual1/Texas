@@ -24,6 +24,7 @@ import cc.bbq.xq.SineShopClient.AppTag
 import cc.bbq.xq.SineShopClient.SineShopDownloadSource
 import cc.bbq.xq.SineShopClient.SineShopUserInfo
 import cc.bbq.xq.LingMarketClient
+import cc.bbq.xq.WysAppMarketClient
 
 // --- KtorClient (小趣空间) Mappers ---
 
@@ -392,4 +393,82 @@ private fun formatSize(bytes: Int): String {
         bytes >= 1024 -> String.format("%.2f KB", bytes / 1024.0)
         else -> "$bytes B"
     }
+}
+
+// --- WysAppMarketClient (微思应用商店) Mappers ---
+
+/**
+ * 微思应用商店应用列表项转统一应用项
+ */
+fun WysAppMarketClient.WysAppListItem.toUnifiedAppItem(): UnifiedAppItem {
+    return UnifiedAppItem(
+        uniqueId = "${AppStore.WYSAPPMARKET}-${this.id}-${this.verid}",
+        navigationId = this.id.toString(),
+        navigationVersionId = this.verid.toLong(),
+        store = AppStore.WYSAPPMARKET,
+        name = this.name,
+        iconUrl = this.logo,
+        versionName = this.version
+    )
+}
+
+/**
+ * 微思应用商店应用详情转统一应用详情
+ */
+fun WysAppMarketClient.WysAppDetail.toUnifiedAppDetail(): UnifiedAppDetail {
+    // 格式化文件大小
+    val formattedSize = if (this.size > 0) {
+        when {
+            this.size >= 1024 * 1024 * 1024 -> String.format("%.2f GB", this.size / (1024.0 * 1024.0 * 1024.0))
+            this.size >= 1024 * 1024 -> String.format("%.2f MB", this.size / (1024.0 * 1024.0))
+            this.size >= 1024 -> String.format("%.2f KB", this.size / 1024.0)
+            else -> "${this.size} B"
+        }
+    } else {
+        "未知大小"
+    }
+
+    // 转换更新时间戳
+    val uploadTime = try {
+        // 尝试解析时间字符串，如果失败则使用当前时间
+        this.uptime.toLongOrNull() ?: 0L
+    } catch (e: Exception) {
+        0L
+    }
+
+    // 构建应用标签/分类
+    val tags = mutableListOf<String>()
+    if (this.family.isNotEmpty()) tags.add(this.family)
+    this.keywords.split(",").forEach { keyword ->
+        if (keyword.isNotEmpty()) tags.add(keyword.trim())
+    }
+
+    return UnifiedAppDetail(
+        id = this.id.toString(),
+        store = AppStore.WYSAPPMARKET,
+        packageName = this.pack,
+        name = this.name,
+        versionCode = this.verid.toLong(),
+        versionName = this.version,
+        iconUrl = this.logo,
+        type = this.family, // 使用家族作为类型
+        previews = this.image,
+        description = this.content,
+        updateLog = this.uplog,
+        developer = this.developer,
+        size = formattedSize,
+        uploadTime = uploadTime,
+        user = UnifiedUser(
+            id = this.userId.toString(),
+            displayName = this.username ?: "未知用户",
+            avatarUrl = null
+        ),
+        tags = tags,
+        downloadCount = this.downloadCount,
+        isFavorite = false,
+        favoriteCount = 0,
+        reviewCount = 0, // 微思应用商店没有评论功能
+        downloadUrl = this.link,
+        raw = this
+    )
 }
