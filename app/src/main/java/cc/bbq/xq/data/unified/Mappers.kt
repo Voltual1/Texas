@@ -478,3 +478,12 @@ fun WysAppMarketClient.WysAppDetail.toUnifiedAppDetail(): UnifiedAppDetail {
         raw = this
     )
 }
+
+fun WysAppMarketClient.DownloadSource.toUnifiedDownloadSource(): UnifiedDownloadSource {
+    return UnifiedDownloadSource(
+        name = this.name,
+        url = this.url,
+        // 根据类型判断是否为官方线路，这里假设 type=0 是官方线路
+        isOfficial = this.type == 0
+    )
+}

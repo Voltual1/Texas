@@ -65,12 +65,25 @@ class WysAppMarketRepository : IAppStoreRepository {
         WysAppMarketClient.getAppInfo(appId.toInt()).map { it.toUnifiedAppDetail() }
     } catch (e: Exception) { Result.failure(e) }
 
-    override suspend fun getAppDownloadSources(appId: String, versionId: Long): Result<List<UnifiedDownloadSource>> = 
-        getAppDetail(appId, versionId).map { detail ->
-            detail.downloadUrl?.let { url ->
-                listOf(UnifiedDownloadSource(name = "官方下载源", url = url, isOfficial = true))
-            } ?: emptyList()
+    override suspend fun getAppDownloadSources(appId: String, versionId: Long): Result<List<UnifiedDownloadSource>> = try {
+        // 将字符串类型的 appId 转换为 Int
+        val appIdInt = appId.toIntOrNull() ?: return Result.failure(IllegalArgumentException("无效的应用ID: $appId"))
+        
+        // 调用 WysAppMarketClient 的 getDownloadSources 方法获取真正的下载源
+        WysAppMarketClient.getDownloadSources(appIdInt).map { response ->
+            // 将每个下载源转换为 UnifiedDownloadSource
+            response.data.map { downloadSource ->
+                UnifiedDownloadSource(
+                    name = downloadSource.name,
+                    url = downloadSource.url,
+                    // 根据类型判断是否为官方线路，type=0 是官方线路
+                    isOfficial = downloadSource.type == 0
+                )
+            }
         }
+    } catch (e: Exception) {
+        Result.failure(e)
+    }
 
     // ==========================================================
     // 辅助工具：处理微思特有的客户端分页
@@ -91,5 +104,5 @@ class WysAppMarketRepository : IAppStoreRepository {
     }
 
     // 所有的评论、用户中心、发布、上传、删除、收藏等操作
-    // 已经全部删除，自动继承接口的“不支持”Result.failure。
+    // 已经全部删除，自动继承接口的"不支持"Result.failure。
 }
