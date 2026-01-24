@@ -44,7 +44,9 @@ fun UserAgreementDialog(
         AgreementItem("《OpenQu 用户协议》", R.raw.useragreement),
         AgreementItem("《小趣空间用户协议》", R.raw.xiaoquuseragreement),
         AgreementItem("《弦-应用商店用户协议》", R.raw.sineuseragreement),
-        AgreementItem("《弦-应用商店隐私政策》", R.raw.sineprivacypolicy)
+        AgreementItem("《弦-应用商店隐私政策》", R.raw.sineprivacypolicy),
+        AgreementItem("《微思应用商店用户协议》", R.raw.wysappmarketuseragreement)
+        AgreementItem("《微思应用商店隐私协议》", R.raw.wysappmarketprivacypolicy)
     )
 
     // 异步加载
@@ -201,5 +203,7 @@ private suspend fun saveAgreement(ds: UserAgreementDataStore, index: Int) {
         1 -> ds.setXiaoquUserAgreementAccepted(true)
         2 -> ds.setSineUserAgreementAccepted(true)
         3 -> ds.setSinePrivacyPolicyAccepted(true)
+        4 -> ds.setWysAppMarketUserAgreementAccepted(true)
+        5 -> ds.setWysAppMarketPrivacyPolicyAccepted(true)
     }
 }
