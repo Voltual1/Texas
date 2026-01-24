@@ -5,6 +5,7 @@ import cc.bbq.xq.LingMarketClient
 import cc.bbq.xq.data.unified.*
 import java.io.File
 import org.koin.core.annotation.Single
+import kotlinx.coroutines.runBlocking
 
 @Single
 class LingMarketRepository : IAppStoreRepository {
@@ -32,7 +33,8 @@ class LingMarketRepository : IAppStoreRepository {
                 UnifiedCategory("hahaha", "整活搞怪"), UnifiedCategory("xposed", "xposed 模块"),
                 UnifiedCategory("Uncategorized", "未分类")
             )
-        }
+        }.getOrThrow()
+        .let { Result.success(it) }
     } catch (e: Exception) { Result.failure(e) }
 
     override suspend fun getApps(categoryId: String?, page: Int, userId: String?): Result<Pair<List<UnifiedAppItem>, Int>> = try {
@@ -41,22 +43,30 @@ class LingMarketRepository : IAppStoreRepository {
         } else {
             LingMarketClient.getAppsByCategory(categoryId, page, 20)
         }
-        call.map { res -> Pair(res.apps.map { it.toUnifiedAppItem() }, res.pagination.pages) }
+        call.map { res -> Pair(res.apps.map { it.toUnifiedAppItem() }, res.pagination.pages) }.getOrThrow()
+            .let { Result.success(it) }
     } catch (e: Exception) { Result.failure(e) }
 
     override suspend fun searchApps(query: String, page: Int, userId: String?): Result<Pair<List<UnifiedAppItem>, Int>> = try {
         LingMarketClient.searchApps(query, page, 20).map { res ->
             Pair(res.apps.map { it.toUnifiedAppItem() }, res.pagination.pages)
-        }
+        }.getOrThrow()
+            .let { Result.success(it) }
     } catch (e: Exception) { Result.failure(e) }
 
     override suspend fun getAppDetail(appId: String, versionId: Long): Result<UnifiedAppDetail> = try {
         LingMarketClient.getAppDetail(appId).map { detail ->
             val unified = detail.toUnifiedAppDetail()
             // 灵商店特有逻辑：通过 apkKey 换取真实的下载 URL
-            val directUrl = LingMarketClient.getFileDownloadUrl(detail.apkKey).getOrNull()?.url
-            if (directUrl != null) unified.copy(downloadUrl = directUrl) else unified
-        }
+            val directUrlResult = LingMarketClient.getFileDownloadUrl(detail.apkKey)
+            if (directUrlResult.isSuccess) {
+                val directUrl = directUrlResult.getOrNull()?.url
+                if (directUrl != null) unified.copy(downloadUrl = directUrl) else unified
+            } else {
+                unified
+            }
+        }.getOrThrow()
+            .let { Result.success(it) }
     } catch (e: Exception) { Result.failure(e) }
 
     // ==========================================================
@@ -74,7 +84,8 @@ class LingMarketRepository : IAppStoreRepository {
                 )
             }
             Pair(unified, res.pagination.pages)
-        }
+        }.getOrThrow()
+            .let { Result.success(it) }
     } catch (e: Exception) { Result.failure(e) }
 
     override suspend fun postComment(appId: String, versionId: Long, content: String, parentCommentId: String?, mentionUserId: String?): Result<Unit> = try {
@@ -83,12 +94,14 @@ class LingMarketRepository : IAppStoreRepository {
         } else {
             LingMarketClient.postCommentReply(appId, parentCommentId, content)
         }
-        if (res.isSuccess) Result.success(Unit) else Result.failure(Exception("发布失败"))
+        res.getOrThrow()
+        Result.success(Unit)
     } catch (e: Exception) { Result.failure(e) }
 
     override suspend fun deleteComment(appId: String, commentId: String): Result<Unit> = try {
         val res = LingMarketClient.deleteComment(appId, commentId)
-        if (res.isSuccess) Result.success(Unit) else Result.failure(Exception("删除失败"))
+        res.getOrThrow()
+        Result.success(Unit)
     } catch (e: Exception) { Result.failure(e) }
 
     // ==========================================================
@@ -96,24 +109,32 @@ class LingMarketRepository : IAppStoreRepository {
     // ==========================================================
 
     override suspend fun getCurrentUserDetail(): Result<UnifiedUserDetail> = try {
-        LingMarketClient.getUserProfile().map { it.toUnifiedUserDetail() }
+        LingMarketClient.getUserProfile().map { it.toUnifiedUserDetail() }.getOrThrow()
+        .let { Result.success(it) }
     } catch (e: Exception) { Result.failure(e) }
 
     override suspend fun updateUserProfile(params: UpdateUserProfileParams): Result<Unit> = try {
         val nickname = params.nickname ?: params.displayName ?: throw Exception("昵称不能为空")
         val res = LingMarketClient.updateUserProfile(nickname, params.description)
-        if (res.isSuccess) Result.success(Unit) else Result.failure(Exception(res.msg ?: "更新失败"))
+        res.getOrThrow()
+        Result.success(Unit)
     } catch (e: Exception) { Result.failure(e) }
 
     override suspend fun uploadAvatar(imageBytes: ByteArray, filename: String): Result<String> = try {
         LingMarketClient.uploadAvatar(imageBytes, filename).map { res ->
             if (res.isSuccess) res.avatarUrl ?: "上传成功" else throw Exception(res.msg)
-        }
+        }.getOrThrow()
+            .let { Result.success(it) }
     } catch (e: Exception) { Result.failure(e) }
 
-    override suspend fun getAppDownloadSources(appId: String, versionId: Long): Result<List<UnifiedDownloadSource>> = 
-        getAppDetail(appId, versionId).map { detail ->
-            detail.downloadUrl?.let { listOf(UnifiedDownloadSource("默认下载源", it, true)) } ?: emptyList()
+    override suspend fun getAppDownloadSources(appId: String, versionId: Long): Result<List<UnifiedDownloadSource>> =
+        try {
+            getAppDetail(appId, versionId).map { detail ->
+                detail.downloadUrl?.let { listOf(UnifiedDownloadSource("默认下载源", it, true)) } ?: emptyList()
+            }.getOrThrow()
+        .let { Result.success(it) }
+        } catch (e: Exception) {
+            Result.failure(e)
         }
 
     // 其余不支持的方法（toggleFavorite, deleteApp, releaseApp, uploadApk 等）
