@@ -204,16 +204,26 @@ class AppDetailComposeViewModel(
     }
     
     // 复制分享链接到剪贴板
-    fun copyShareLink(context: Context): Boolean {
-        val link = generateShareLink()
-        return if (!link.isNullOrBlank()) {
-            _snackbarEvent.tryEmit("已复制分享链接")
-            true
-        } else {
-            _snackbarEvent.tryEmit("无法生成分享链接")
-            false
+fun copyShareLink(context: Context): Boolean {
+    val link = generateShareLink()
+    return if (!link.isNullOrBlank()) {
+        // 复制到剪贴板
+        val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+        val clip = ClipData.newPlainText("应用分享链接", link)
+        clipboard.setPrimaryClip(clip)
+        
+        // 发送 Snackbar 事件
+        viewModelScope.launch {
+            _snackbarEvent.emit("已复制分享链接")
         }
+        true
+    } else {
+        viewModelScope.launch {
+            _snackbarEvent.emit("无法生成分享链接")
+        }
+        false
     }
+}
 
     fun refresh() {
         loadData()
