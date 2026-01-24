@@ -12,18 +12,16 @@ import android.content.Context
 import android.util.Base64
 import androidx.datastore.core.DataStore
 import androidx.datastore.dataStore
-import com.google.crypto.tink.Aead
-import com.google.crypto.tink.getPrimitive 
 import cc.bbq.xq.data.proto.UserCredentials
 import cc.bbq.xq.data.proto.UserCredentialsSerializer
 import com.google.crypto.tink.Aead
 import com.google.crypto.tink.KeyTemplates
 import com.google.crypto.tink.aead.AeadConfig
+import com.google.crypto.tink.getPrimitive 
 import com.google.crypto.tink.integration.android.AndroidKeysetManager
 import kotlinx.coroutines.flow.Flow
-import java.io.File
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
+import java.io.File
 
 // 定义扩展属性，将 Serializer 与 Tink 绑定
 private val Context.credentialsStore: DataStore<UserCredentials> by dataStore(
@@ -41,18 +39,17 @@ object AuthManager {
 
     // --- 1. 初始化 (必须在 Application 调用) ---
 fun initialize(context: Context) {
-    AeadConfig.register()
-    val keysetHandle = AndroidKeysetManager.Builder()
-        .withSharedPref(context, KEYSET_NAME, PREF_FILE_NAME)
-        .withKeyTemplate(KeyTemplates.get("AES256_GCM"))
-        .withMasterKeyUri(MASTER_KEY_URI)
-        .build()
-        .keysetHandle
+        AeadConfig.register()
+        val keysetHandle = AndroidKeysetManager.Builder()
+            .withSharedPref(context, KEYSET_NAME, PREF_FILE_NAME)
+            .withKeyTemplate(KeyTemplates.get("AES256_GCM"))
+            .withMasterKeyUri(MASTER_KEY_URI)
+            .build()
+            .keysetHandle
 
-
-    // 新的推荐写法
-aead = keysetHandle.getPrimitive()
-}
+        // 核心修正：显式指定泛型类型为 Aead
+        aead = keysetHandle.getPrimitive<Aead>() 
+    }
 
     // --- 2. 保存逻辑 (保持原方法签名) ---
     suspend fun saveCredentials(
