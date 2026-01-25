@@ -400,7 +400,7 @@ private suspend fun handleLingMarketDownload(detail: UnifiedAppDetail) {
         viewModelScope.launch {
             try {
                 // 触发 Service 开始下载
-                val appName = _appDetail.value?.name ?: "未命名应用"
+                val appName = "${_appDetail.value?.name ?: "未命名应用"}.apk"
                 getApplication<Application>().startDownload(downloadUrl, appName)
                                 
                 // 发送导航到下载管理界面的事件
