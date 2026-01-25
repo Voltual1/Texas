@@ -9,8 +9,6 @@
 
 package cc.bbq.xq.ui.plaza
 
-// --- 导入语句 ---
-
 // 用于 @Composable 注解和基础 Compose UI 元素
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
