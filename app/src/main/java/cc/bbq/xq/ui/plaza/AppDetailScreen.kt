@@ -470,9 +470,25 @@ fun AppDetailContent(
         }
 
         // --- 更新日志 ---
-        item {
-            UpdateLogSection(appDetail = appDetail, navController = navController)
-        }
+// 判断是否显示
+val updateLog = when (appDetail.store) {
+    AppStore.SIENE_SHOP -> appDetail.updateLog
+    AppStore.LING_MARKET -> {
+        // 直接从 UnifiedAppDetail 的 updateLog 字段获取
+        appDetail.updateLog
+    }
+    // Xiaoqu Space 不显示更新日志，所以返回 null
+    AppStore.XIAOQU_SPACE -> null
+    // 其他商店默认使用 UnifiedAppDetail.updateLog (如果需要)
+    else -> null
+    
+}
+
+if (!updateLog.isNullOrEmpty()) { // 这里检查的是上面 when 表达式的结果
+    item {
+        UpdateLogSection(appDetail = appDetail, navController = navController)
+    }
+}
 
         // --- 适配说明（小趣空间） ---
         item {
