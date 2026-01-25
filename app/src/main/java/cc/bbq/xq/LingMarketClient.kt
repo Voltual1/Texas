@@ -377,6 +377,45 @@ data class UpdateProfileResponse(
     val isSuccess: Boolean get() = msg.contains("成功")
 }
 
+// 收藏响应
+@Serializable
+data class FavoriteResponse(
+    @SerialName("message") val msg: String,
+    @SerialName("favorite") val favorite: Favorite? = null
+) {
+    val isSuccess: Boolean get() = msg == "favorite.added" || msg == "favorite.removed"
+}
+
+// 收藏项
+@Serializable
+data class Favorite(
+    @SerialName("_id") val id: String,
+    val app: LingMarketAppMinimal,
+    @SerialName("favoritedAt") val favoritedAt: String
+)
+
+// 历史记录响应
+@Serializable
+data class HistoryResponse(
+    val history: List<HistoryItem>,
+    val pagination: LingMarketPagination
+)
+
+// 历史记录项
+@Serializable
+data class HistoryItem(
+    @SerialName("_id") val id: String,
+    val app: LingMarketAppMinimal,
+    @SerialName("viewedAt") val viewedAt: String
+)
+
+// 收藏列表响应
+@Serializable
+data class FavoritesResponse(
+    val favorites: List<Favorite>,
+    val pagination: LingMarketPagination
+)
+
     // ===== API 方法 =====
 
     /**
@@ -699,6 +738,75 @@ suspend fun getUserProfile(): Result<LingMarketUser> {  // 直接返回 LingMark
     }
 }
 
+/**
+ * 收藏应用
+ * @param appId 应用ID
+ * @return 收藏结果
+ */
+suspend fun addToFavorites(appId: String): Result<FavoriteResponse> {
+    val token = getToken() ?: return Result.failure(IOException("No token available"))
+    val url = "favorites/$appId"
+    
+    return safeApiCall<FavoriteResponse> {
+        httpClient.post(url) {
+            contentType(ContentType.Application.Json)
+            bearerAuth(token)
+            // 请求体为空，但需要明确设置Content-Length: 0
+            // Ktor会自动处理，这里不需要特殊设置
+        }
+    }
+}
+
+/**
+ * 取消收藏应用
+ * @param appId 应用ID
+ * @return 取消收藏结果
+ */
+suspend fun removeFromFavorites(appId: String): Result<FavoriteResponse> {
+    val token = getToken() ?: return Result.failure(IOException("No token available"))
+    val url = "favorites/$appId"
+    
+    return safeApiCall<FavoriteResponse> {
+        httpClient.delete(url) {
+            bearerAuth(token)
+        }
+    }
+}
+
+/**
+ * 获取浏览历史列表
+ * @param page 页码，默认1
+ * @param limit 每页数量，默认20
+ * @return 历史记录列表
+ */
+suspend fun getViewHistory(page: Int = 1, limit: Int = 20): Result<HistoryResponse> {
+    val token = getToken() ?: return Result.failure(IOException("No token available"))
+    val url = "history?page=$page&limit=$limit"
+    
+    return safeApiCall<HistoryResponse> {
+        httpClient.get(url) {
+            bearerAuth(token)
+        }
+    }
+}
+
+/**
+ * 获取收藏列表
+ * @param page 页码，默认1
+ * @param limit 每页数量，默认20
+ * @return 收藏列表
+ */
+suspend fun getFavorites(page: Int = 1, limit: Int = 20): Result<FavoritesResponse> {
+    val token = getToken() ?: return Result.failure(IOException("No token available"))
+    val url = "favorites?page=$page&limit=$limit"
+    
+    return safeApiCall<FavoritesResponse> {
+        httpClient.get(url) {
+            bearerAuth(token)
+        }
+    }
+}
+
     // 辅助方法：为请求添加Bearer认证
     private fun HttpRequestBuilder.bearerAuth(token: String) {
         header(HttpHeaders.Authorization, "Bearer $token")
@@ -760,6 +868,9 @@ suspend fun getFileDownloadUrl(
         suspend fun uploadAvatar(imageData: ByteArray, filename: String): Result<AvatarUploadResponse>
         suspend fun getUserProfile(): Result<LingMarketUser>  // 修改返回类型
         suspend fun getFileDownloadUrl(fileKey: String, type: String): Result<LingMarketClient.LingMarketFileUrlResponse>
+        suspend fun addToFavorites(appId: String): Result<FavoriteResponse>
+    suspend fun removeFromFavorites(appId: String): Result<FavoriteResponse>
+    suspend fun getViewHistory(page: Int, limit: Int): Result<HistoryResponse>
         suspend fun getCommentReplies(appId: String, commentId: String, page: Int, limit: Int): Result<LingMarketBaseResponse<List<LingMarketReply>>>
     }
 
@@ -825,6 +936,21 @@ suspend fun getFileDownloadUrl(
         }
         override suspend fun getFileDownloadUrl(fileKey: String, type: String): Result<LingMarketClient.LingMarketFileUrlResponse> {
         return this@LingMarketClient.getFileDownloadUrl(fileKey, type)
+    }
+    override suspend fun addToFavorites(appId: String): Result<FavoriteResponse> {
+        return this@LingMarketClient.addToFavorites(appId)
+    }
+    
+    override suspend fun removeFromFavorites(appId: String): Result<FavoriteResponse> {
+        return this@LingMarketClient.removeFromFavorites(appId)
+    }
+    
+    override suspend fun getFavorites(page: Int, limit: Int): Result<FavoritesResponse> {
+        return this@LingMarketClient.getFavorites(page, limit)
+    }    
+    
+    override suspend fun getViewHistory(page: Int, limit: Int): Result<HistoryResponse> {
+        return this@LingMarketClient.getViewHistory(page, limit)
     }
     }
 }
