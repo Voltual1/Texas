@@ -27,9 +27,11 @@ import cc.bbq.xq.LingMarketClient
 // 用于时间格式化工具 (formatTimestamp)
 import cc.bbq.xq.util.formatTimestamp
 
-// 用于 Coil 图片加载 (如果 InfoRow 或其他组件需要 ImageRequest 等，虽然当前没用到，但为未来兼容性保留)
-// import coil3.request.ImageRequest
-// import coil3.request.CachePolicy
+import androidx.compose.foundation.shape.RoundedCornerShape
+import coil3.request.ImageRequest
+import coil3.request.CachePolicy
+import cc.bbq.xq.ui.UserDetail
+import cc.bbq.xq.ui.compose.LinkifyText // 确保导入了 LinkifyText
 
 // --- Composable 组件 ---
 
