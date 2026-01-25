@@ -196,57 +196,7 @@ fun AppDetailScreen(
             isRefreshing = false
         }
     }
-
-    // 处理分享功能
-    fun handleShare() {
-        appDetail?.let { detail ->
-            when (detail.store) {
-                AppStore.XIAOQU_SPACE -> {
-                    // 小趣空间：使用 posturl
-                    val raw = detail.raw as? cc.bbq.xq.KtorClient.AppDetail
-                    val shareUrl = raw?.posturl
-                    if (!shareUrl.isNullOrBlank()) {
-                        val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-                        val clip = ClipData.newPlainText("应用链接", shareUrl)
-                        clipboard.setPrimaryClip(clip)
-                        coroutineScope.launch {
-                            snackbarHostState.showSnackbar("已复制分享链接: $shareUrl")
-                        }
-                    } else {
-                        coroutineScope.launch {
-                            snackbarHostState.showSnackbar("分享链接无效")
-                        }
-                    }
-                }
-                AppStore.SIENE_SHOP -> {
-                    // 弦应用商店：使用自定义格式
-                    val shareUrl = "sinemarket://app/${detail.id}"
-                    val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-                    val clip = ClipData.newPlainText("应用链接", shareUrl)
-                    clipboard.setPrimaryClip(clip)
-                    coroutineScope.launch {
-                        snackbarHostState.showSnackbar("已复制分享链接: $shareUrl")
-                    }
-                }
-                AppStore.WYSAPPMARKET -> {
-val shareUrl = "https://apk.wysteam.cn/app/?id=${detail.id}"
-                    val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-                    val clip = ClipData.newPlainText("应用链接", shareUrl)
-                    clipboard.setPrimaryClip(clip)
-                    coroutineScope.launch {
-                        snackbarHostState.showSnackbar("已复制分享链接: $shareUrl")
-                    }                                    }
-                                    
-                else -> {
-                    // 暂不支持分享
-                    coroutineScope.launch {
-                        snackbarHostState.showSnackbar("暂不支持该商店的分享功能")
-                    }
-                }
-            }
-        }
-    }
-
+  
     // 使用 MD3 的 PullToRefreshBox
     PullToRefreshBox(
         isRefreshing = isRefreshing,
@@ -486,6 +436,56 @@ var showMoreMenu by remember { mutableStateOf(false) }
                                     }
                                 )
                                 
+                                // 处理分享功能
+    fun handleShare() {
+        appDetail?.let { detail ->
+            when (detail.store) {
+                AppStore.XIAOQU_SPACE -> {
+                    // 小趣空间：使用 posturl
+                    val raw = detail.raw as? cc.bbq.xq.KtorClient.AppDetail
+                    val shareUrl = raw?.posturl
+                    if (!shareUrl.isNullOrBlank()) {
+                        val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+                        val clip = ClipData.newPlainText("应用链接", shareUrl)
+                        clipboard.setPrimaryClip(clip)
+                        coroutineScope.launch {
+                            snackbarHostState.showSnackbar("已复制分享链接: $shareUrl")
+                        }
+                    } else {
+                        coroutineScope.launch {
+                            snackbarHostState.showSnackbar("分享链接无效")
+                        }
+                    }
+                }
+                AppStore.SIENE_SHOP -> {
+                    // 弦应用商店：使用自定义格式
+                    val shareUrl = "sinemarket://app/${detail.id}"
+                    val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+                    val clip = ClipData.newPlainText("应用链接", shareUrl)
+                    clipboard.setPrimaryClip(clip)
+                    coroutineScope.launch {
+                        snackbarHostState.showSnackbar("已复制分享链接: $shareUrl")
+                    }
+                }
+                AppStore.WYSAPPMARKET -> {
+val shareUrl = "https://apk.wysteam.cn/app/?id=${detail.id}"
+                    val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+                    val clip = ClipData.newPlainText("应用链接", shareUrl)
+                    clipboard.setPrimaryClip(clip)
+                    coroutineScope.launch {
+                        snackbarHostState.showSnackbar("已复制分享链接: $shareUrl")
+                    }                                    }
+                                    
+                else -> {
+                    // 暂不支持分享
+                    coroutineScope.launch {
+                        snackbarHostState.showSnackbar("暂不支持该商店的分享功能")
+                    }
+                }
+            }
+        }
+    }
+                                
                                 // 根据商店类型显示不同选项
                                 when (appDetail.store) {
                                     AppStore.XIAOQU_SPACE -> {
@@ -620,267 +620,21 @@ if (appDetail.store == AppStore.XIAOQU_SPACE) {
                     when (appDetail.store) {
                         AppStore.XIAOQU_SPACE -> {
                             // 小趣空间信息
-                            val raw = appDetail.raw as? cc.bbq.xq.KtorClient.AppDetail
+XiaoquSpaceAppInfo(appDetail = appDetail)
                             
-                            InfoRow(
-                                label = "应用类型",
-                                value = appDetail.type
-                            )
-                            InfoRow(
-                                label = "下载次数",
-                                value = "${appDetail.downloadCount} 次"
-                            )
-                            if (appDetail.size != null) {
-                                InfoRow(
-                                    label = "安装包大小",
-                                    value = appDetail.size
-                                )
-                            }
-                            InfoRow(
-                                label = "上传时间",
-                                value = raw?.create_time ?: "未知"
-                            )
-                            InfoRow(
-                                label = "更新时间",
-                                value = raw?.update_time ?: "未知"
-                            )
                         }
                         AppStore.SIENE_SHOP -> {
                             // 弦应用商店信息
-                            val raw = appDetail.raw as? cc.bbq.xq.SineShopClient.SineShopAppDetail
-                            val deviceInfo = getDeviceInfo(raw?.app_sdk_min ?: 0)
+SineShopAppInfo(appDetail = appDetail)
                             
-                            InfoRow(
-                                label = "应用类型",
-                                value = appDetail.type
-                            )
-                            InfoRow(
-                                label = "版本类型",
-                                value = raw?.app_version_type ?: "未知"
-                            )
                             
-                            // 支持系统信息（包含最低SDK、目标SDK和设备兼容性）
-                            val supportSystem = buildString {
-                                append("最低SDK: ${raw?.app_sdk_min ?: "未知"}")
-                                if (raw?.app_sdk_target != null && raw.app_sdk_target != raw.app_sdk_min) {
-                                    append(" (目标SDK: ${raw.app_sdk_target})")
-                                }
-                                append(" • ")
-                                append(deviceInfo)
-                            }
-                            InfoRow(
-                                label = "支持系统",
-                                value = supportSystem
-                            )
-                            
-                            if (appDetail.size != null) {
-                                InfoRow(
-                                    label = "安装包大小",
-                                    value = appDetail.size
-                                )
-                            }
-                            InfoRow(
-                                label = "下载次数",
-                                value = "${appDetail.downloadCount} 次"
-                            )
-                            InfoRow(
-                                label = "应用开发者",
-                                value = raw?.app_developer ?: "未知"
-                            )
-                            InfoRow(
-                                label = "应用来源",
-                                value = raw?.app_source ?: "未知"
-                            )
-                            InfoRow(
-                                label = "上传时间",
-                                value = if (raw?.upload_time != null) formatTimestamp(raw.upload_time) else "未知"
-                            )
-                            InfoRow(
-                                label = "资料时间",
-                                value = if (raw?.update_time != null) formatTimestamp(raw.update_time) else "未知"
-                            )
-                            
-                            // 显示应用标签
-                            if (!raw?.tags.isNullOrEmpty()) {
-                                InfoRow(
-                                    label = "应用标签",
-                                    value = raw?.tags?.joinToString(", ") { it.name } ?: ""
-                                )
-                            }
-                            
-                            // 显示审核状态（如果有审核失败的情况）
-                            if (raw?.audit_status == 0 && !raw.audit_reason.isNullOrEmpty()) {
-                                InfoRow(
-                                    label = "审核状态",
-                                    value = raw.audit_reason
-                                )
-                            }
                         }
-                        AppStore.SINE_OPEN_MARKET -> {
-                            // 弦开放市场信息
-                            InfoRow(
-                                label = "应用类型",
-                                value = appDetail.type
-                            )
-                            if (appDetail.size != null) {
-                                InfoRow(
-                                    label = "安装包大小",
-                                    value = appDetail.size
-                                )
-                            }
-                            InfoRow(
-                                label = "下载次数",
-                                value = "${appDetail.downloadCount} 次"
-                            )
-                        }                        
 // 修改 AppDetailContent 函数中的灵应用商店信息显示部分
 AppStore.LING_MARKET -> {
-    val raw = appDetail.raw as? LingMarketClient.LingMarketApp
-    
-    // SDK 信息
-    val minSdk = raw?.minSdk
-    val targetSdk = raw?.targetSdk
-    if (minSdk != null && targetSdk != null) {
-        InfoRow(
-            label = "SDK",
-            value = "Min $minSdk / Target $targetSdk"
-        )
-    } else if (minSdk != null) {
-        InfoRow(
-            label = "SDK",
-            value = "Min $minSdk"
-        )
-    }
-    
-    // 架构信息 - 检查字段名是否正确
-    val architectures = raw?.architectures
-    val archText = architectures?.joinToString(", ") ?: "未知"
-    InfoRow(
-        label = "Arch",
-        value = archText
-    )
-    
-    // 下载量 - 检查字段名
-    InfoRow(
-        label = "下载量",
-        value = "${appDetail.downloadCount ?: 0}"
-    )
-    
-    // 创建时间 - 检查字段名
-    val createdAt = raw?.createdAt
-    createdAt?.let {
-        // 尝试格式化日期 (2026-01-14T12:54:00.499Z -> 2026-01-14)
-        val formattedDate = try {
-            it.substring(0, 10)
-        } catch (e: Exception) {
-            it
-        }
-        InfoRow(
-            label = "创建于",
-            value = formattedDate
-        )
-    }
-    
-    // 包名 - 检查字段名
-    val packageName = raw?.packageName
-    InfoRow(
-        label = "包名",
-        value = packageName ?: "未知"
-    )
-    
-    // 应用类型
-    InfoRow(
-        label = "应用类型",
-        value = appDetail.type
-    )
-    
-    // 安装包大小
-    if (appDetail.size != null) {
-        InfoRow(
-            label = "安装包大小",
-            value = appDetail.size
-        )
-    }
-    
-    // 支持设备类型 - 检查字段名
-    val supportedDevices = raw?.supportedDevices
-    val devicesText = supportedDevices?.joinToString(", ") ?: "未知"
-    if (devicesText.isNotEmpty() && devicesText != "未知") {
-        InfoRow(
-            label = "支持设备",
-            value = devicesText
-        )
-    }
-    
-    // 支持的屏幕密度 - 检查字段名
-    val supportedDensities = raw?.supportedDensities
-    supportedDensities?.takeIf { it.isNotEmpty() }?.let { densities ->
-        InfoRow(
-            label = "屏幕密度",
-            value = densities.joinToString(", ")
-        )
-    }
-    
-    // 最后更新时间 - 检查字段名
-    val updatedAt = raw?.updatedAt
-    updatedAt?.let {
-        val formattedDate = try {
-            it.substring(0, 10)
-        } catch (e: Exception) {
-            it
-        }
-        InfoRow(
-            label = "最后更新",
-            value = formattedDate
-        )
-    }
+    LingMarketAppInfo(appDetail = appDetail)
 }
 AppStore.WYSAPPMARKET -> {
-    // 直接使用 UnifiedAppDetail 中转换好的字段
-    InfoRow(
-        label = "包名",
-        value = appDetail.packageName
-    )
-    InfoRow(
-        label = "版本类型",
-        value = appDetail.versionTypeDisplay
-    )
-    InfoRow(
-        label = "最低版本",
-        value = appDetail.minsdkDisplay
-    )
-    InfoRow(
-        label = "目标版本",
-        value = appDetail.targetsdkDisplay
-    )
-    InfoRow(
-        label = "CPU架构",
-        value = appDetail.cpuArchDisplay
-    )
-    InfoRow(
-        label = "系统兼容",
-        value = appDetail.osCompatibilityDisplay
-    )
-    InfoRow(
-        label = "屏幕兼容",
-        value = appDetail.displayCompatibilityDisplay
-    )
-    InfoRow(
-        label = "浏览次数",
-        value = "${appDetail.watchCount ?: 0}"
-    )
-    InfoRow(
-        label = "下载次数",
-        value = "${appDetail.downloadCount}"
-    )
-    InfoRow(
-        label = "上传时间",
-        value = if (appDetail.uploadTime > 0) formatTimestamp(appDetail.uploadTime) else "未知"
-    )
-    InfoRow(
-        label = "上传留言",
-        value = appDetail.upnote ?: "无"
-    )
+   WysAppMarketInfo(appDetail = appDetail)
 }
 else -> {
 Text(
@@ -1142,48 +896,6 @@ items(comments) { comment ->
         navController = navController // 新增参数
     )
 }
-        }
-    }
-}
-
-// 新增：信息行组件
-@Composable
-fun InfoRow(label: String, value: String?) {
-    if (!value.isNullOrEmpty() && value != "未知" && value != "") {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(vertical = 4.dp),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text(
-                label,
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-            Text(
-                value,
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurface
-            )
-        }
-        HorizontalDivider(modifier = Modifier.padding(vertical = 2.dp))
-    }
-}
-
-// 新增：获取设备兼容性信息
-@Composable
-fun getDeviceInfo(minSdk: Int?): String {
-    val context = LocalContext.current
-    val deviceSdk = android.os.Build.VERSION.SDK_INT
-    
-    return buildString {
-        append("当前设备SDK:  $deviceSdk")
-        if (minSdk != null && deviceSdk >= minSdk) {
-            append(" • 兼容")
-        } else {
-            append(" • 不兼容")
         }
     }
 }
