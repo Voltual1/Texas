@@ -188,6 +188,55 @@ fun AppDetailScreen(
             }
         }
     }
+                                    // 处理分享功能
+    fun handleShare() {
+        appDetail?.let { detail ->
+            when (detail.store) {
+                AppStore.XIAOQU_SPACE -> {
+                    // 小趣空间：使用 posturl
+                    val raw = detail.raw as? cc.bbq.xq.KtorClient.AppDetail
+                    val shareUrl = raw?.posturl
+                    if (!shareUrl.isNullOrBlank()) {
+                        val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+                        val clip = ClipData.newPlainText("应用链接", shareUrl)
+                        clipboard.setPrimaryClip(clip)
+                        coroutineScope.launch {
+                            snackbarHostState.showSnackbar("已复制分享链接: $shareUrl")
+                        }
+                    } else {
+                        coroutineScope.launch {
+                            snackbarHostState.showSnackbar("分享链接无效")
+                        }
+                    }
+                }
+                AppStore.SIENE_SHOP -> {
+                    // 弦应用商店：使用自定义格式
+                    val shareUrl = "sinemarket://app/${detail.id}"
+                    val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+                    val clip = ClipData.newPlainText("应用链接", shareUrl)
+                    clipboard.setPrimaryClip(clip)
+                    coroutineScope.launch {
+                        snackbarHostState.showSnackbar("已复制分享链接: $shareUrl")
+                    }
+                }
+                AppStore.WYSAPPMARKET -> {
+val shareUrl = "https://apk.wysteam.cn/app/?id=${detail.id}"
+                    val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+                    val clip = ClipData.newPlainText("应用链接", shareUrl)
+                    clipboard.setPrimaryClip(clip)
+                    coroutineScope.launch {
+                        snackbarHostState.showSnackbar("已复制分享链接: $shareUrl")
+                    }                                    }
+                                    
+                else -> {
+                    // 暂不支持分享
+                    coroutineScope.launch {
+                        snackbarHostState.showSnackbar("暂不支持该商店的分享功能")
+                    }
+                }
+            }
+        }
+    }
 
     // 监听 ViewModel 状态变化以结束刷新状态
     LaunchedEffect(isRefreshing, isLoading, appDetail, errorMessage) {
@@ -434,57 +483,7 @@ var showMoreMenu by remember { mutableStateOf(false) }
                                     leadingIcon = {
                                         Icon(Icons.Default.Share, contentDescription = null)
                                     }
-                                )
-                                
-                                // 处理分享功能
-    fun handleShare() {
-        appDetail?.let { detail ->
-            when (detail.store) {
-                AppStore.XIAOQU_SPACE -> {
-                    // 小趣空间：使用 posturl
-                    val raw = detail.raw as? cc.bbq.xq.KtorClient.AppDetail
-                    val shareUrl = raw?.posturl
-                    if (!shareUrl.isNullOrBlank()) {
-                        val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-                        val clip = ClipData.newPlainText("应用链接", shareUrl)
-                        clipboard.setPrimaryClip(clip)
-                        coroutineScope.launch {
-                            snackbarHostState.showSnackbar("已复制分享链接: $shareUrl")
-                        }
-                    } else {
-                        coroutineScope.launch {
-                            snackbarHostState.showSnackbar("分享链接无效")
-                        }
-                    }
-                }
-                AppStore.SIENE_SHOP -> {
-                    // 弦应用商店：使用自定义格式
-                    val shareUrl = "sinemarket://app/${detail.id}"
-                    val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-                    val clip = ClipData.newPlainText("应用链接", shareUrl)
-                    clipboard.setPrimaryClip(clip)
-                    coroutineScope.launch {
-                        snackbarHostState.showSnackbar("已复制分享链接: $shareUrl")
-                    }
-                }
-                AppStore.WYSAPPMARKET -> {
-val shareUrl = "https://apk.wysteam.cn/app/?id=${detail.id}"
-                    val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-                    val clip = ClipData.newPlainText("应用链接", shareUrl)
-                    clipboard.setPrimaryClip(clip)
-                    coroutineScope.launch {
-                        snackbarHostState.showSnackbar("已复制分享链接: $shareUrl")
-                    }                                    }
-                                    
-                else -> {
-                    // 暂不支持分享
-                    coroutineScope.launch {
-                        snackbarHostState.showSnackbar("暂不支持该商店的分享功能")
-                    }
-                }
-            }
-        }
-    }
+                                )                                   
                                 
                                 // 根据商店类型显示不同选项
                                 when (appDetail.store) {
