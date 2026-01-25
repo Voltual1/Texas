@@ -4,5 +4,8 @@
 
     <item
         android:drawable="@drawable/fire"
-        android:gravity="center" />
+        android:gravity="center"
+        android:width="249dp"
+        android:height="200dp">
+        </item>
 </layer-list>
