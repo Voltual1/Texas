@@ -9,29 +9,59 @@
 
 package cc.bbq.xq.ui.plaza
 
-// 用于 @Composable 注解和基础 Compose UI 元素
+import android.content.ClipData
+import android.content.ClipboardManager
+import android.content.Context
+import android.content.Intent
+import android.net.Uri
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Comment
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Download
+import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.ui.*
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-
-// 用于 AppStore 枚举
+import androidx.navigation.NavController
 import cc.bbq.xq.AppStore
-
-// 用于数据模型
-import cc.bbq.xq.data.unified.UnifiedAppDetail
 import cc.bbq.xq.LingMarketClient
-
-// 用于时间格式化工具 (formatTimestamp)
-import cc.bbq.xq.util.formatTimestamp
-
-import androidx.compose.foundation.shape.RoundedCornerShape
-import coil3.request.ImageRequest
-import coil3.request.CachePolicy
+import cc.bbq.xq.data.unified.UnifiedAppDetail
+import cc.bbq.xq.data.unified.UnifiedComment
+import cc.bbq.xq.ui.ImagePreview
 import cc.bbq.xq.ui.UserDetail
-import cc.bbq.xq.ui.compose.LinkifyText // 确保导入了 LinkifyText
+import cc.bbq.xq.ui.PaymentForApp
+import cc.bbq.xq.ui.community.compose.CommentDialog
+import cc.bbq.xq.ui.CreateRefundPost
+import cc.bbq.xq.ui.UpdateAppRelease
+import cc.bbq.xq.ui.community.compose.CommentItem
+import cc.bbq.xq.ui.compose.LinkifyText
+import cc.bbq.xq.ui.theme.BBQDropdownMenu
+import cc.bbq.xq.ui.theme.BBQSnackbarHost
+import cc.bbq.xq.ui.theme.DownloadSourceDrawer
+import cc.bbq.xq.ui.theme.BBQPullRefreshIndicator
+import cc.bbq.xq.util.formatTimestamp
+import coil3.compose.AsyncImage
+import coil3.request.CachePolicy
+import coil3.request.ImageRequest
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.launch
+import org.koin.androidx.compose.koinViewModel
 
 // --- Composable 组件 ---
 
