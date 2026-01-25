@@ -330,3 +330,514 @@ fun getDeviceInfo(minSdk: Int?): String {
 // --- 注意 ---
 // handleShare 函数不应该放在这里。它依赖于 ViewModel 状态 (appDetail, context, coroutineScope, snackbarHostState)
 // 并且是 AppDetailScreen 的一部分逻辑。应该保留在 AppDetailScreen.kt 或其 ViewModel 中。
+
+// ... (在 AppDetailComponents.kt 文件末尾添加) ...
+
+// --- 平台特定的头部信息组件 ---
+
+@Composable
+fun XiaoquSpaceAppHeader(
+    appDetail: UnifiedAppDetail,
+    onImagePreview: (String) -> Unit,
+    onDownloadClick: () -> Unit,
+    onMoreMenuClick: () -> Unit,
+    onShareClick: () -> Unit,
+    onUpdateClick: () -> Unit,
+    onRefundClick: () -> Unit,
+    onDeleteAppClick: () -> Unit
+) {
+    // 小趣空间特有逻辑
+    val raw = appDetail.raw as? cc.bbq.xq.KtorClient.AppDetail
+    var showMoreMenu by remember { mutableStateOf(false) }
+
+    Column(modifier = Modifier.padding(16.dp)) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            AsyncImage(
+                model = appDetail.iconUrl,
+                contentDescription = null,
+                modifier = Modifier
+                    .size(64.dp)
+                    .clip(RoundedCornerShape(16.dp))
+                    .clickable { onImagePreview(appDetail.iconUrl) },
+                contentScale = ContentScale.Crop
+            )
+            Spacer(Modifier.width(16.dp))
+            Column(Modifier.weight(1f)) {
+                Text(
+                    appDetail.name,
+                    style = MaterialTheme.typography.titleLarge,
+                    fontWeight = FontWeight.Bold
+                )
+                Text("版本: ${appDetail.versionName}", style = MaterialTheme.typography.bodyMedium)
+                Text("大小: ${appDetail.size ?: "未知"}", style = MaterialTheme.typography.bodyMedium)
+            }
+
+            Box {
+                IconButton(
+                    onClick = { showMoreMenu = true }
+                ) {
+                    Icon(Icons.Default.MoreVert, "更多")
+                }
+
+                // 下拉菜单直接与按钮关联
+                BBQDropdownMenu(
+                    expanded = showMoreMenu,
+                    onDismissRequest = { showMoreMenu = false },
+                    modifier = Modifier.width(180.dp)
+                ) {
+                    // 分享选项
+                    DropdownMenuItem(
+                        text = { Text("分享应用") },
+                        onClick = {
+                            showMoreMenu = false
+                            onShareClick()
+                        },
+                        leadingIcon = {
+                            Icon(Icons.Default.Share, contentDescription = null)
+                        }
+                    )
+
+                    // 更新选项（总是显示）
+                    DropdownMenuItem(
+                        text = { Text("更新应用") },
+                        onClick = {
+                            showMoreMenu = false
+                            onUpdateClick()
+                        }
+                    )
+
+                    // 退币选项（仅当应用是付费应用且用户已购买后时显示）
+                    if (raw?.is_pay == 1 && raw.is_user_pay == true) {
+                        DropdownMenuItem(
+                            text = { Text("申请退币") },
+                            onClick = {
+                                showMoreMenu = false
+                                onRefundClick()
+                            }
+                        )
+                    }
+
+                    // 删除选项
+                    DropdownMenuItem(
+                        text = { Text("删除应用") },
+                        onClick = {
+                            showMoreMenu = false
+                            onDeleteAppClick()
+                        },
+                        leadingIcon = {
+                            Icon(Icons.Default.Delete, contentDescription = null)
+                        }
+                    )
+                }
+            }
+        }
+
+        Spacer(Modifier.height(16.dp))
+
+        // 显示付费信息（如果是付费应用）
+        Button(
+            onClick = onDownloadClick, // 这里会触发购买检查
+            modifier = Modifier.fillMaxWidth(),
+            enabled = true // 总是启用，ViewModel会处理购买逻辑
+        ) {
+            Icon(Icons.Filled.Download, null)
+            Spacer(Modifier.width(8.dp))
+            Text(
+                when {
+                    raw?.is_pay == 1 && raw.pay_money > 0 && raw.is_user_pay != true ->
+                        "购买并下载 (${raw.pay_money}硬币)"
+
+                    raw?.is_pay == 1 && raw.is_user_pay == true ->
+                        "下载应用 (已购买)"
+
+                    else -> "下载应用"
+                }
+            )
+        }
+    }
+}
+
+@Composable
+fun DefaultAppHeader( // 为其他商店提供一个默认或简化版本
+    appDetail: UnifiedAppDetail,
+    onImagePreview: (String) -> Unit,
+    onDownloadClick: () -> Unit,
+    onMoreMenuClick: () -> Unit,
+    onShareClick: () -> Unit
+) {
+    var showMoreMenu by remember { mutableStateOf(false) }
+    Column(modifier = Modifier.padding(16.dp)) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            AsyncImage(
+                model = appDetail.iconUrl,
+                contentDescription = null,
+                modifier = Modifier
+                    .size(64.dp)
+                    .clip(RoundedCornerShape(16.dp))
+                    .clickable { onImagePreview(appDetail.iconUrl) },
+                contentScale = ContentScale.Crop
+            )
+            Spacer(Modifier.width(16.dp))
+            Column(Modifier.weight(1f)) {
+                Text(
+                    appDetail.name,
+                    style = MaterialTheme.typography.titleLarge,
+                    fontWeight = FontWeight.Bold
+                )
+                Text("版本: ${appDetail.versionName}", style = MaterialTheme.typography.bodyMedium)
+                Text("大小: ${appDetail.size ?: "未知"}", style = MaterialTheme.typography.bodyMedium)
+            }
+
+            Box {
+                IconButton(
+                    onClick = { showMoreMenu = true }
+                ) {
+                    Icon(Icons.Default.MoreVert, "更多")
+                }
+
+                // 下拉菜单直接与按钮关联
+                BBQDropdownMenu(
+                    expanded = showMoreMenu,
+                    onDismissRequest = { showMoreMenu = false },
+                    modifier = Modifier.width(180.dp)
+                ) {
+                    // 分享选项
+                    DropdownMenuItem(
+                        text = { Text("分享应用") },
+                        onClick = {
+                            showMoreMenu = false
+                            onShareClick()
+                        },
+                        leadingIcon = {
+                            Icon(Icons.Default.Share, contentDescription = null)
+                        }
+                    )
+                    // 可以在这里为其他商店添加通用选项
+                }
+            }
+        }
+
+        Spacer(Modifier.height(16.dp))
+
+        Button(
+            onClick = onDownloadClick,
+            modifier = Modifier.fillMaxWidth(),
+            enabled = true
+        ) {
+            Icon(Icons.Filled.Download, null)
+            Spacer(Modifier.width(8.dp))
+            Text("下载应用")
+        }
+    }
+}
+
+
+// --- 平台特定的更新日志组件 ---
+@Composable
+fun UpdateLogSection(appDetail: UnifiedAppDetail, navController: NavController) {
+    val updateLog = appDetail.updateLog // 假设 updateLog 已经在 UnifiedAppDetail 中统一处理
+
+    if (!updateLog.isNullOrEmpty()) {
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
+        ) {
+            Column(modifier = Modifier.padding(16.dp)) {
+                Text(
+                    "更新日志",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold
+                )
+                Spacer(Modifier.height(8.dp))
+                LinkifyText(
+                    text = updateLog,
+                    navController = navController,
+                    modifier = Modifier.fillMaxWidth(),
+                    style = MaterialTheme.typography.bodyMedium.copy(color = MaterialTheme.colorScheme.onSurface)
+                )
+            }
+        }
+    }
+}
+
+// --- 平台特定的适配说明组件 (小趣空间) ---
+@Composable
+fun XiaoquSpaceExplainSection(appDetail: UnifiedAppDetail, navController: NavController) {
+    if (appDetail.store == AppStore.XIAOQU_SPACE) {
+        val appExplain = when (val raw = appDetail.raw) {
+            is cc.bbq.xq.KtorClient.AppDetail -> raw.app_explain
+            else -> null
+        }
+
+        if (!appExplain.isNullOrEmpty()) {
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
+            ) {
+                Column(modifier = Modifier.padding(16.dp)) {
+                    Text(
+                        "适配说明",
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold
+                    )
+                    Spacer(Modifier.height(8.dp))
+                    LinkifyText(
+                        text = appExplain,
+                        navController = navController,
+                        modifier = Modifier.fillMaxWidth(),
+                        style = MaterialTheme.typography.bodyMedium.copy(color = MaterialTheme.colorScheme.onSurface)
+                    )
+                }
+            }
+        }
+    }
+}
+
+// --- 平台特定的应用介绍组件 ---
+@Composable
+fun AppDescriptionSection(appDetail: UnifiedAppDetail, navController: NavController) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
+    ) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            Text(
+                "应用介绍",
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold
+            )
+            Spacer(Modifier.height(8.dp))
+            if (!appDetail.description.isNullOrEmpty()) {
+                LinkifyText(
+                    text = appDetail.description,
+                    navController = navController,
+                    modifier = Modifier.fillMaxWidth(),
+                    style = MaterialTheme.typography.bodyMedium.copy(color = MaterialTheme.colorScheme.onSurface)
+                )
+            } else {
+                Text("暂无介绍", style = MaterialTheme.typography.bodyMedium)
+            }
+        }
+    }
+}
+
+// --- 平台特定的应用截图组件 ---
+@Composable
+fun AppPreviewsSection(
+    appDetail: UnifiedAppDetail,
+    onImagePreview: (String) -> Unit
+) {
+    if (!appDetail.previews.isNullOrEmpty()) {
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
+        ) {
+            Column(modifier = Modifier.padding(16.dp)) {
+                Text(
+                    "应用截图",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold
+                )
+                Spacer(Modifier.height(8.dp))
+                LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    items(appDetail.previews) { url ->
+                        AsyncImage(
+                            model = url,
+                            contentDescription = null,
+                            modifier = Modifier
+                                .height(200.dp)
+                                .clip(RoundedCornerShape(8.dp))
+                                .clickable { onImagePreview(url) },
+                            contentScale = ContentScale.Crop
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+
+// --- 平台特定的作者信息组件 ---
+@Composable
+fun AppAuthorSection(
+    appDetail: UnifiedAppDetail,
+    navController: NavController
+) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
+    ) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            Text(
+                "作者信息",
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold
+            )
+            Spacer(Modifier.height(12.dp))
+
+            when (appDetail.store) {
+                AppStore.SIENE_SHOP -> {
+                    // 弦应用商店：同时显示上传者和审核员
+                    val raw = appDetail.raw as? cc.bbq.xq.SineShopClient.SineShopAppDetail
+
+                    // 上传者信息
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 4.dp)
+                            .clickable {
+                                val userId = raw?.user?.id
+                                if (userId != null) {
+                                    navController.navigate(UserDetail(userId.toLong(), appDetail.store).createRoute())
+                                }
+                            },
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        AsyncImage(
+                            model = ImageRequest.Builder(LocalContext.current)
+                                .data(raw?.user?.userAvatar ?: "https://static.sineshop.xin/images/user_avatar/default_avatar.png")
+                                .diskCachePolicy(CachePolicy.DISABLED) // 禁用磁盘缓存
+                                .build(),
+                            contentDescription = "上传者头像",
+                            modifier = Modifier.size(40.dp).clip(CircleShape),
+                            contentScale = ContentScale.Crop
+                        )
+                        Spacer(Modifier.width(16.dp))
+                        Column {
+                            Text(
+                                raw?.user?.displayName ?: "未知上传者",
+                                style = MaterialTheme.typography.titleMedium
+                            )
+                            Text(
+                                "上传者",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                    }
+
+                    // 审核员信息
+                    if (raw?.audit_user != null) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 4.dp)
+                                .clickable {
+                                    val userId = raw.audit_user?.id
+                                    if (userId != null) {
+                                        navController.navigate(UserDetail(userId.toLong(), appDetail.store).createRoute())
+                                    }
+                                },
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            AsyncImage(
+                                model = ImageRequest.Builder(LocalContext.current)
+                                    .data(raw.audit_user?.userAvatar ?: "https://static.sineshop.xin/images/user_avatar/default_avatar.png")
+                                    .diskCachePolicy(CachePolicy.DISABLED) // 禁用磁盘缓存
+                                    .build(),
+                                contentDescription = "审核员头像",
+                                modifier = Modifier.size(40.dp).clip(CircleShape),
+                                contentScale = ContentScale.Crop
+                            )
+                            Spacer(Modifier.width(16.dp))
+                            Column {
+                                Text(
+                                    raw.audit_user?.displayName ?: "未知审核员",
+                                    style = MaterialTheme.typography.titleMedium
+                                )
+                                Text(
+                                    "审核员",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                        }
+                    }
+                }
+
+                AppStore.XIAOQU_SPACE,
+                AppStore.SINE_OPEN_MARKET,
+                AppStore.LING_MARKET -> {
+                    // 这些商店只显示上传者
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp)
+                            .clickable {
+                                val userId = appDetail.user.id.toLongOrNull()
+                                if (userId != null) {
+                                    navController.navigate(UserDetail(userId, appDetail.store).createRoute())
+                                }
+                            },
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        AsyncImage(
+                            model = appDetail.user.avatarUrl,
+                            contentDescription = "上传者头像",
+                            modifier = Modifier.size(40.dp).clip(CircleShape),
+                            contentScale = ContentScale.Crop
+                        )
+                        Spacer(Modifier.width(16.dp))
+                        Text(appDetail.user.displayName, style = MaterialTheme.typography.titleMedium)
+                    }
+                }
+
+                AppStore.WYSAPPMARKET -> {
+                    // 微思应用商店显示上传者信息
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp)
+                            .clickable {
+                                val userId = appDetail.user.id.toLongOrNull()
+                                if (userId != null) {
+                                    navController.navigate(UserDetail(userId, appDetail.store).createRoute())
+                                }
+                            },
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Column {
+                            Text(
+                                appDetail.user.displayName,
+                                style = MaterialTheme.typography.titleMedium
+                            )
+                            Text(
+                                "上传者",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                    }
+                }
+
+                else -> {
+                    Text(
+                        text = "⚠什么都没有!﹁_﹂",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.error
+                    )
+                }
+            }
+        }
+    }
+}
+
+// --- 评论列表标题组件 ---
+@Composable
+fun CommentsHeader(appDetail: UnifiedAppDetail) {
+    Text(
+        "评论 (${appDetail.reviewCount})",
+        style = MaterialTheme.typography.titleMedium,
+        fontWeight = FontWeight.Bold
+    )
+}
+
+// --- 无评论提示组件 ---
+@Composable
+fun NoCommentsMessage() {
+    Text(
+        "暂无评论",
+        style = MaterialTheme.typography.bodyMedium,
+        modifier = Modifier.padding(vertical = 16.dp)
+    )
+}
