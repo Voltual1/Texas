@@ -5,7 +5,7 @@
     <item
         android:drawable="@drawable/fire"
         android:gravity="center"
-        android:width="249dp"
-        android:height="200dp">
+        android:width="240dp"
+        android:height="240dp">
         </item>
 </layer-list>
