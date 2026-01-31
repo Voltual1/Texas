@@ -71,6 +71,7 @@ import cc.bbq.xq.ui.animation.rememberSlideDistance
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import cc.bbq.xq.ui.settings.update.UpdateSettingsScreen //导入更新屏幕
 import androidx.compose.material3.SnackbarHostState // 确保 SnackbarHostState 被正确导入
+import android.content.Intent
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
