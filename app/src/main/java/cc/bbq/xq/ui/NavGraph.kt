@@ -257,6 +257,27 @@ composable(route = CreateRefundPost(0, 0, "", 0).route, arguments = CreateRefund
     DownloadScreen(modifier = Modifier.fillMaxSize(),snackbarHostState = snackbarHostState )
 }*/
 
+composable(Download.route) {
+    val context = LocalContext.current
+    
+    LaunchedEffect(Unit) {
+        val intent = context.packageManager.getLaunchIntentForPackage("idm.internet.download.manager.plus") 
+            ?: context.packageManager.getLaunchIntentForPackage("idm.internet.download.manager")
+            ?: context.packageManager.getLaunchIntentForPackage("idm.internet.download.manager.adm.lite")
+
+        if (intent != null) {
+            // 模仿 Via 直接跳转到 1DM+ 的主 Activity
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            context.startActivity(intent)
+        } else {
+            // 如果没安装，弹个提示或者跳转到关于页面告知用户
+//TODO
+        }
+        
+        // 关键：立即返回上一个页面，避免停留在一个空白的导航目的地
+        navController.popBackStack()
+    }
+}
 composable(route = MyComments.route) {
     MyCommentsScreen(
         navController = navController,
