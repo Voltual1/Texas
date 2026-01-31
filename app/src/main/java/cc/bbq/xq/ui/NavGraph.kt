@@ -14,7 +14,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.foundation.layout.fillMaxSize
 import org.koin.androidx.compose.koinViewModel
 import androidx.compose.foundation.layout.padding
-import cc.bbq.xq.ui.download.DownloadScreen // 导入 DownloadScreen
+//import cc.bbq.xq.ui.download.DownloadScreen // 导入 DownloadScreen
 import cc.bbq.xq.ui.update.UpdateScreen // 新增导入
 import cc.bbq.xq.ui.settings.storage.StoreManagerScreen
 import org.koin.core.parameter.parametersOf
@@ -253,9 +253,9 @@ composable(route = CreateRefundPost(0, 0, "", 0).route, arguments = CreateRefund
             )
         }
         
-        composable(route = Download.route) {
+/*        composable(route = Download.route) {
     DownloadScreen(modifier = Modifier.fillMaxSize(),snackbarHostState = snackbarHostState )
-}
+}*/
 
 composable(route = MyComments.route) {
     MyCommentsScreen(

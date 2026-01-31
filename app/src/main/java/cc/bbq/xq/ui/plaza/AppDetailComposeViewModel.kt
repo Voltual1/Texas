@@ -27,7 +27,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import org.koin.android.annotation.KoinViewModel
 import cc.bbq.xq.LingMarketClient
-import cc.bbq.xq.service.download.DownloadService
+//import cc.bbq.xq.service.download.DownloadService
 
 @KoinViewModel
 class AppDetailComposeViewModel(
@@ -414,7 +414,7 @@ private suspend fun handleLingMarketDownload(detail: UnifiedAppDetail) {
 
     // 扩展函数：启动下载服务
 private fun Application.startDownload(downloadUrl: String, fileName: String) {
-    val intent = Intent(this, cc.bbq.xq.service.download.DownloadService::class.java)
+/*    val intent = Intent(this, cc.bbq.xq.service.download.DownloadService::class.java)
     intent.action = DownloadService.ACTION_START_DOWNLOAD  // 明确指定 action
     intent.putExtra(DownloadService.EXTRA_URL, downloadUrl)  // 使用正确的 key
     intent.putExtra(DownloadService.EXTRA_FILE_NAME, fileName)
@@ -424,4 +424,4 @@ private fun Application.startDownload(downloadUrl: String, fileName: String) {
     } else {
         startService(intent)
     }
-}}
+}*/}

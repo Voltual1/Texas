@@ -74,7 +74,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
-import cc.bbq.xq.service.download.DownloadService
+//import cc.bbq.xq.service.download.DownloadService
 import cc.bbq.xq.ui.theme.AppShapes
 import cc.bbq.xq.ui.theme.BBQButton
 import cc.bbq.xq.ui.theme.BBQCard
@@ -668,7 +668,7 @@ fun PaymentResultDialog(
  * 启动内部下载服务
  */
 private fun startInternalDownload(context: Context, downloadUrl: String, fileName: String) {
-    val intent = Intent(context, DownloadService::class.java).apply {
+/*    val intent = Intent(context, DownloadService::class.java).apply {
         action = DownloadService.ACTION_START_DOWNLOAD 
         
         // 使用我们在 Service 里定义的常量名
@@ -678,7 +678,8 @@ private fun startInternalDownload(context: Context, downloadUrl: String, fileNam
     }
     
     // 启动服务
-    context.startService(intent)
+    context.startService(intent)*/
+    //TODO
 }
 
 /**
