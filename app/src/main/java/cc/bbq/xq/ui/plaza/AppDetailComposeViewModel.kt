@@ -415,10 +415,7 @@ private suspend fun handleLingMarketDownload(detail: UnifiedAppDetail) {
                 val appName = "${_appDetail.value?.name ?: "未命名应用"}.apk"
                 
                 // 发送下载事件，包含 URL 和文件名
-                _downloadEvent.emit(DownloadEvent(downloadUrl, appName))
-                
-                // 仍然发送导航到下载管理界面的事件
-                _navigateToDownloadEvent.emit(true)
+                _downloadEvent.emit(DownloadEvent(downloadUrl, appName))                
                 
             } catch (e: Exception) {
                 _errorMessage.value = "启动下载失败: ${e.message}"
