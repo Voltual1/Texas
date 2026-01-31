@@ -423,5 +423,5 @@ private fun Application.startDownload(downloadUrl: String, fileName: String) {
         startForegroundService(intent)
     } else {
         startService(intent)
-    }
-}*/}
+    }*/
+}}
