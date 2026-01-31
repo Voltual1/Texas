@@ -854,6 +854,7 @@ suspend fun getFileDownloadUrl(
     interface LingMarketApiService {
         suspend fun login(username: String, password: String): Result<LingMarketBaseResponse<LoginResponseData>>
         suspend fun getUserDetail(userId: String): Result<LingMarketBaseResponse<LingMarketUser>>
+        suspend fun getFavorites(page: Int, limit: Int): Result<FavoritesResponse>
         suspend fun getCategories(includeInactive: Boolean): Result<List<LingMarketCategory>>
         suspend fun getAppsByCategory(category: String, page: Int, limit: Int): Result<LingMarketAppListResponse>
         // 新增：更新用户个人资料

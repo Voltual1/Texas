@@ -217,7 +217,7 @@ object SmartListSerializer : KSerializer<List<String>> {
     data class DownloadSourceResponse(
         val code: Int,
         val id: String,
-        val sha256: String,
+        val sha256: String? = null,
         val data: List<DownloadSource>
     ) {
         val isSuccess: Boolean get() = code == ApiResponseCode.SUCCESS.code
