@@ -13,6 +13,7 @@ import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
 import android.content.Intent
+import android.app.Activity
 import android.net.Uri
 import cc.bbq.xq.util.DownloadManager
 // 移除 MD2 的 ExperimentalMaterialApi 和 pullrefresh 导入
