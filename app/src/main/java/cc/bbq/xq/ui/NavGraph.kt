@@ -296,10 +296,9 @@ composable(Download.route) {
 
         if (targetIntent != null) {
             // 1. 找到了 1DM：直接跳转
+            navController.popBackStack()
             targetIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
             context.startActivity(targetIntent)
-            // 跳转后立即返回，不留空白页
-            navController.popBackStack()
         } else {
             // 2. 没找到：触发对话框显示
             showInstallDialog = true
