@@ -294,9 +294,6 @@ composable(Download.route) {
             if (targetIntent != null) break
         }
         
-        if(showInstallDialog == false)
-        {            navController.popBackStack()}
-
         if (targetIntent != null) {
             targetIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
             context.startActivity(targetIntent)
@@ -316,6 +313,8 @@ composable(Download.route) {
             }
         )
     }
+            if(showInstallDialog == false)
+        {            navController.popBackStack()}
 }
 composable(route = MyComments.route) {
     MyCommentsScreen(

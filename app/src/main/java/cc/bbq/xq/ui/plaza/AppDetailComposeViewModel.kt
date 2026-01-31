@@ -413,6 +413,8 @@ private suspend fun handleLingMarketDownload(detail: UnifiedAppDetail) {
             try {
                 // 获取应用名称用于文件名
                 val appName = "${_appDetail.value?.name ?: "未命名应用"}.apk"
+                                // 仍然发送导航到下载管理界面的事件
+                _navigateToDownloadEvent.emit(true)
                 
                 // 发送下载事件，包含 URL 和文件名
                 _downloadEvent.emit(DownloadEvent(downloadUrl, appName))                
