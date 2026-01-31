@@ -293,10 +293,11 @@ composable(Download.route) {
             targetIntent = pm.getLaunchIntentForPackage(pkg)
             if (targetIntent != null) break
         }
+        
+        if(showInstallDialog == false)
+        {            navController.popBackStack()}
 
         if (targetIntent != null) {
-            // 1. 找到了 1DM：直接跳转
-            navController.popBackStack()
             targetIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
             context.startActivity(targetIntent)
         } else {
