@@ -272,12 +272,10 @@ composable(route = CreateRefundPost(0, 0, "", 0).route, arguments = CreateRefund
 
 composable(Download.route) {
     val context = LocalContext.current
-    val navController = rememberNavController() // 假设已在外部定义
+    val navController = rememberNavController() // 注意：通常应从外部传入同一个 navController
     
-    // 状态控制：是否显示“未安装”对话框
     var showInstallDialog by remember { mutableStateOf(false) }
 
-    // 1DM 家族包名列表
     val idmPackages = listOf(
         "idm.internet.download.manager.plus",
         "idm.internet.download.manager",
@@ -288,33 +286,31 @@ composable(Download.route) {
         val pm = context.packageManager
         var targetIntent: Intent? = null
 
-        // 遍历检测
         for (pkg in idmPackages) {
             targetIntent = pm.getLaunchIntentForPackage(pkg)
             if (targetIntent != null) break
         }
-        
+
         if (targetIntent != null) {
             targetIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
             context.startActivity(targetIntent)
+            
+            // --- 核心改动：使用同步立即返回 ---
+            // 某些情况下 popBackStack 需要在 UI 线程队列中稍微排队
+            navController.navigateUp() 
         } else {
-            // 2. 没找到：触发对话框显示
             showInstallDialog = true
         }
     }
 
-    // 如果需要显示对话框
     if (showInstallDialog) {
         IDMTransferDialog(
             onDismiss = {
                 showInstallDialog = false
-                // 用户点击“知道咯”后，返回上一个页面
                 navController.popBackStack()
             }
         )
     }
-            if(showInstallDialog == false)
-        {            navController.popBackStack()}
 }
 composable(route = MyComments.route) {
     MyCommentsScreen(
