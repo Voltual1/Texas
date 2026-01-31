@@ -7,33 +7,44 @@
 // 如果没有，请查阅 <http://www.gnu.org/licenses/>。
 package cc.bbq.xq.ui
 
+// Android & Lifecycle
 import android.app.Activity
 import android.app.Application
-import androidx.compose.animation.*
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.foundation.layout.fillMaxSize
-import org.koin.androidx.compose.koinViewModel
-import androidx.compose.foundation.layout.padding
-//import cc.bbq.xq.ui.download.DownloadScreen // 导入 DownloadScreen
-import cc.bbq.xq.ui.update.UpdateScreen // 新增导入
-import cc.bbq.xq.ui.settings.storage.StoreManagerScreen
-import org.koin.core.parameter.parametersOf
+import android.content.Intent
+import android.content.pm.PackageManager
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
+
+// Compose Core
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
-import cc.bbq.xq.AppStore
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.lifecycleScope
-import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.compose.ui.unit.dp
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.animation.*
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.SnackbarHostState
+
+// Navigation
 import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+
+// Koin
+import org.koin.androidx.compose.koinViewModel
+import org.koin.core.parameter.parametersOf
+
+// Project UI - Screens & ViewModels
 import cc.bbq.xq.AuthManager
 import cc.bbq.xq.KtorClient
+import cc.bbq.xq.AppStore
 import cc.bbq.xq.ui.auth.LoginScreen
 import cc.bbq.xq.ui.auth.LoginViewModel
 import cc.bbq.xq.ui.billing.BillingScreen
@@ -49,7 +60,6 @@ import cc.bbq.xq.ui.message.MessageCenterScreen
 import cc.bbq.xq.ui.message.MessageViewModel
 import cc.bbq.xq.ui.payment.PaymentCenterScreen
 import cc.bbq.xq.ui.payment.PaymentType
-import cc.bbq.xq.ui.user.UserProfileViewModel
 import cc.bbq.xq.ui.payment.PaymentViewModel
 import cc.bbq.xq.ui.player.PlayerScreen
 import cc.bbq.xq.ui.player.PlayerViewModel
@@ -60,18 +70,20 @@ import cc.bbq.xq.ui.search.SearchViewModel
 import cc.bbq.xq.ui.theme.ThemeCustomizeScreen
 import cc.bbq.xq.ui.user.*
 import cc.bbq.xq.ui.user.compose.UserListScreen
+import cc.bbq.xq.ui.update.UpdateScreen
+import cc.bbq.xq.ui.settings.storage.StoreManagerScreen
+import cc.bbq.xq.ui.settings.signin.SignInSettingsScreen
+import cc.bbq.xq.ui.settings.update.UpdateSettingsScreen
+import cc.bbq.xq.ui.compose.IDMTransferDialog
+
+// Animations & Utils
+import cc.bbq.xq.ui.animation.materialSharedAxisXIn
+import cc.bbq.xq.ui.animation.materialSharedAxisXOut
+import cc.bbq.xq.ui.animation.rememberSlideDistance
+import cc.bbq.xq.util.getPackageInfoCompat
 import kotlinx.coroutines.launch
 import java.net.URLDecoder
 import java.nio.charset.StandardCharsets
-import cc.bbq.xq.ui.animation.materialSharedAxisXIn
-import cc.bbq.xq.ui.animation.materialSharedAxisXOut
-import androidx.compose.ui.unit.dp
-import cc.bbq.xq.ui.settings.signin.SignInSettingsScreen
-import cc.bbq.xq.ui.animation.rememberSlideDistance
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import cc.bbq.xq.ui.settings.update.UpdateSettingsScreen //导入更新屏幕
-import androidx.compose.material3.SnackbarHostState // 确保 SnackbarHostState 被正确导入
-import android.content.Intent
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -260,23 +272,49 @@ composable(route = CreateRefundPost(0, 0, "", 0).route, arguments = CreateRefund
 
 composable(Download.route) {
     val context = LocalContext.current
+    val navController = rememberNavController() // 假设已在外部定义
     
-    LaunchedEffect(Unit) {
-        val intent = context.packageManager.getLaunchIntentForPackage("idm.internet.download.manager.plus") 
-            ?: context.packageManager.getLaunchIntentForPackage("idm.internet.download.manager")
-            ?: context.packageManager.getLaunchIntentForPackage("idm.internet.download.manager.adm.lite")
+    // 状态控制：是否显示“未安装”对话框
+    var showInstallDialog by remember { mutableStateOf(false) }
 
-        if (intent != null) {
-            // 模仿 Via 直接跳转到 1DM+ 的主 Activity
-            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-            context.startActivity(intent)
-        } else {
-            // 如果没安装，弹个提示或者跳转到关于页面告知用户
-//TODO
+    // 1DM 家族包名列表
+    val idmPackages = listOf(
+        "idm.internet.download.manager.plus",
+        "idm.internet.download.manager",
+        "idm.internet.download.manager.adm.lite"
+    )
+
+    LaunchedEffect(Unit) {
+        val pm = context.packageManager
+        var targetIntent: Intent? = null
+
+        // 遍历检测
+        for (pkg in idmPackages) {
+            targetIntent = pm.getLaunchIntentForPackage(pkg)
+            if (targetIntent != null) break
         }
-        
-        // 关键：立即返回上一个页面，避免停留在一个空白的导航目的地
-        navController.popBackStack()
+
+        if (targetIntent != null) {
+            // 1. 找到了 1DM：直接跳转
+            targetIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            context.startActivity(targetIntent)
+            // 跳转后立即返回，不留空白页
+            navController.popBackStack()
+        } else {
+            // 2. 没找到：触发对话框显示
+            showInstallDialog = true
+        }
+    }
+
+    // 如果需要显示对话框
+    if (showInstallDialog) {
+        IDMTransferDialog(
+            onDismiss = {
+                showInstallDialog = false
+                // 用户点击“知道咯”后，返回上一个页面
+                navController.popBackStack()
+            }
+        )
     }
 }
 composable(route = MyComments.route) {
