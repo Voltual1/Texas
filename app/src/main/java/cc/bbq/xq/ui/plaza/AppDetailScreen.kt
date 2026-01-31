@@ -14,6 +14,7 @@ import android.content.ClipboardManager
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
+import cc.bbq.xq.util.DownloadManager
 // 移除 MD2 的 ExperimentalMaterialApi 和 pullrefresh 导入
 // import androidx.compose.material.ExperimentalMaterialApi
 // import androidx.compose.material.pullrefresh.PullRefreshIndicator
@@ -107,6 +108,28 @@ fun AppDetailScreen(
     var showDeleteCommentDialog by remember { mutableStateOf(false) }
     var commentToDeleteId by remember { mutableStateOf<String?>(null) }
     var showMoreMenu by remember { mutableStateOf(false) }
+    
+    // 监听下载事件
+    LaunchedEffect(Unit) {
+        viewModel.downloadEvent.collectLatest { downloadEvent ->
+            // 这里可以获取到 Activity 上下文
+            val activity = context as? Activity
+            if (activity != null) {
+                // 调用 DownloadManager 启动下载
+                DownloadManager.download(
+                    activity = activity,
+                    url = downloadEvent.url,
+                    fileName = downloadEvent.fileName,
+                    headers = downloadEvent.headers
+                )
+            } else {
+                // 如果不是 Activity 上下文，使用 Toast 或 Snackbar 提示
+                coroutineScope.launch {
+                    snackbarHostState.showSnackbar("无法启动下载，上下文错误")
+                }
+            }
+        }
+    }
 
     LaunchedEffect(appId, versionId, storeName) {
         viewModel.initializeData(appId, versionId, storeName)

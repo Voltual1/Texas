@@ -21,6 +21,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
 import android.content.Context
 import android.content.Intent
+import cc.bbq.xq.util.DownloadManager
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -99,6 +100,17 @@ class AppDetailComposeViewModel(
     // 支付相关状态和方法
     private val _navigateToPaymentEvent = MutableSharedFlow<PaymentInfo>()
     val navigateToPaymentEvent: SharedFlow<PaymentInfo> = _navigateToPaymentEvent.asSharedFlow()
+    
+    // 新增：下载事件
+    data class DownloadEvent(
+        val url: String,
+        val fileName: String,
+        val headers: Map<String, String>? = null
+    )
+
+    private val _downloadEvent = MutableSharedFlow<DownloadEvent>()
+    val downloadEvent: SharedFlow<DownloadEvent> = _downloadEvent.asSharedFlow()
+
 
     // 支付信息数据类
     data class PaymentInfo(
@@ -399,11 +411,13 @@ private suspend fun handleLingMarketDownload(detail: UnifiedAppDetail) {
     private fun startDownload(downloadUrl: String) {
         viewModelScope.launch {
             try {
-                // 触发 Service 开始下载
+                // 获取应用名称用于文件名
                 val appName = "${_appDetail.value?.name ?: "未命名应用"}.apk"
-                getApplication<Application>().startDownload(downloadUrl, appName)
-                                
-                // 发送导航到下载管理界面的事件
+                
+                // 发送下载事件，包含 URL 和文件名
+                _downloadEvent.emit(DownloadEvent(downloadUrl, appName))
+                
+                // 仍然发送导航到下载管理界面的事件
                 _navigateToDownloadEvent.emit(true)
                 
             } catch (e: Exception) {
@@ -412,16 +426,4 @@ private suspend fun handleLingMarketDownload(detail: UnifiedAppDetail) {
         }
     }
 
-    // 扩展函数：启动下载服务
-private fun Application.startDownload(downloadUrl: String, fileName: String) {
-/*    val intent = Intent(this, cc.bbq.xq.service.download.DownloadService::class.java)
-    intent.action = DownloadService.ACTION_START_DOWNLOAD  // 明确指定 action
-    intent.putExtra(DownloadService.EXTRA_URL, downloadUrl)  // 使用正确的 key
-    intent.putExtra(DownloadService.EXTRA_FILE_NAME, fileName)
-    
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-        startForegroundService(intent)
-    } else {
-        startService(intent)
-    }*/
-}}
+}
