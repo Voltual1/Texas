@@ -77,26 +77,32 @@ class WysAppMarketRepository(
     } catch (e: Exception) { Result.failure(e) }
 
     override suspend fun getAppDownloadSources(appId: String, versionId: Long): Result<List<UnifiedDownloadSource>> = try {
-        val appIdInt = appId.toIntOrNull() ?: return Result.failure(IllegalArgumentException("ID错误"))
-        
-        // 3. 在这里动态获取 DataStore 中的机型
-        val currentModel = getCurrentDeviceModel()
-        
-        // 4. 先获取 StartKey
-        val startKeyResult = WysAppMarketClient.getStartKey(deviceModel = currentModel)
-        val startKey = startKeyResult.getOrThrow()
+    val appIdInt = appId.toIntOrNull() ?: return Result.failure(IllegalArgumentException("ID错误"))
+    
+    val currentModel = getCurrentDeviceModel()
+    val startKeyResult = WysAppMarketClient.getStartKey(deviceModel = currentModel)
+    val startKey = startKeyResult.getOrThrow()
 
-        // 5. 传入 Client 执行
-        WysAppMarketClient.getDownloadSources(
-            appId = appIdInt,
-            startKey = startKey,
-            deviceModel = currentModel
-        ).map { response ->
-            response.data.map { it.toUnifiedDownloadSource() }
+    WysAppMarketClient.getDownloadSources(
+        appId = appIdInt,
+        startKey = startKey,
+        deviceModel = currentModel
+    ).map { response ->
+        val sources = response.data        
+        if (sources.size == 1) {
+            val firstSource = sources[0]
+            val isSlowIp = firstSource.url.contains("111.229.138.199")
+            val isFakeFastName = firstSource.name.contains("极速")
+            
+            if (isSlowIp && isFakeFastName) {
+                throw IllegalStateException("检测到由于机型名【$currentModel】被服务器拉入黑名单，服务器故意把备用线路当作极速路线返回给客户端导致限速。请在账号资料设置中更换伪装机型后再试。")
+            }
         }
-    } catch (e: Exception) {
-        Result.failure(e)
+        sources.map { it.toUnifiedDownloadSource() }
     }
+} catch (e: Exception) {
+    Result.failure(e)
+}
 
     // ==========================================================
     // 辅助工具：处理微思特有的客户端分页
