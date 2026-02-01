@@ -408,7 +408,7 @@ private suspend fun handleLingMarketDownload(detail: UnifiedAppDetail) {
     }
         
     // 启动下载
-    private fun startDownload(downloadUrl: String) {
+ fun startDownload(downloadUrl: String) {
         viewModelScope.launch {
             try {
                 // 获取应用名称用于文件名
