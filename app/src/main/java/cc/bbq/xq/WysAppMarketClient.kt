@@ -396,7 +396,7 @@ object SmartListSerializer : KSerializer<List<String>> {
     suspend fun getDownloadSources(
         appId: Int,
         startKey: String? = null,
-        deviceModel: String = DEFAULT_DEVICE_MODEL
+        deviceModel: String // 改为强制要求，由调用方保证传入
     ): Result<DownloadSourceResponse> {
         // 获取或使用提供的StartKey
         val finalStartKey = if (startKey != null) {

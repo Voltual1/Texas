@@ -2,6 +2,7 @@ package cc.bbq.xq.data.repository
 
 import cc.bbq.xq.WysAppMarketClient
 import cc.bbq.xq.WysAppMarketClient.WysAppListItem
+import cc.bbq.xq.data.DeviceNameDataStore
 import cc.bbq.xq.data.unified.*
 import java.io.File
 import kotlin.math.ceil
