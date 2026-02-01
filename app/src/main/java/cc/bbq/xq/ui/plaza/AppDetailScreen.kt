@@ -426,14 +426,11 @@ val shareUrl = "https://apk.wysteam.cn/app/?id=${detail.id}"
         onDismissRequest = { viewModel.closeDownloadDrawer() },
         sources = downloadSources,
         onSourceSelected = { source ->
-            try {
-                val intent = Intent(Intent.ACTION_VIEW, Uri.parse(source.url))
-                context.startActivity(intent)
-            } catch (e: Exception) {
-                coroutineScope.launch {
-                    snackbarHostState.showSnackbar("无法打开链接")
-                }
-            }
+            // --- 关键修改处 ---
+            // 不再直接通过 Intent 打开，而是调用 ViewModel 的逻辑
+            // 这样它就会走 startDownload -> emit(DownloadEvent) -> 1DM 启动
+            viewModel.startDownload(source.url) 
+            viewModel.closeDownloadDrawer() // 选择后关闭抽屉
         }
     )
 

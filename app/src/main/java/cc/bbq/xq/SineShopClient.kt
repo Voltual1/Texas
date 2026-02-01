@@ -22,6 +22,10 @@ import io.ktor.client.statement.*
 import io.ktor.http.*
 import io.ktor.serialization.kotlinx.json.*
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.runBlocking
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import java.io.IOException
 
@@ -448,6 +452,119 @@ data class SineShopReview(
         }
         return get<BaseResponse<AppListData>>("/app/list", parameters).map {
             if (it.code == 0) it.data ?: AppListData(0, emptyList()) else throw IOException(it.msg)
+        }
+    }
+    
+        /** 获取标签列表 */
+    suspend fun getAppTagList(token: String? = null): Result<List<AppTag>> {
+        return get<BaseResponse<AppTagListData>>("/tag/list", token = token).map {
+            if (it.code == 0) it.data?.list ?: emptyList() else throw IOException(it.msg)
+        }
+    }
+
+    /** 获取最新应用列表 */
+    suspend fun getLatestAppsList(page: Int = 1, token: String? = null): Result<AppListData> {
+        val params = Parameters.build {
+            append("time", "")
+            append("page", page.toString())
+        }
+        return get<BaseResponse<AppListData>>("/app/list", params, token = token).map {
+            if (it.code == 0) it.data ?: AppListData(0, emptyList()) else throw IOException(it.msg)
+        }
+    }
+
+    /** 获取下载排行列表 */
+    suspend fun getMostDownloadedAppsList(page: Int = 1, token: String? = null): Result<AppListData> {
+        val params = Parameters.build { append("page", page.toString()) }
+        return get<BaseResponse<AppListData>>("/leaderboard/app_download", params, token = token).map {
+            if (it.code == 0) it.data ?: AppListData(0, emptyList()) else throw IOException(it.msg)
+        }
+    }
+
+    /** 获取应用详情 */
+    suspend fun getSineShopAppInfo(appId: Int, token: String? = null): Result<SineShopAppDetail> {
+        val params = Parameters.build { append("appid", appId.toString()) }
+        return get<BaseResponse<SineShopAppDetail>>("/app/info", params, token = token).map {
+            if (it.code == 0) it.data ?: throw IOException("Data null") else throw IOException(it.msg)
+        }
+    }
+
+    /** 获取应用评价列表 */
+    suspend fun getSineShopAppReviews(appId: Int, page: Int = 1, token: String? = null): Result<SineShopReviewListData> {
+        val params = Parameters.build {
+            append("appid", appId.toString())
+            append("page", page.toString())
+        }
+        return get<BaseResponse<SineShopReviewListData>>("/review/list", params, token = token).map {
+            if (it.code == 0) it.data ?: SineShopReviewListData(0, emptyList()) else throw IOException(it.msg)
+        }
+    }
+
+    /** 获取应用评论列表 */
+    suspend fun getSineShopAppComments(appId: Int, page: Int = 1, token: String? = null): Result<SineShopCommentListData> {
+        val params = Parameters.build {
+            append("appid", appId.toString())
+            append("page", page.toString())
+        }
+        return get<BaseResponse<SineShopCommentListData>>("/reply/list", params, token = token).map {
+            if (it.code == 0) it.data ?: SineShopCommentListData(0, emptyList()) else throw IOException(it.msg)
+        }
+    }
+
+    /** 回复评论 (带Mention) - 该请求可能需要携带 Token */
+    suspend fun postSineShopAppReplyCommentWithMention(commentId: Int, content: String, mentionUserId: Int, token: String? = null): Result<Int> {
+        val params = Parameters.build {
+            append("appid", "-1")
+            append("content", content)
+            append("father", commentId.toString())
+            append("mention", mentionUserId.toString())
+        }
+        return postForm<BaseResponse<Int>>("/reply/send", params, token = token).map {
+            if (it.code == 0) it.data ?: throw IOException("Data null") else throw IOException(it.msg)
+        }
+    }
+
+    /** 回复评论 - 该请求可能需要携带 Token */
+    suspend fun postSineShopAppReplyComment(commentId: Int, content: String, token: String? = null): Result<Int> {
+        val params = Parameters.build {
+            append("appid", "-1")
+            append("content", content)
+            append("father", commentId.toString())
+        }
+        return postForm<BaseResponse<Int>>("/reply/send", params, token = token).map {
+            if (it.code == 0) it.data ?: throw IOException("Data null") else throw IOException(it.msg)
+        }
+    }
+
+    /** 获取我的评价 - 该请求可能需要携带 Token */
+    suspend fun getMyReviews(page: Int = 1, token: String? = null): Result<SineShopReviewListData> {
+        val params = Parameters.build { append("page", page.toString()) }
+        return get<BaseResponse<SineShopReviewListData>>("/review/mine", params, token = token).map {
+            if (it.code == 0) it.data ?: SineShopReviewListData(0, emptyList()) else throw IOException(it.msg)
+        }
+    }
+
+    /** 删除评价 - 该请求可能需要携带 Token */
+    suspend fun deleteSineShopReview(reviewId: Int, token: String? = null): Result<Unit> {
+        val params = Parameters.build { append("reviewid", reviewId.toString()) }
+        return postForm<BaseResponse<Unit>>("/review/delete", params, token = token).map {
+            if (it.code != 0) throw IOException(it.msg)
+        }
+    }
+
+    /** 获取下载源 */
+    suspend fun getAppDownloadSources(appId: Int, token: String? = null): Result<List<SineShopDownloadSource>> {
+        val params = Parameters.build { append("appid", appId.toString()) }
+        return get<DownloadSourceResponse>("/download/app", params, token = token).map {
+            if (it.code == 0) it.data ?: emptyList() else throw IOException(it.msg)
+        }
+    }
+
+    /** 根据ID获取用户信息 */
+    suspend fun getUserInfoById(userId: Long, token: String? = null): Result<SineShopUserInfo> {
+        val params = Parameters.build { append("id", userId.toString()) }
+        return get<BaseResponse<SineShopUserInfo>>("/user/info", params, token = token).map {
+            if (it.code == 0) it.data ?: throw IOException("Data null") else throw IOException(it.msg)
         }
     }
 
