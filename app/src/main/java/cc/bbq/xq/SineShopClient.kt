@@ -337,10 +337,10 @@ data class SineShopReview(
         }
     }
 
-    /** 获取应用版本：通常不需要 Token */
-    suspend fun getAppVersionsByAppId(appid: Int, page: Int = 1): Result<AppListData> {
+    /** 获取应用版本：需要包名 */
+    suspend fun getAppVersionsByPackageName(packageName: String, page: Int = 1): Result<AppListData> {
         val parameters = Parameters.build {
-            append("appid", appid.toString())
+            append("packagename", packageName)
             append("page", page.toString())
         }
         return get<BaseResponse<AppListData>>("/app/list", parameters).map {

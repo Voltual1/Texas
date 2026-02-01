@@ -156,9 +156,8 @@ class SineShopRepository : IAppStoreRepository {
         }
     } catch (e: Exception) { Result.failure(e) }
 
-    // 仓库特有方法
-    suspend fun getAppVersionsByAppId(appId: Int, page: Int = 1): Result<Pair<List<UnifiedAppItem>, Int>> = try {
-        SineShopClient.getAppVersionsByAppId(appid = appId, page = page).map { 
+    override suspend fun getAppVersionsByPackageName(packageName: String, page: Int = 1): Result<Pair<List<UnifiedAppItem>, Int>> = try {
+        SineShopClient.getAppVersionsByPackageName(packageName = packageName, page = page).map { 
             Pair(it.list.map { item -> item.toUnifiedAppItem() }, calculateTotalPages(it.total))
         }
     } catch (e: Exception) { Result.failure(e) }
