@@ -151,7 +151,139 @@ fun PaymentCenterScreen(
     }
 }
 
-// ... PaymentContent 代码保持不变 ...
+@Composable
+fun PaymentContent(
+    paymentInfo: PaymentInfo?,
+    coinsBalance: Int?,
+    isLoadingBalance: Boolean,
+    errorMessage: String?,
+    onFetchBalance: () -> Unit,
+    onPay: (Int) -> Unit,
+    viewModel: PaymentViewModel,
+    isPaymentProcessing: Boolean,
+    modifier: Modifier = Modifier,
+    snackbarHostState: SnackbarHostState
+) {
+    val coroutineScope = rememberCoroutineScope()
+    var amount by remember { mutableStateOf(paymentInfo?.price?.toString() ?: "") }
+    var postIdInput by remember { mutableStateOf("") }
+    val isAdvancedMode = paymentInfo?.type == PaymentType.POST_REWARD && paymentInfo.postId == 0L
+
+    Box(modifier = modifier.fillMaxSize()) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .verticalScroll(rememberScrollState())
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            if (isAdvancedMode) {
+                BBQCard(modifier = Modifier.fillMaxWidth()) {
+                     Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
+                        Text("高级支付模式", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+                        OutlinedTextField(
+                            value = postIdInput,
+                            onValueChange = { postIdInput = it },
+                            label = { Text("输入帖子ID") },
+                            modifier = Modifier.fillMaxWidth(),
+                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = ImeAction.Done)
+                        )
+                        Button(
+                            onClick = {
+                                postIdInput.toLongOrNull()?.let { viewModel.loadPostInfo(it) } ?: coroutineScope.launch {
+                                    snackbarHostState.showSnackbar("请输入有效的帖子ID")
+                                }
+                            },
+                            modifier = Modifier.fillMaxWidth()
+                        ) { Text("加载帖子") }
+                    }
+                }
+            } else {
+                // 信息展示卡片...
+                BBQCard(modifier = Modifier.fillMaxWidth()) {
+                    paymentInfo?.let { info ->
+                        when (info.type) {
+                            PaymentType.APP_PURCHASE -> {
+                                Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
+                                    Row(verticalAlignment = Alignment.CenterVertically) {
+                                        AsyncImage(
+                                            model = info.iconUrl,
+                                            contentDescription = null,
+                                            modifier = Modifier.size(64.dp).clip(RoundedCornerShape(16.dp)),
+                                            contentScale = ContentScale.Crop
+                                        )
+                                        Spacer(Modifier.width(16.dp))
+                                        Column {
+                                            Text(info.appName, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
+                                            Text("版本: ${info.versionId}", style = MaterialTheme.typography.bodyMedium)
+                                        }
+                                    }
+                                    Text(info.previewContent, style = MaterialTheme.typography.bodyMedium, maxLines = 2)
+                                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                                        Text("价格")
+                                        Text("${info.price} 硬币", color = MaterialTheme.colorScheme.primary)
+                                    }
+                                }
+                            }
+                            PaymentType.POST_REWARD -> { /* 帖子打赏布局保持原样 */ }
+                            else -> { Text("支付信息", modifier = Modifier.padding(16.dp)) }
+                        }
+                    }
+                }
+            }
+
+            // 余额区域
+            BBQCard(modifier = Modifier.fillMaxWidth()) {
+                Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text("我的硬币", modifier = Modifier.weight(1f), fontWeight = FontWeight.Bold)
+                        BBQOutlinedButton(
+                            onClick = onFetchBalance,
+                            enabled = !isLoadingBalance,
+                            text = { Text(if (isLoadingBalance) "查询中..." else "刷新余额") }
+                        )
+                    }
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text("当前余额:", modifier = Modifier.weight(1f))
+                        if (isLoadingBalance) {
+                            CircularProgressIndicator(Modifier.size(24.dp), strokeWidth = 2.dp)
+                        } else {
+                            Text("${coinsBalance ?: "--"} 硬币", color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Bold)
+                        }
+                    }
+                }
+            }
+
+            // 支付按钮
+            val payAmount = amount.toIntOrNull() ?: 0
+            BBQButton(
+                onClick = {
+                    if (payAmount > 0) {
+                        if (coinsBalance != null && payAmount > coinsBalance) {
+                            coroutineScope.launch { snackbarHostState.showSnackbar("硬币余额不足") }
+                        } else onPay(payAmount)
+                    }
+                },
+                modifier = Modifier.fillMaxWidth(),
+                enabled = payAmount > 0 && !isPaymentProcessing,
+                text = {
+                    if (isPaymentProcessing) CircularProgressIndicator(Modifier.size(24.dp))
+                    else Text("确认支付")
+                }
+            )
+        }
+
+        // SnackBar 宿主，修正对齐问题
+        BBQSnackbarHost(
+            hostState = snackbarHostState,
+            modifier = Modifier.align(Alignment.BottomCenter)
+        )
+    }
+
+    errorMessage?.let { msg ->
+        LaunchedEffect(msg) { snackbarHostState.showSnackbar(msg) }
+    }
+}
 
 @Composable
 fun PaymentResultDialog(
