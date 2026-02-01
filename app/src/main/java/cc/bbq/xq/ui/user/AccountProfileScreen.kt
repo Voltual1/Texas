@@ -48,7 +48,7 @@ fun AccountProfileScreen(
     var qqNumber by remember { mutableStateOf("") }
     var description by remember { mutableStateOf("") }
     
-    // 设备配置状态
+    // 设备配置状态本地临时变量
     var brand by remember { mutableStateOf("") }
     var model by remember { mutableStateOf("") }
     
@@ -122,7 +122,7 @@ fun AccountProfileScreen(
                     val params = UpdateUserProfileParams(
                         nickname = nickname,
                         description = description,
-                        deviceName = model // 为了兼容后端旧逻辑，暂用 model 作为 deviceName
+                        deviceName = model 
                     )
                     val newConfig = state.deviceConfig.copy(brand = brand, model = model)
                     viewModel.updateProfile(store, params, newConfig) { _, msg ->
@@ -132,8 +132,66 @@ fun AccountProfileScreen(
                 modifier = Modifier.fillMaxWidth().padding(top = 32.dp),
                 enabled = !state.isLoading
             ) {
-                if (state.isLoading) CircularProgressIndicator(Modifier.size(24.dp))
+                if (state.isLoading) CircularProgressIndicator(Modifier.size(24.dp), color = MaterialTheme.colorScheme.onPrimary)
                 else Text("保存全部修改")
+            }
+        }
+    }
+}
+
+@Composable
+fun AvatarSection(
+    currentUrl: String?,
+    onImageSelected: (Uri) -> Unit
+) {
+    val context = LocalContext.current
+    val launcher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        if (result.resultCode == Activity.RESULT_OK) {
+            result.data?.data?.let { onImageSelected(it) }
+        }
+    }
+
+    Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
+        Box(contentAlignment = Alignment.BottomEnd) {
+            val painter = rememberAsyncImagePainter(currentUrl)
+            
+            Surface(
+                modifier = Modifier.size(120.dp),
+                shape = CircleShape,
+                color = MaterialTheme.colorScheme.surfaceVariant,
+                tonalElevation = 2.dp
+            ) {
+                if (!currentUrl.isNullOrEmpty()) {
+                    Image(
+                        painter = painter,
+                        contentDescription = null,
+                        modifier = Modifier.fillMaxSize(),
+                        contentScale = ContentScale.Crop
+                    )
+                } else {
+                    Icon(
+                        Icons.Default.Person,
+                        contentDescription = null,
+                        modifier = Modifier.padding(24.dp),
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            }
+
+            SmallFloatingActionButton(
+                onClick = {
+                    ImagePicker.with(context as Activity)
+                        .cropSquare()
+                        .compress(1024)
+                        .maxResultSize(512, 512)
+                        .createIntent { launcher.launch(it) }
+                },
+                shape = CircleShape,
+                containerColor = MaterialTheme.colorScheme.primary
+            ) {
+                Icon(Icons.Default.CameraAlt, contentDescription = "更换头像", modifier = Modifier.size(16.dp))
             }
         }
     }
@@ -155,7 +213,7 @@ fun ProfileFields(
     onImportClick: () -> Unit
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
-        Text("基本信息", style = MaterialTheme.typography.titleMedium)
+        Text("账户信息", style = MaterialTheme.typography.titleMedium)
         
         OutlinedTextField(
             value = nickname,
@@ -192,10 +250,14 @@ fun ProfileFields(
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Text("设备伪装 (本地)", style = MaterialTheme.typography.titleMedium)
+            Text("设备伪装 (仅本地)", style = MaterialTheme.typography.titleMedium)
             TextButton(onClick = onImportClick) {
-                Icon(Icons.Default.ContentPaste, contentSize = 18.dp)
-                Spacer(Modifier.width(4.dp))
+                Icon(
+                    imageVector = Icons.Default.ContentPaste,
+                    contentDescription = null,
+                    modifier = Modifier.size(18.dp) // 修复位置
+                )
+                Spacer(Modifier.width(8.dp))
                 Text("导入 Guise JSON")
             }
         }
@@ -203,7 +265,7 @@ fun ProfileFields(
         OutlinedTextField(
             value = brand,
             onValueChange = onBrandChange,
-            label = { Text("品牌 (Brand)") },
+            label = { Text("设备品牌 (Brand)") },
             modifier = Modifier.fillMaxWidth(),
             singleLine = true
         )
@@ -211,10 +273,10 @@ fun ProfileFields(
         OutlinedTextField(
             value = model,
             onValueChange = onModelChange,
-            label = { Text("型号 (Model)") },
+            label = { Text("设备型号 (Model)") },
             modifier = Modifier.fillMaxWidth(),
             singleLine = true,
-            supportingText = { Text("避免使用 '浊燃' 等被黑名单的名称") }
+            supportingText = { Text("避免使用被服务器拦截的关键词") }
         )
     }
 }
@@ -224,17 +286,21 @@ fun ImportConfigDialog(onDismiss: () -> Unit, onConfirm: (String) -> Unit) {
     var text by remember { mutableStateOf("") }
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("导入设备配置") },
+        title = { Text("从 JSON 导入机型") },
         text = {
-            OutlinedTextField(
-                value = text,
-                onValueChange = { text = it },
-                placeholder = { Text("在此粘贴 Guise 的 configuration 字符串...") },
-                modifier = Modifier.fillMaxWidth().height(150.dp)
-            )
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                Text("粘贴 Guise 的 configuration 字段内容：", style = MaterialTheme.typography.bodySmall)
+                OutlinedTextField(
+                    value = text,
+                    onValueChange = { text = it },
+                    placeholder = { Text("{\"brand\":\"...\", \"model\":\"...\"}") },
+                    modifier = Modifier.fillMaxWidth().height(120.dp),
+                    textStyle = MaterialTheme.typography.bodySmall
+                )
+            }
         },
         confirmButton = {
-            Button(onClick = { onConfirm(text) }) { Text("确认导入") }
+            Button(onClick = { onConfirm(text) }) { Text("导入") }
         },
         dismissButton = {
             TextButton(onClick = onDismiss) { Text("取消") }
@@ -242,64 +308,7 @@ fun ImportConfigDialog(onDismiss: () -> Unit, onConfirm: (String) -> Unit) {
     )
 }
 
-@Composable
-fun AvatarSection(
-    currentUrl: String?,
-    onImageSelected: (Uri) -> Unit
-) {
-    val context = LocalContext.current
-    val launcher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.StartActivityForResult()
-    ) { result ->
-        if (result.resultCode == Activity.RESULT_OK) {
-            result.data?.data?.let { onImageSelected(it) }
-        }
-    }
-
-    Box(contentAlignment = Alignment.BottomEnd) {
-        val painter = rememberAsyncImagePainter(currentUrl)
-        
-        Surface(
-            modifier = Modifier.size(120.dp),
-            shape = CircleShape,
-            color = MaterialTheme.colorScheme.surfaceVariant,
-            tonalElevation = 2.dp
-        ) {
-            if (!currentUrl.isNullOrEmpty()) {
-                Image(
-                    painter = painter,
-                    contentDescription = null,
-                    modifier = Modifier.fillMaxSize(),
-                    contentScale = ContentScale.Crop
-                )
-            } else {
-                Icon(
-                    Icons.Default.Person,
-                    contentDescription = null,
-                    modifier = Modifier.padding(24.dp),
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
-        }
-
-        // 悬浮相机按钮
-        SmallFloatingActionButton(
-            onClick = {
-                ImagePicker.with(context as Activity)
-                    .cropSquare()
-                    .compress(1024)
-                    .maxResultSize(512, 512)
-                    .createIntent { launcher.launch(it) }
-            },
-            shape = CircleShape,
-            containerColor = MaterialTheme.colorScheme.primary
-        ) {
-            Icon(Icons.Default.CameraAlt, contentDescription = "更换头像", modifier = Modifier.size(16.dp))
-        }
-    }
-}
-
-// 辅助组件：带尺寸限制的 Loading
+// 辅助组件保持...
 @Composable
 fun CircularProgressIndicator(size: androidx.compose.ui.unit.Dp, color: androidx.compose.ui.graphics.Color) {
     androidx.compose.material3.CircularProgressIndicator(

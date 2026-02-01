@@ -131,7 +131,7 @@ fun PostCreateScreen(
         if (isRefundMode) {
             viewModel.onTitleChange("$refundAppName  【应用退币申请】")
         }
-        val storedDeviceName = deviceNameDataStore.deviceNameFlow.first()
+        val storedDeviceName = /*deviceNameDataStore.deviceNameFlow.first()*/"https://gitee.com/Voltula/bbq/releases/"//暂时硬编码
         tempDeviceName = storedDeviceName
     }
 
