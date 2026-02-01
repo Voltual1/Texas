@@ -13,6 +13,7 @@ object AgreementVersions {
     const val USER_AGREEMENT = 1
     const val XIAOQU_AGREEMENT = 1 
     const val SINE_PRIVACY = 1
+    const val SINE_AGREEMENT = 1
     const val WYSMARKET_PRIVACY = 1
 }
 
@@ -41,7 +42,7 @@ class UserAgreementDataStore(context: Context) {
     // --- 对外暴露的 Flow (对应 MainActivity 监听) ---
     val isUserAgreementAccepted = isAccepted(Keys.USER_AGREEMENT_VER, AgreementVersions.USER_AGREEMENT)
     val isXiaoquAccepted = isAccepted(Keys.XIAOQU_AGREEMENT_VER, AgreementVersions.XIAOQU_AGREEMENT)
-    val isSineAgreementAccepted = isAccepted(Keys.SINE_AGREEMENT_VER, AgreementVersions.SINE_AGREEMENT_VER)
+    val isSineAgreementAccepted = isAccepted(Keys.SINE_AGREEMENT_VER, AgreementVersions.SINE_AGREEMENT)
     val isSinePrivacyAccepted = isAccepted(Keys.SINE_PRIVACY_VER, AgreementVersions.SINE_PRIVACY)
     val isWysMarketAgreementAccepted = isAccepted(Keys.WYSMARKET_AGREEMENT_VER, AgreementVersions.WYSMARKET_PRIVACY)
     val isWysMarketPrivacyAccepted = isAccepted(Keys.WYSMARKET_PRIVACY_VER, AgreementVersions.WYSMARKET_PRIVACY)
