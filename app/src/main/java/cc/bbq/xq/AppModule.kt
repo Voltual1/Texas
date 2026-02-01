@@ -53,6 +53,7 @@ import cc.bbq.xq.ui.settings.update.UpdateSettingsViewModel
 import cc.bbq.xq.ui.home.HomeViewModel
 import cc.bbq.xq.ui.plaza.VersionListViewModel
 import cc.bbq.xq.data.UserFilterDataStore
+import cc.bbq.xq.data.UserAgreementDataStore
 import cc.bbq.xq.ui.user.MyCommentsViewModel
 import cc.bbq.xq.data.repository.LingMarketRepository //新增灵应用商店仓库
 
@@ -100,6 +101,8 @@ val appModule = module {
 //    single { AuthManager }AuthManager是object天生单例这里不再用koin管理
     
     single { UserFilterDataStore(get()) }
+    
+single { UserAgreementDataStore(androidContext()) }
     
     // 数据库相关 - 添加 DownloadTaskDao 定义
     single { BBQApplication.instance.database }

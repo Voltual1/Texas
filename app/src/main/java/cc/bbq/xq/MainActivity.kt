@@ -83,12 +83,9 @@ private val agreementDataStore: UserAgreementDataStore by inject()
         setContent {
     val snackbarHostState = remember { SnackbarHostState() }
     val context = LocalContext.current
-    val scope = rememberCoroutineScope()
+    val scope = rememberCoroutineScope()   
 
-    // 1. 获取 DataStore 实例（如果没用 Koin 注入，则使用 remember）
-    val agreementDataStore = remember { UserAgreementDataStore(context) }
-
-    // 2. 监听所有 6 个协议的状态（使用新版变量名）
+    // 监听所有 6 个协议的状态（使用新版变量名）
     // 注意：初值设为 true 可以避免在极短的加载瞬间闪烁弹窗
     val userAccepted by agreementDataStore.isUserAgreementAccepted.collectAsState(initial = true)
     val xiaoquAccepted by agreementDataStore.isXiaoquAccepted.collectAsState(initial = true)

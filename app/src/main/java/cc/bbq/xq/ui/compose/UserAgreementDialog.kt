@@ -20,6 +20,7 @@ import androidx.compose.ui.window.DialogProperties
 import cc.bbq.xq.ui.theme.AppShapes
 import cc.bbq.xq.R
 import cc.bbq.xq.data.UserAgreementDataStore
+import org.koin.android.ext.android.inject
 import cc.bbq.xq.ui.animation.materialSharedAxisX
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch // 必须：用于 onClick 中的滚动动画
@@ -34,8 +35,8 @@ fun UserAgreementDialog(
 ) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
-    val agreementDataStore = remember { UserAgreementDataStore(context) }
-
+    //val agreementDataStore = remember { UserAgreementDataStore(context) }
+val agreementDataStore: UserAgreementDataStore = koinInject()
     var currentAgreementIndex by remember { mutableStateOf(0) }
     val agreementContents = remember { mutableStateMapOf<Int, String>() }
     var animationForward by remember { mutableStateOf(true) }
