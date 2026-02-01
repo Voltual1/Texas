@@ -1,7 +1,6 @@
 package cc.bbq.xq
 
 import java.util.ArrayList
-
 /**
  * app_abi字段的位掩码解析逻辑
  */
