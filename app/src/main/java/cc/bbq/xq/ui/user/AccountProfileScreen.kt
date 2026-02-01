@@ -1,3 +1,11 @@
+//Copyright (C) 2025 Voltual
+// 本程序是自由软件：你可以根据自由软件基金会发布的 GNU 通用公共许可证第3版
+//（或任意更新的版本）的条款重新分发和/或修改它。
+//本程序是基于希望它有用而分发的，但没有任何担保；甚至没有适销性或特定用途适用性的隐含担保。
+// 有关更多细节，请参阅 GNU 通用公共许可证。
+//
+// 你应该已经收到了一份 GNU 通用公共许可证的副本
+// 如果没有，请查阅 <http://www.gnu.org/licenses/>.
 package cc.bbq.xq.ui.user
 
 import android.app.Activity
@@ -25,7 +33,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import cc.bbq.xq.AppStore
 import cc.bbq.xq.data.DeviceConfig
 import cc.bbq.xq.data.unified.UpdateUserProfileParams
-import cc.bbq.xq.ui.theme.BBQSnackbarHost
+import cc.bbq.xq.ui.theme.* // 导入自定义组件
 import cc.bbq.xq.util.FileUtil
 import coil3.compose.rememberAsyncImagePainter
 import com.github.dhaval2404.imagepicker.ImagePicker
@@ -44,24 +52,22 @@ fun AccountProfileScreen(
     val coroutineScope = rememberCoroutineScope()
     val state by viewModel.uiState.collectAsStateWithLifecycle()
 
-    // 基础信息状态
     var nickname by remember { mutableStateOf("") }
     var description by remember { mutableStateOf("") }
+    var qqNumber by remember { mutableStateOf("") }
     
-    // 当前编辑的设备配置临时状态
     var brand by remember { mutableStateOf("") }
     var model by remember { mutableStateOf("") }
     var alias by remember { mutableStateOf("") }
     
     var showImportDialog by remember { mutableStateOf(false) }
 
-    // 监听数据层变化，刷新 UI 字段
     LaunchedEffect(state.userDetail, state.currentDevice) {
         state.userDetail?.let {
             nickname = it.displayName ?: ""
             description = it.description ?: ""
+            qqNumber = it.qq ?: "" 
         }
-        // 当切换选中的设备或加载完成时，同步表单
         brand = state.currentDevice.brand
         model = state.currentDevice.model
         alias = state.currentDevice.alias
@@ -90,7 +96,7 @@ fun AccountProfileScreen(
     Scaffold(
         snackbarHost = { BBQSnackbarHost(snackbarHostState) }
     ) { padding ->
-        Column(modifier = Modifier.padding(padding).verticalScroll(rememberScrollState()).padding(20.dp)) {
+        Column(modifier = modifier.padding(padding).verticalScroll(rememberScrollState()).padding(20.dp)) {
             
             AvatarSection(
                 currentUrl = state.userDetail?.avatarUrl,
@@ -112,6 +118,8 @@ fun AccountProfileScreen(
                 store = store,
                 nickname = nickname,
                 onNicknameChange = { nickname = it },
+                qqNumber = qqNumber,
+                onQqNumberChange = { qqNumber = it },
                 description = description,
                 onDescriptionChange = { description = it },
                 brand = brand,
@@ -129,9 +137,9 @@ fun AccountProfileScreen(
                     val params = UpdateUserProfileParams(
                         nickname = nickname,
                         description = description,
+                        qq = qqNumber,
                         deviceName = model 
                     )
-                    // 保存当前正在编辑的配置（允许用户手动修改 brand/model 后保存）
                     val updatedConfig = state.currentDevice.copy(
                         brand = brand, 
                         model = model,
@@ -160,6 +168,8 @@ fun ProfileFields(
     store: AppStore,
     nickname: String,
     onNicknameChange: (String) -> Unit,
+    qqNumber: String,
+    onQqNumberChange: (String) -> Unit,
     description: String,
     onDescriptionChange: (String) -> Unit,
     brand: String,
@@ -176,13 +186,29 @@ fun ProfileFields(
     Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
         Text("账户信息", style = MaterialTheme.typography.titleMedium)
         
+        val nicknameLabel = when (store) {
+            AppStore.XIAOQU_SPACE -> "修改昵称"
+            AppStore.LING_MARKET -> "市场昵称"
+            else -> "外显名称"
+        }
+
         OutlinedTextField(
             value = nickname,
             onValueChange = onNicknameChange,
-            label = { Text("昵称") },
+            label = { Text(nicknameLabel) },
             modifier = Modifier.fillMaxWidth(),
             singleLine = true
         )
+
+        if (store == AppStore.XIAOQU_SPACE) {
+            OutlinedTextField(
+                value = qqNumber,
+                onValueChange = onQqNumberChange,
+                label = { Text("QQ 号码") },
+                modifier = Modifier.fillMaxWidth(),
+                singleLine = true
+            )
+        }
 
         if (store == AppStore.SIENE_SHOP || store == AppStore.LING_MARKET) {
             OutlinedTextField(
@@ -196,7 +222,6 @@ fun ProfileFields(
 
         HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
         
-        // 设备伪装标题栏
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,
@@ -210,10 +235,10 @@ fun ProfileFields(
             }
         }
 
-        // 机型选择下拉列表
-        ExposedDropdownMenuBox(
+        // 使用自定义 BBQ 包装组件
+        BBQExposedDropdownMenuBox(
             expanded = expanded,
-            onExpandedChange = { expanded = !expanded }
+            onExpandedChange = { expanded = it }
         ) {
             OutlinedTextField(
                 value = currentDevice.alias.ifEmpty { "未命名配置" },
@@ -222,10 +247,11 @@ fun ProfileFields(
                 label = { Text("当前选中的模板") },
                 trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
                 colors = ExposedDropdownMenuDefaults.outlinedTextFieldColors(),
-                modifier = Modifier.menuAnchor().fillMaxWidth()
+                // 替换被弃用的 menuAnchor()
+                modifier = Modifier.menuAnchor(MenuAnchorType.PrimaryNotEditable).fillMaxWidth()
             )
 
-            ExposedDropdownMenu(
+            BBQExposedDropdownMenu(
                 expanded = expanded,
                 onDismissRequest = { expanded = false }
             ) {
@@ -247,7 +273,6 @@ fun ProfileFields(
             }
         }
 
-        // 详细参数编辑
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             OutlinedTextField(
                 value = brand,
@@ -352,7 +377,7 @@ fun AvatarSection(
     }
 }
 
-// 辅助组件保持...
+// 辅助组件
 @Composable
 fun CircularProgressIndicator(size: androidx.compose.ui.unit.Dp, color: androidx.compose.ui.graphics.Color) {
     androidx.compose.material3.CircularProgressIndicator(
