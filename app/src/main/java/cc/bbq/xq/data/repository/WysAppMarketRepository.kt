@@ -8,10 +8,18 @@ import kotlin.math.ceil
 import org.koin.core.annotation.Single
 
 @Single
-class WysAppMarketRepository : IAppStoreRepository {
+class WysAppMarketRepository(
+    private val deviceDataStore: DeviceNameDataStore // 1. 构造函数注入
+) : IAppStoreRepository {
 
     private companion object {
         const val PAGE_SIZE = 20
+    }
+    
+    // 2. 提取一个私有辅助方法，用于获取当前机型名
+    private suspend fun getCurrentDeviceModel(): String {
+        // 从 Flow 中获取当前最新的选中配置，如果没有则使用默认值
+        return deviceDataStore.currentConfigFlow.first().model.ifBlank { "浊燃" }
     }
 
     // ==========================================================
@@ -66,20 +74,22 @@ class WysAppMarketRepository : IAppStoreRepository {
     } catch (e: Exception) { Result.failure(e) }
 
     override suspend fun getAppDownloadSources(appId: String, versionId: Long): Result<List<UnifiedDownloadSource>> = try {
-        // 将字符串类型的 appId 转换为 Int
-        val appIdInt = appId.toIntOrNull() ?: return Result.failure(IllegalArgumentException("无效的应用ID: $appId"))
+        val appIdInt = appId.toIntOrNull() ?: return Result.failure(IllegalArgumentException("ID错误"))
         
-        // 调用 WysAppMarketClient 的 getDownloadSources 方法获取真正的下载源
-        WysAppMarketClient.getDownloadSources(appIdInt).map { response ->
-            // 将每个下载源转换为 UnifiedDownloadSource
-            response.data.map { downloadSource ->
-                UnifiedDownloadSource(
-                    name = downloadSource.name,
-                    url = downloadSource.url,
-                    // 根据类型判断是否为官方线路，type=0 是官方线路
-                    isOfficial = downloadSource.type == 0
-                )
-            }
+        // 3. 在这里动态获取 DataStore 中的机型
+        val currentModel = getCurrentDeviceModel()
+        
+        // 4. 先获取 StartKey
+        val startKeyResult = WysAppMarketClient.getStartKey(deviceModel = currentModel)
+        val startKey = startKeyResult.getOrThrow()
+
+        // 5. 传入 Client 执行
+        WysAppMarketClient.getDownloadSources(
+            appId = appIdInt,
+            startKey = startKey,
+            deviceModel = currentModel
+        ).map { response ->
+            response.data.map { it.toUnifiedDownloadSource() }
         }
     } catch (e: Exception) {
         Result.failure(e)

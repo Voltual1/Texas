@@ -47,7 +47,7 @@ object WysAppMarketClient {
     internal const val WYSAPPMARKET_ICON_BASE_URL = "https://image.apk.wysteam.cn/"
 
 
-    private const val DEFAULT_DEVICE_MODEL = "浊燃"
+//    private const val DEFAULT_DEVICE_MODEL = "浊燃"
     private const val DEFAULT_BUILD_NUMBER = "3210"
     
     // Ktor HttpClient 实例
@@ -349,7 +349,7 @@ object SmartListSerializer : KSerializer<List<String>> {
      * @param buildNumber 构建号
      */
     suspend fun getStartKey(
-        deviceModel: String = DEFAULT_DEVICE_MODEL,
+        deviceModel: String, // 改为强制要求，由调用方保证传入
         buildNumber: String = DEFAULT_BUILD_NUMBER
     ): Result<String> {
         val timestamp = getCurrentTimestamp()
