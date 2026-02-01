@@ -210,7 +210,10 @@ fun ProfileFields(
     onBrandChange: (String) -> Unit,
     model: String,
     onModelChange: (String) -> Unit,
-    onImportClick: () -> Unit
+    onImportClick: () -> Unit,
+    allDevices: List<DeviceConfig>,
+    currentDevice: DeviceConfig,
+    onDeviceSelect: (DeviceConfig) -> Unit
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
         Text("账户信息", style = MaterialTheme.typography.titleMedium)
@@ -250,33 +253,52 @@ fun ProfileFields(
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Text("设备伪装 (仅本地)", style = MaterialTheme.typography.titleMedium)
+            Text("设备伪装管理", style = MaterialTheme.typography.titleMedium)
             TextButton(onClick = onImportClick) {
-                Icon(
-                    imageVector = Icons.Default.ContentPaste,
-                    contentDescription = null,
-                    modifier = Modifier.size(18.dp) // 修复位置
-                )
+                Icon(Icons.Default.ContentPaste, null, Modifier.size(18.dp))
                 Spacer(Modifier.width(8.dp))
-                Text("导入 Guise JSON")
+                Text("导入 Guise")
+            }
+        }
+
+        // 机型切换下拉菜单
+        ExposedDropdownMenuBox(
+            expanded = expanded,
+            onExpandedChange = { expanded = !expanded }
+        ) {
+            OutlinedTextField(
+                value = currentDevice.alias.ifEmpty { currentDevice.model },
+                onValueChange = {},
+                readOnly = true,
+                label = { Text("当前选定的机型模板") },
+                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
+                modifier = Modifier.menuAnchor().fillMaxWidth()
+            )
+            ExposedDropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+                allDevices.forEach { device ->
+                    DropdownMenuItem(
+                        text = { Text("${device.alias} (${device.model})") },
+                        onClick = {
+                            onDeviceSelect(device)
+                            expanded = false
+                        }
+                    )
+                }
             }
         }
 
         OutlinedTextField(
             value = brand,
             onValueChange = onBrandChange,
-            label = { Text("设备品牌 (Brand)") },
-            modifier = Modifier.fillMaxWidth(),
-            singleLine = true
+            label = { Text("品牌 (Brand)") },
+            modifier = Modifier.fillMaxWidth()
         )
 
         OutlinedTextField(
             value = model,
             onValueChange = onModelChange,
-            label = { Text("设备型号 (Model)") },
-            modifier = Modifier.fillMaxWidth(),
-            singleLine = true,
-            supportingText = { Text("避免使用被服务器拦截的关键词") }
+            label = { Text("型号 (Model)") },
+            modifier = Modifier.fillMaxWidth()
         )
     }
 }
