@@ -27,12 +27,12 @@ enum class AppListType(val value: Int) {
 
 /**
  * 搜索类型（用于 /market/search/ 接口的 type 参数）
- * 已知类型：0 = 关键词搜索，1 = 分类搜索
  */
 enum class SearchType(val value: Int) {
     KEYWORD(0),     // 关键词搜索
     CATEGORY(1),    // 分类搜索
-    UNKNOWN(-1);    // 未知类型
+    PACKAGE_NAME(3), // 新增：包名搜索（用于获取版本列表）
+    UNKNOWN(-1);
     
     companion object {
         fun fromValue(value: Int): SearchType {

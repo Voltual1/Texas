@@ -108,7 +108,7 @@ object WysAppMarketClient {
         val logo: String,
         val type: Int,
         val verid: Int,
-        val info: String
+        val info: String? = null
     ) {
         // 辅助属性：获取版本类型显示名称
         val versionTypeDisplay: String
@@ -476,7 +476,18 @@ object SmartListSerializer : KSerializer<List<String>> {
                 throw IOException("Search failed with code: ${response.code}")
             }
         }
-    }
+    }   
+
+/**
+ * 根据包名获取应用的所有版本列表
+ * @param packageName 应用包名 (如 com.deepseek.chat)
+ */
+suspend fun getAppVersionsByPackage(
+    packageName: String
+): Result<List<WysAppListItem>> {
+    // 复用 searchApps 逻辑，但固定使用 PACKAGE_NAME 类型
+    return searchApps(packageName, SearchType.PACKAGE_NAME)
+}
     
     /**
      * 获取应用列表

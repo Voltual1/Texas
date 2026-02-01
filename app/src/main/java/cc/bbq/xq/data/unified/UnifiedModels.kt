@@ -95,7 +95,9 @@ data class UnifiedAppItem(
     val store: AppStore,
     val name: String,
     val iconUrl: String,
-    val versionName: String
+    val versionName: String,
+    // 新增：统一的描述性副标题/信息标签
+    val info: String? = null
 )
 
 /**
