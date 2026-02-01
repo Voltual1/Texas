@@ -48,7 +48,7 @@ object WysAppMarketClient {
 
 
     private const val DEFAULT_DEVICE_MODEL = "浊燃"
-    private const val DEFAULT_BUILD_NUMBER = "2131558406"
+    private const val DEFAULT_BUILD_NUMBER = "9999"
     
     // Ktor HttpClient 实例
     val httpClient = HttpClient(OkHttp) {
@@ -344,9 +344,9 @@ object SmartListSerializer : KSerializer<List<String>> {
     // ===== 下载相关 API 方法 =====
     
     /**
-     * 获取 StartKey（参考Python原型的 get_startkey 方法）
-     * @param deviceModel 设备型号，默认为 V2072A
-     * @param buildNumber 构建号，默认为 2131558406
+     * 获取 StartKey
+     * @param deviceModel 设备型号
+     * @param buildNumber 构建号
      */
     suspend fun getStartKey(
         deviceModel: String = DEFAULT_DEVICE_MODEL,
