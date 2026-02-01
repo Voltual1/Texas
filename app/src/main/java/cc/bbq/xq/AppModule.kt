@@ -120,7 +120,9 @@ val appModule = module {
     single { SineShopRepository() }
     single { SineOpenMarketRepository() } // 添加 SINE_OPEN_MARKET 的仓库
 //    single { DownloadTaskRepository(get()) }  // 这里会自动使用上面定义的 DownloadTaskDao
-    single { WysAppMarketRepository() }
+
+// 这里的 get() 会自动匹配到上面的 DeviceNameDataStore
+single { WysAppMarketRepository(get()) }
     
     single { LingMarketRepository() } // 新增灵应用商店
     
