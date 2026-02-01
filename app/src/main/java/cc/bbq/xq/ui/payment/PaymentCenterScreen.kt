@@ -84,31 +84,48 @@ import kotlinx.coroutines.launch
 @Composable
 fun PaymentCenterScreen(
     viewModel: PaymentViewModel,
-    navController: NavController? = null, // 添加 NavController 参数
-    modifier: Modifier = Modifier // 新增：接收外部 modifier
+    navController: NavController? = null,
+    modifier: Modifier = Modifier
 ) {
+    val context = LocalContext.current
+    val snackbarHostState = remember { SnackbarHostState() }
+    val coroutineScope = rememberCoroutineScope()
+    
     val isLoadingBalance by viewModel.isLoadingBalance.collectAsState()
     val paymentInfo by viewModel.paymentInfo.collectAsState()
     val coinsBalance by viewModel.coinsBalance.collectAsState()
     val paymentStatus by viewModel.paymentStatus.collectAsState()
     val errorMessage by viewModel.errorMessage.collectAsState()
-    val context = LocalContext.current
-/*
-    // 支付成功后自动触发下载
-    LaunchedEffect(paymentStatus) {
-        if (paymentStatus == PaymentStatus.SUCCESS) {
-            val downloadUrl = viewModel.getDownloadUrl()
-            if (!downloadUrl.isNullOrEmpty()) {
-                // 使用内部下载服务
-                val fileName = viewModel.getDownloadFileName() ?: "download_file.apk"
-                startInternalDownload(context, downloadUrl, fileName)
-                
-                // 导航到下载屏幕 - 使用字符串路由
-                navController?.navigate("download") // 改为字符串路由
-            }
+    
+    // 监听从 ViewModel 获取的下载信息
+    val downloadUrl by remember(paymentStatus) {
+        derivedStateOf {
+            if (paymentStatus == PaymentStatus.SUCCESS) {
+                viewModel.getDownloadUrl()
+            } else null
         }
     }
-    */
+    
+    val downloadFileName by remember(paymentStatus) {
+        derivedStateOf {
+            if (paymentStatus == PaymentStatus.SUCCESS) {
+                viewModel.getDownloadFileName()
+            } else null
+        }
+    }
+    
+    // 下载函数
+    fun startDownload(url: String, fileName: String) {
+        val activity = context as? Activity
+        if (activity != null) {
+            DownloadManager.download(
+                activity = activity,
+                url = url,
+                fileName = fileName,
+                headers = null
+            )
+        }
+    }
 
     when (paymentStatus) {
         PaymentStatus.SUCCESS -> {
@@ -116,19 +133,20 @@ fun PaymentCenterScreen(
                 success = true,
                 onDismiss = { 
                     viewModel.resetPaymentStatus()
-                    // 完成后可以返回上一页
                     navController?.popBackStack()
                 },
                 onDownload = {
-                    val downloadUrl = viewModel.getDownloadUrl()
-                    val fileName = viewModel.getDownloadFileName()
-                    if (!downloadUrl.isNullOrEmpty() && !fileName.isNullOrEmpty()) {
-                        startInternalDownload(context, downloadUrl, fileName)
-                        // 导航到下载屏幕 - 使用字符串路由
-                        navController?.navigate("download") // 改为字符串路由
+                    downloadUrl?.let { url ->
+                        downloadFileName?.let { fileName ->
+                            startDownload(url, fileName)
+                        }
                     }
                 },
-                showDownloadButton = paymentInfo?.type == PaymentType.APP_PURCHASE
+                showDownloadButton = paymentInfo?.type == PaymentType.APP_PURCHASE && !downloadUrl.isNullOrEmpty(),
+                snackbarHostState = snackbarHostState,
+                coroutineScope = coroutineScope,
+                navController = navController,
+                fileName = downloadFileName
             )
         }
         PaymentStatus.FAILED -> {
@@ -150,8 +168,9 @@ fun PaymentCenterScreen(
                 onFetchBalance = { viewModel.fetchCoinsBalance() },
                 onPay = { amount -> viewModel.executePayment(amount) },
                 viewModel = viewModel,
-                isPaymentProcessing = paymentStatus == PaymentStatus.PROCESSING, // 根据状态判断是否正在处理
-                modifier = modifier // 传递 modifier
+                isPaymentProcessing = paymentStatus == PaymentStatus.PROCESSING,
+                modifier = modifier,
+                snackbarHostState = snackbarHostState
             )
         }
     }
@@ -167,7 +186,8 @@ fun PaymentContent(
     onPay: (Int) -> Unit,
     viewModel: PaymentViewModel,
     isPaymentProcessing: Boolean = false, // 添加一个参数来表示是否正在支付处理中
-    modifier: Modifier = Modifier // 新增：接收外部 modifier
+    modifier: Modifier = Modifier, // 接收外部 modifier
+    snackbarHostState: SnackbarHostState
 ) {
     val snackbarHostState = remember { SnackbarHostState() }
     val coroutineScope = rememberCoroutineScope()
@@ -482,6 +502,11 @@ fun PaymentContent(
                 }
             }
         }
+        
+        BBQSnackbarHost(
+            snackbarHostState,
+            modifier = Modifier.align(Alignment.BottomCenter)
+        )
 
         // ==================== 支付按钮区域 ====================
         val payAmount = amount.toIntOrNull() ?: 0
@@ -584,14 +609,22 @@ private fun CoinAmountChip(
     }
 }
 
+// 在 PaymentCenterScreen.kt 的 PaymentResultDialog Composable 函数中
 @Composable
 fun PaymentResultDialog(
     success: Boolean,
     error: String? = null,
     onDismiss: () -> Unit,
     onDownload: (() -> Unit)? = null,
-    showDownloadButton: Boolean = false
+    showDownloadButton: Boolean = false,
+    // 新增参数
+    snackbarHostState: SnackbarHostState? = null,
+    coroutineScope: CoroutineScope? = null,
+    navController: NavController? = null,
+    fileName: String? = null
 ) {
+    val context = LocalContext.current
+    
     Dialog(
         onDismissRequest = onDismiss,
         properties = DialogProperties(dismissOnBackPress = true, dismissOnClickOutside = false)
@@ -645,7 +678,33 @@ fun PaymentResultDialog(
 
                 if (success && showDownloadButton) {
                     BBQButton(
-                        onClick = { onDownload?.invoke() },
+                        onClick = {
+                            // 执行下载
+                            onDownload?.invoke()
+                            
+                            // 显示SnackBar（参考AppDetailScreen）
+                            if (snackbarHostState != null && coroutineScope != null && fileName != null) {
+                                coroutineScope.launch {
+                                    val result = snackbarHostState.showSnackbar(
+                                        message = "任务已发送至 1DM: $fileName",
+                                        actionLabel = "管理下载",
+                                        withDismissAction = true,
+                                        duration = SnackbarDuration.Indefinite
+                                    )
+
+                                    // 处理 SnackBar 的点击事件
+                                    when (result) {
+                                        SnackbarResult.ActionPerformed -> {
+                                            // 用户点击了“管理下载”，执行静默导航
+                                            navController?.navigate(Download.route)
+                                        }
+                                        SnackbarResult.Dismissed -> {
+                                            // 用户点击了 X 或者手动关闭
+                                        }
+                                    }
+                                }
+                            }
+                        },
                         modifier = Modifier.fillMaxWidth(),
                         contentPadding = PaddingValues(vertical = 14.dp),
                         text = { Text("下载应用") }
