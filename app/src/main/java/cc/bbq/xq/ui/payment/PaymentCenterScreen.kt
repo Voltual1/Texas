@@ -16,6 +16,7 @@ import androidx.compose.foundation.border
 import coil3.compose.AsyncImage
 import androidx.navigation.NavController
 import androidx.compose.ui.layout.ContentScale
+import cc.bbq.xq.util.DownloadManager
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -721,29 +722,4 @@ fun PaymentResultDialog(
             }
         }
     }
-}
-
-/**
- * 启动内部下载服务
- */
-private fun startInternalDownload(context: Context, downloadUrl: String, fileName: String) {
-/*    val intent = Intent(context, DownloadService::class.java).apply {
-        action = DownloadService.ACTION_START_DOWNLOAD 
-        
-        // 使用我们在 Service 里定义的常量名
-        putExtra(DownloadService.EXTRA_URL, downloadUrl)
-        putExtra(DownloadService.EXTRA_FILE_NAME, fileName)
-        putExtra(DownloadService.EXTRA_SAVE_PATH, getDefaultDownloadPath(context))
-    }
-    
-    // 启动服务
-    context.startService(intent)*/
-    //TODO
-}
-
-/**
- * 获取默认下载路径
- */
-private fun getDefaultDownloadPath(context: Context): String {
-    return context.getExternalFilesDir(null)?.absolutePath ?: context.filesDir.absolutePath + "/downloads"
 }
