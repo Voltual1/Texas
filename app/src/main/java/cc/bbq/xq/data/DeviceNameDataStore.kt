@@ -1,11 +1,3 @@
-//Copyright (C) 2025 Voltual
-// 本程序是自由软件：你可以根据自由软件基金会发布的 GNU 通用公共许可证第3版
-//（或任意更新的版本）的条款重新分发和/或修改它。
-//本程序是基于希望它有用而分发的，但没有任何担保；甚至没有适销性或特定用途适用性的隐含担保。
-// 有关更多细节，请参阅 GNU 通用公共许可证。
-//
-// 你应该已经收到了一份 GNU 通用公共许可证的副本
-// 如果没有，请查阅 <http://www.gnu.org/licenses/>。
 package cc.bbq.xq.data
 
 import android.content.Context
@@ -16,23 +8,64 @@ import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 import org.koin.core.annotation.Single
 
-private val Context.deviceNameDataStore: DataStore<Preferences> by preferencesDataStore(name = "device_name")
+// 定义设备配置模型
+@Serializable
+data class DeviceConfig(
+    val brand: String = "Generic",
+    val model: String = "Android Device",
+    val product: String = "",
+    val device: String = ""
+)
+
+private val Context.deviceNameDataStore: DataStore<Preferences> by preferencesDataStore(name = "device_info")
 
 @Single
 class DeviceNameDataStore(context: Context) {
-    private val DEVICE_NAME_KEY = stringPreferencesKey("device_name")
+    private val DEVICE_CONFIG_KEY = stringPreferencesKey("device_config_json")
     private val dataStore = context.deviceNameDataStore
+    
+    private val json = Json { 
+        ignoreUnknownKeys = true 
+        coerceInputValues = true
+    }
 
-    val deviceNameFlow: Flow<String> = dataStore.data
+    // 提供 Flow 供 UI 订阅
+    val deviceConfigFlow: Flow<DeviceConfig> = dataStore.data
         .map { preferences ->
-            preferences[DEVICE_NAME_KEY] ?: "https://gitee.com/Voltula/bbq/releases/"
+            val jsonStr = preferences[DEVICE_CONFIG_KEY]
+            if (jsonStr != null) {
+                try {
+                    json.decodeFromString<DeviceConfig>(jsonStr)
+                } catch (e: Exception) {
+                    DeviceConfig()
+                }
+            } else {
+                // 默认值，或者迁移旧的单字符串数据逻辑（如果需要）
+                DeviceConfig()
+            }
         }
 
-    suspend fun saveDeviceName(deviceName: String) {
+    suspend fun saveDeviceConfig(config: DeviceConfig) {
         dataStore.edit { preferences ->
-            preferences[DEVICE_NAME_KEY] = deviceName
+            preferences[DEVICE_CONFIG_KEY] = json.encodeToString(config)
+        }
+    }
+
+    /**
+     * 从外部（如 Guise 模板）导入配置
+     */
+    suspend fun importConfigFromJson(configJson: String): Boolean {
+        return try {
+            val config = json.decodeFromString<DeviceConfig>(configJson)
+            saveDeviceConfig(config)
+            true
+        } catch (e: Exception) {
+            false
         }
     }
 }

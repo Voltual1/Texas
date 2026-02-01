@@ -3,6 +3,7 @@ package cc.bbq.xq.ui.user
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import cc.bbq.xq.AppStore
+import cc.bbq.xq.data.DeviceConfig
 import cc.bbq.xq.data.DeviceNameDataStore
 import cc.bbq.xq.data.repository.IAppStoreRepository
 import cc.bbq.xq.data.unified.UnifiedUserDetail
@@ -26,7 +27,7 @@ class UserProfileViewModel(
     data class UserProfileUiState(
         val isLoading: Boolean = false,
         val userDetail: UnifiedUserDetail? = null,
-        val deviceName: String = "",
+        val deviceConfig: DeviceConfig = DeviceConfig(), // 扩展为对象
         val error: String? = null,
         val isUploading: Boolean = false
     )
@@ -38,8 +39,7 @@ class UserProfileViewModel(
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, error = null) }
             try {
-                // 并行获取 DataStore 和网络数据
-                val deviceNameDeferred = async { deviceNameDataStore.deviceNameFlow.first() }
+                val configDeferred = async { deviceNameDataStore.deviceConfigFlow.first() }
                 val repository = repositories[store] ?: throw Exception("不支持的平台")
                 val userResult = repository.getCurrentUserDetail()
 
@@ -48,7 +48,7 @@ class UserProfileViewModel(
                         it.copy(
                             isLoading = false,
                             userDetail = userResult.getOrNull(),
-                            deviceName = deviceNameDeferred.await()
+                            deviceConfig = configDeferred.await()
                         )
                     }
                 } else {
@@ -63,16 +63,20 @@ class UserProfileViewModel(
     fun updateProfile(
         store: AppStore,
         params: UpdateUserProfileParams,
-        onResult: (Boolean, String) -> Unit // 两个参数：成功标志和消息
+        deviceConfig: DeviceConfig, // 增加设备配置参数
+        onResult: (Boolean, String) -> Unit
     ) {
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true) }
             try {
+                // 保存本地设备伪装信息
+                deviceNameDataStore.saveDeviceConfig(deviceConfig)
+                
+                // 保存云端用户信息
                 val repository = repositories[store] ?: return@launch onResult(false, "不支持的平台")
                 val result = repository.updateUserProfile(params)
                 
                 if (result.isSuccess) {
-                    params.deviceName?.let { deviceNameDataStore.saveDeviceName(it) }
                     loadUserProfile(store)
                     onResult(true, "保存成功")
                 } else {
@@ -86,17 +90,23 @@ class UserProfileViewModel(
         }
     }
 
-    fun uploadAvatar(
-        store: AppStore,
-        imageFile: File,
-        onResult: (Boolean, String) -> Unit
-    ) {
+    fun importDeviceConfig(jsonStr: String, onResult: (Boolean) -> Unit) {
+        viewModelScope.launch {
+            val success = deviceNameDataStore.importConfigFromJson(jsonStr)
+            if (success) {
+                val newConfig = deviceNameDataStore.deviceConfigFlow.first()
+                _uiState.update { it.copy(deviceConfig = newConfig) }
+            }
+            onResult(success)
+        }
+    }
+
+    fun uploadAvatar(store: AppStore, imageFile: File, onResult: (Boolean, String) -> Unit) {
         viewModelScope.launch {
             _uiState.update { it.copy(isUploading = true) }
             try {
                 val repository = repositories[store] ?: return@launch onResult(false, "不支持的平台")
                 val result = repository.uploadAvatar(imageFile.readBytes(), imageFile.name)
-                
                 if (result.isSuccess) {
                     loadUserProfile(store)
                     onResult(true, "头像上传成功")
