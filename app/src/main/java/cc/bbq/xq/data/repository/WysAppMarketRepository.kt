@@ -95,7 +95,8 @@ class WysAppMarketRepository(
             val isFakeFastName = firstSource.name.contains("极速")
             
             if (isSlowIp && isFakeFastName) {
-                throw IllegalStateException("检测到由于机型名【$currentModel】被服务器拉入黑名单，服务器故意把备用线路当作极速路线返回给客户端导致限速。请在账号资料设置中更换伪装机型后再试。")
+                throw IllegalStateException("检测到由于机型名【$currentModel】被服务器拉入黑名单，服务器故意把备用线路当作极速路线返回给客户端导致限速。正在自动更改机型请再试一下。")
+                deviceDataStore.applyEmergencyRandomModel()
             }
         }
         sources.map { it.toUnifiedDownloadSource() }

@@ -40,7 +40,27 @@ class DeviceNameDataStore(context: Context) {
         ignoreUnknownKeys = true 
         coerceInputValues = true
         isLenient = true
-    }
+    }    
+
+// 辅助：生成随机字符串
+private fun generateRandomModel() = "${(1000..9999).random()}-${('A'..'Z').random()}"
+
+suspend fun applyEmergencyRandomModel() {
+    val currentList = deviceListFlow.first()
+    val randomModel = generateRandomModel()
+    
+    // 创建一个新的伪装配置
+    val emergencyConfig = DeviceConfig(
+        alias = "${randomModel}",
+        model = randomModel,
+        brand = "Generic",
+        isSelected = true
+    )
+
+    // 将旧的选中状态取消，并加入新的
+    val updatedList = currentList.map { it.copy(isSelected = false) } + emergencyConfig
+    updateDeviceList(updatedList)
+}
 
     // 获取所有机型列表
     val deviceListFlow: Flow<List<DeviceConfig>> = dataStore.data
