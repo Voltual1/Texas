@@ -272,7 +272,7 @@ composable(route = CreateRefundPost(0, 0, "", 0).route, arguments = CreateRefund
 
 composable(Download.route) {
     val context = LocalContext.current
-    val navController = rememberNavController() // 注意：通常应从外部传入同一个 navController
+    navController = navController, // 传递 navController
     
     var showInstallDialog by remember { mutableStateOf(false) }
 
@@ -311,6 +311,7 @@ composable(Download.route) {
             }
         )
     }
+    navController.popBackStack()
 }
 composable(route = MyComments.route) {
     MyCommentsScreen(
