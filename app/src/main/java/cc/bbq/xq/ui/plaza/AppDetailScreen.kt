@@ -403,7 +403,7 @@ val shareUrl = "https://apk.wysteam.cn/app/?id=${detail.id}"
         AlertDialog(
             onDismissRequest = { showDeleteCommentDialog = false },
             title = { Text("确认删除评论") },
-            Shape = AppShapes.medium,
+            shape = AppShapes.medium,
             text = { Text("确定要删除这条评论吗？") },
             confirmButton = {
                 TextButton(onClick = {
