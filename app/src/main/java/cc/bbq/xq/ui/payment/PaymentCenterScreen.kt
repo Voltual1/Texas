@@ -227,7 +227,7 @@ fun PaymentContent(
                                 // 帖子打赏布局
                                 Text("帖子打赏: ${info.appName}", modifier = Modifier.padding(16.dp))
                             }
-                            else -> { Text("支付信息", modifier = Modifier.padding(16.dp)) }
+//                            else -> { Text("支付信息", modifier = Modifier.padding(16.dp)) }
                         }
                     }
                 }

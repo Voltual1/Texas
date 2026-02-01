@@ -118,7 +118,7 @@ abstract class AppDatabase : RoomDatabase() {
                         MIGRATION_4_7,
                         MIGRATION_5_7
                     )
-                    .fallbackToDestructiveMigration() // 如果迁移失败，重建数据库（数据会丢失，但避免崩溃）
+//                    .fallbackToDestructiveMigration() // 如果迁移失败，重建数据库（数据会丢失，但避免崩溃）
                     .build()
                 INSTANCE = instance
                 instance

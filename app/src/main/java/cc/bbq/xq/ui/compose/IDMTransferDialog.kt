@@ -15,7 +15,7 @@ import androidx.compose.ui.window.Dialog
 fun IDMTransferDialog(onDismiss: () -> Unit) {
     // 既然有 MarkDownText，我们可以直接在这里定义符合 MD 语法的文案
 val noticeContent = """
-        嘿孩子们，从 **Pyrolysis18.4** 版本开始，本项目的下载服务已经整体移交给 **1DM** 家族了。
+        嘿孩子们，从 **Pyrolysis19.0** 版本开始，本项目的下载服务已经整体移交给 **1DM** 家族了。
 
 所以你需要安装 1DM 系列的应用哦。
 

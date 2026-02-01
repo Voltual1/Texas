@@ -128,14 +128,16 @@ class LingMarketRepository : IAppStoreRepository {
     } catch (e: Exception) { Result.failure(e) }
 
     override suspend fun getAppDownloadSources(appId: String, versionId: Long): Result<List<UnifiedDownloadSource>> =
-        try {
-            getAppDetail(appId, versionId).map { detail ->
-                detail.downloadUrl?.let { listOf(UnifiedDownloadSource("默认下载源", it, true)) } ?: emptyList()
-            }.getOrThrow()
-        .let { Result.success(it) }
-        } catch (e: Exception) {
-            Result.failure(e)
-        }
+    try {
+        val sources = getAppDetail(appId, versionId).map { detail ->
+            detail.downloadUrl?.let { listOf(UnifiedDownloadSource("默认下载源", it, true)) } ?: emptyList()
+        }.getOrThrow()
+        
+        Result.success(sources)
+    } catch (e: Exception) {
+        // 在这里自定义提示文案
+        Result.failure(Exception("获取下载源失败：你可能没有登录灵应用商店哦", e))
+    }
 
     // 其余不支持的方法（toggleFavorite, deleteApp, releaseApp, uploadApk 等）
     // 均自动继承接口的默认 failure 实现。

@@ -260,15 +260,24 @@ object Util1DM {
     }
 
     private fun get1DMAppState(packageManager: PackageManager, packageName: String, requiredVersion: Int): AppState {
-        return try {
-            val packageInfo: PackageInfo = packageManager.getPackageInfo(packageName, 0)
-            if (requiredVersion <= 0 || packageInfo.versionCode >= requiredVersion) {
-                AppState.OK
-            } else {
-                AppState.UPDATE_REQUIRED
-            }
-        } catch (ignore: PackageManager.NameNotFoundException) {
-            AppState.NOT_INSTALLED
+    return try {
+        val packageInfo: PackageInfo = packageManager.getPackageInfo(packageName, 0)
+        
+        // 获取当前安装的版本号（处理弃用警告）
+        val currentVersionCode = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+            packageInfo.longVersionCode
+        } else {
+            @Suppress("DEPRECATION")
+            packageInfo.versionCode.toLong()
         }
+
+        if (requiredVersion <= 0 || currentVersionCode >= requiredVersion) {
+            AppState.OK
+        } else {
+            AppState.UPDATE_REQUIRED
+        }
+    } catch (ignore: PackageManager.NameNotFoundException) {
+        AppState.NOT_INSTALLED
     }
+}
 }

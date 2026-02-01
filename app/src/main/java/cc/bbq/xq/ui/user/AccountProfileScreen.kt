@@ -20,6 +20,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CameraAlt
 import androidx.compose.material.icons.filled.ContentPaste
+import androidx.compose.material.icons.filled.HelpOutline
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -33,8 +34,8 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import cc.bbq.xq.AppStore
 import cc.bbq.xq.data.DeviceConfig
 import cc.bbq.xq.data.unified.UpdateUserProfileParams
-import cc.bbq.xq.ui.theme.* // 导入自定义组件
-import cc.bbq.xq.util.FileUtil
+import cc.bbq.xq.ui.compose.MarkDownText // 导入 MarkDownText
+import cc.bbq.xq.ui.theme.* import cc.bbq.xq.util.FileUtil
 import coil3.compose.rememberAsyncImagePainter
 import com.github.dhaval2404.imagepicker.ImagePicker
 import kotlinx.coroutines.Dispatchers
@@ -61,12 +62,13 @@ fun AccountProfileScreen(
     var alias by remember { mutableStateOf("") }
     
     var showImportDialog by remember { mutableStateOf(false) }
+    // 新增：Guise 信息弹窗状态
+    var showGuiseInfoDialog by remember { mutableStateOf(false) }
 
     LaunchedEffect(state.userDetail, state.currentDevice) {
         state.userDetail?.let {
             nickname = it.displayName ?: ""
             description = it.description ?: ""
-            // 修正：UnifiedUserDetail 中对应的字段是 bindQq (Long?)
             qqNumber = it.bindQq?.toString() ?: "" 
         }
         brand = state.currentDevice.brand
@@ -76,6 +78,11 @@ fun AccountProfileScreen(
 
     LaunchedEffect(store) {
         viewModel.loadUserProfile(store)
+    }
+
+    // Guise 信息弹窗
+    if (showGuiseInfoDialog) {
+        GuiseInfoDialog(onDismiss = { showGuiseInfoDialog = false })
     }
 
     if (showImportDialog) {
@@ -130,7 +137,8 @@ fun AccountProfileScreen(
                 allDevices = state.allDevices,
                 currentDevice = state.currentDevice,
                 onDeviceSelect = { viewModel.switchDevice(it) },
-                onImportClick = { showImportDialog = true }
+                onImportClick = { showImportDialog = true },
+                onHelpClick = { showGuiseInfoDialog = true } // 传递点击事件
             )
 
             Button(
@@ -180,7 +188,8 @@ fun ProfileFields(
     allDevices: List<DeviceConfig>,
     currentDevice: DeviceConfig,
     onDeviceSelect: (DeviceConfig) -> Unit,
-    onImportClick: () -> Unit
+    onImportClick: () -> Unit,
+    onHelpClick: () -> Unit // 新增回调
 ) {
     var expanded by remember { mutableStateOf(false) }
 
@@ -228,7 +237,18 @@ fun ProfileFields(
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Text("设备伪装库", style = MaterialTheme.typography.titleMedium)
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text("设备伪装库（仅本地）", style = MaterialTheme.typography.titleMedium)
+                // 添加问号按钮
+                IconButton(onClick = onHelpClick) {
+                    Icon(
+                        imageVector = Icons.Default.HelpOutline,
+                        contentDescription = "关于 Guise",
+                        modifier = Modifier.size(20.dp),
+                        tint = MaterialTheme.colorScheme.primary
+                    )
+                }
+            }
             TextButton(onClick = onImportClick) {
                 Icon(Icons.Default.ContentPaste, null, modifier = Modifier.size(18.dp))
                 Spacer(Modifier.width(8.dp))
@@ -236,7 +256,6 @@ fun ProfileFields(
             }
         }
 
-        // 使用自定义 BBQ 包装组件
         BBQExposedDropdownMenuBox(
             expanded = expanded,
             onExpandedChange = { expanded = it }
@@ -248,8 +267,7 @@ fun ProfileFields(
                 label = { Text("当前选中的模板") },
                 trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
                 colors = ExposedDropdownMenuDefaults.outlinedTextFieldColors(),
-                // 替换被弃用的 menuAnchor()
-                modifier = Modifier.menuAnchor(MenuAnchorType.PrimaryNotEditable).fillMaxWidth()
+                modifier = Modifier.menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable).fillMaxWidth()
             )
 
             BBQExposedDropdownMenu(
@@ -291,6 +309,49 @@ fun ProfileFields(
             )
         }
     }
+}
+
+@Composable
+fun GuiseInfoDialog(onDismiss: () -> Unit) {
+    val markdownContent = """
+        Guise 项目原作者为 [Houvven](https://github.com/Houvven/)
+        仓库地址为 https://github.com/Houvven/Guise/
+        **注意！作者已删库，不是我给的地址有误。**
+        
+        你可以去例如 [酷安](https://www.coolapk.com/) 查找有关于 Guise 的信息和模板。
+        
+        Guise 是一个安卓 11-13 可用的应用伪装类的机型修改的 Xposed 模块。
+        但本项目在此仅兼容 Guise 的模板防止重复造轮子。有关于模板获取见上文。
+        
+        一个格式正确的 JSON 模板例子是这样的：
+        ```json
+        [
+            {
+                "name": "名字",
+                "configuration": "{\"brand\":\"品牌名\",\"model\":\"型号\",\"product\":\"corot\",\"device\":\"corot\"}"
+            }
+        ]
+        ```
+    """.trimIndent()
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("关于 Guise") },
+        shape = AppShapes.medium,
+        text = {
+            Box(modifier = Modifier.heightIn(max = 400.dp).verticalScroll(rememberScrollState())) {
+                MarkDownText(
+                    content = markdownContent,
+                    style = MaterialTheme.typography.bodyMedium.copy(
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                )
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = onDismiss) { Text("知道了") }
+        }
+    )
 }
 
 @Composable
@@ -379,7 +440,6 @@ fun AvatarSection(
     }
 }
 
-// 辅助组件
 @Composable
 fun CircularProgressIndicator(size: androidx.compose.ui.unit.Dp, color: androidx.compose.ui.graphics.Color) {
     androidx.compose.material3.CircularProgressIndicator(
