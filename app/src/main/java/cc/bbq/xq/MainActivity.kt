@@ -81,36 +81,35 @@ private val agreementDataStore: UserAgreementDataStore by inject()
         }
 
         setContent {
-    val snackbarHostState = remember { SnackbarHostState() }
-    val context = LocalContext.current
-    val scope = rememberCoroutineScope()   
+            val snackbarHostState = remember { SnackbarHostState() }
+            val context = LocalContext.current
+            val scope = rememberCoroutineScope()   
 
-    // 监听所有 6 个协议的状态（使用新版变量名）
-    // 注意：初值设为 true 可以避免在极短的加载瞬间闪烁弹窗
-    val userAccepted by agreementDataStore.isUserAgreementAccepted.collectAsState(initial = true)
-    val xiaoquAccepted by agreementDataStore.isXiaoquAccepted.collectAsState(initial = true)
-    val sineAgreementAccepted by agreementDataStore.isSineAgreementAccepted.collectAsState(initial = true)
-    val sinePrivacyAccepted by agreementDataStore.isSinePrivacyAccepted.collectAsState(initial = true)
-    val wysMarketAgreementAccepted by agreementDataStore.isWysMarketAgreementAccepted.collectAsState(initial = true)
-    val wysMarketPrivacyAccepted by agreementDataStore.isWysMarketPrivacyAccepted.collectAsState(initial = true)
+            // 监听所有协议状态（包含新增的 Ling）
+            val userAccepted by agreementDataStore.isUserAgreementAccepted.collectAsState(initial = true)
+            val xiaoquAccepted by agreementDataStore.isXiaoquAccepted.collectAsState(initial = true)
+            val sineAgreementAccepted by agreementDataStore.isSineAgreementAccepted.collectAsState(initial = true)
+            val sinePrivacyAccepted by agreementDataStore.isSinePrivacyAccepted.collectAsState(initial = true)
+            val wysMarketAgreementAccepted by agreementDataStore.isWysMarketAgreementAccepted.collectAsState(initial = true)
+            val wysMarketPrivacyAccepted by agreementDataStore.isWysMarketPrivacyAccepted.collectAsState(initial = true)
+            val lingAccepted by agreementDataStore.isLingAgreementAccepted.collectAsState(initial = true) // 新增
 
-    // 3. 状态加载标记
-    var isAgreementDataLoaded by remember { mutableStateOf(false) }
-    LaunchedEffect(Unit) {
-        // 等待 DataStore 首次读取完成
-        delay(150) 
-        isAgreementDataLoaded = true
-    }
+            var isAgreementDataLoaded by remember { mutableStateOf(false) }
+            LaunchedEffect(Unit) {
+                delay(150) 
+                isAgreementDataLoaded = true
+            }
 
-    // 4. 计算最终是否显示对话框：数据已加载 且 (存在任何一个未同意/版本过低的协议)
-    val showAgreementDialog = isAgreementDataLoaded && !(
-        userAccepted && 
-        xiaoquAccepted && 
-        sineAgreementAccepted && 
-        sinePrivacyAccepted && 
-        wysMarketAgreementAccepted && 
-        wysMarketPrivacyAccepted
-    )
+    //  计算最终是否显示对话框：数据已加载 且 (存在任何一个未同意/版本过低的协议)
+            val showAgreementDialog = isAgreementDataLoaded && !(
+                userAccepted && 
+                xiaoquAccepted && 
+                sineAgreementAccepted && 
+                sinePrivacyAccepted && 
+                wysMarketAgreementAccepted && 
+                wysMarketPrivacyAccepted &&
+                lingAccepted // 新增判断
+            )
 
     BBQTheme(appDarkTheme = ThemeManager.isAppDarkTheme) {
         Scaffold(
