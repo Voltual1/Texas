@@ -450,30 +450,7 @@ object SmartListSerializer : KSerializer<List<String>> {
                 throw IOException("获取下载源失败，code: ${response.code}")
             }
         }
-    }
-    
-    /**
-     * 快速获取下载链接（简化版）
-     * @param appId 应用ID
-     * @param lineIndex 线路索引，默认为0（极速线路）
-     */
-    suspend fun getDownloadUrl(
-        appId: Int,
-        lineIndex: Int = 0
-    ): Result<String> {
-        return getDownloadSources(appId).map { response ->
-            val sources = response.data
-            if (sources.isEmpty()) {
-                throw IOException("没有可用的下载源")
-            }
-            
-            if (lineIndex >= 0 && lineIndex < sources.size) {
-                sources[lineIndex].url
-            } else {
-                sources.first().url
-            }
-        }
-    }
+    }    
 
     // ===== 原有的 API 方法 =====
     

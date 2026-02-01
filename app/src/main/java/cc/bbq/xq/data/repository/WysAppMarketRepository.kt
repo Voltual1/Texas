@@ -6,6 +6,7 @@ import cc.bbq.xq.data.DeviceNameDataStore
 import cc.bbq.xq.data.unified.*
 import java.io.File
 import kotlin.math.ceil
+import kotlinx.coroutines.flow.first 
 import org.koin.core.annotation.Single
 
 @Single
@@ -19,9 +20,10 @@ class WysAppMarketRepository(
     
     // 2. 提取一个私有辅助方法，用于获取当前机型名
     private suspend fun getCurrentDeviceModel(): String {
-        // 从 Flow 中获取当前最新的选中配置，如果没有则使用默认值
-        return deviceDataStore.currentConfigFlow.first().model.ifBlank { "浊燃" }
-    }
+    // 依靠 DataStore 的默认值 "Android Device" 或 "默认机型"
+    // 但使用 ifBlank 确保不会把空字符串发给 API
+    return deviceDataStore.currentConfigFlow.first().model.takeIf { it.isNotBlank() } ?: "Android"
+}
 
     // ==========================================================
     // 核心功能：微思商店是一个只读源，仅保留查询逻辑
