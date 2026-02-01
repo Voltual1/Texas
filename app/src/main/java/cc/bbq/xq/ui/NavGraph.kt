@@ -110,7 +110,6 @@ fun AppNavHost(
     val myLikesViewModel: MyLikesViewModel = org.koin.androidx.compose.koinViewModel()
     val hotPostsViewModel: HotPostsViewModel = org.koin.androidx.compose.koinViewModel()
     val followingPostsViewModel: FollowingPostsViewModel = org.koin.androidx.compose.koinViewModel()
-//    val userDetailViewModel: UserDetailViewModel = org.koin.androidx.compose.koinViewModel()
     val myPostsViewModel: MyPostsViewModel = org.koin.androidx.compose.koinViewModel()
     val appDetailViewModel: AppDetailComposeViewModel = org.koin.androidx.compose.koinViewModel()
     val userProfileViewModel: UserProfileViewModel = koinViewModel()
