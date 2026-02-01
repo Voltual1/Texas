@@ -64,6 +64,7 @@ import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.window.DialogWindowProvider
 import android.app.Activity
 import cc.bbq.xq.ui.theme.BBQSnackbarHost
+import org.koin.android.ext.android.inject
 import cc.bbq.xq.data.UserAgreementDataStore // 导入 UserAgreementDataStore
 
 class MainActivity : ComponentActivity() {
@@ -71,6 +72,7 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
     // 关键：在 super 之前切回主主题，不然你的启动图会一直垫在 Compose 下面
         setTheme(R.style.Theme_BBQ_Main)
+        private val agreementDataStore: UserAgreementDataStore by inject()
         super.onCreate(savedInstanceState)
 
         // 只有在用户启用自定义 DPI 的情况下才执行
@@ -80,81 +82,73 @@ class MainActivity : ComponentActivity() {
         }
 
         setContent {
-            val snackbarHostState = remember { SnackbarHostState() }
-            val context = LocalContext.current
+    val snackbarHostState = remember { SnackbarHostState() }
+    val context = LocalContext.current
+    val scope = rememberCoroutineScope()
 
-            // 修复：添加加载状态
-            var isAgreementDataLoaded by remember { mutableStateOf(false) }
-            
-            val userAgreementDataStore = remember { UserAgreementDataStore(context) }
-            
-            // 使用 collectAsState 监听所有协议状态
-            val userAgreementAccepted by userAgreementDataStore.userAgreementFlow.collectAsState(initial = false)
-            val xiaoquUserAgreementAccepted by userAgreementDataStore.xiaoquUserAgreementFlow.collectAsState(initial = false)
-            val sineUserAgreementAccepted by userAgreementDataStore.sineUserAgreementFlow.collectAsState(initial = false)
-            val sinePrivacyPolicyAccepted by userAgreementDataStore.sinePrivacyPolicyFlow.collectAsState(initial = false)
-            val wysappmarketPrivacyPolicyAccepted by userAgreementDataStore.wysappmarketPrivacyPolicyFlow.collectAsState(initial = false)
-            val wysappmarketUserAgreementAccepted by userAgreementDataStore.wysappmarketUserAgreementFlow.collectAsState(initial = false)
+    // 1. 获取 DataStore 实例（如果没用 Koin 注入，则使用 remember）
+    val agreementDataStore = remember { UserAgreementDataStore(context) }
 
-            // 修复：在 LaunchedEffect 中标记数据已加载
-            LaunchedEffect(Unit) {
-                // 等待一小段时间确保 DataStore 状态已加载
-                delay(100)
-                isAgreementDataLoaded = true
-            }            
+    // 2. 监听所有 6 个协议的状态（使用新版变量名）
+    // 注意：初值设为 true 可以避免在极短的加载瞬间闪烁弹窗
+    val userAccepted by agreementDataStore.isUserAgreementAccepted.collectAsState(initial = true)
+    val xiaoquAccepted by agreementDataStore.isXiaoquAccepted.collectAsState(initial = true)
+    val sineAgreementAccepted by agreementDataStore.isSineAgreementAccepted.collectAsState(initial = true)
+    val sinePrivacyAccepted by agreementDataStore.isSinePrivacyAccepted.collectAsState(initial = true)
+    val wysMarketAgreementAccepted by agreementDataStore.isWysMarketAgreementAccepted.collectAsState(initial = true)
+    val wysMarketPrivacyAccepted by agreementDataStore.isWysMarketPrivacyAccepted.collectAsState(initial = true)
 
-            // 计算是否显示协议对话框
-            val showAgreementDialog = remember(
-                userAgreementAccepted, 
-                xiaoquUserAgreementAccepted, 
-                sineUserAgreementAccepted, 
-                sinePrivacyPolicyAccepted,
-                wysappmarketUserAgreementAccepted,
-                wysappmarketPrivacyPolicyAccepted,
-                isAgreementDataLoaded
-            ) {
-                // 只有在数据加载完成后才决定是否显示对话框
-                if (!isAgreementDataLoaded) {
-                    false // 数据未加载完成时不显示
-                } else {
-                    !(userAgreementAccepted && 
-                      xiaoquUserAgreementAccepted && 
-                      sineUserAgreementAccepted && 
-                      sinePrivacyPolicyAccepted&&
-                      wysappmarketUserAgreementAccepted&&
-                      wysappmarketPrivacyPolicyAccepted)
+    // 3. 状态加载标记
+    var isAgreementDataLoaded by remember { mutableStateOf(false) }
+    LaunchedEffect(Unit) {
+        // 等待 DataStore 首次读取完成
+        delay(150) 
+        isAgreementDataLoaded = true
+    }
 
+    // 4. 计算最终是否显示对话框：数据已加载 且 (存在任何一个未同意/版本过低的协议)
+    val showAgreementDialog = isAgreementDataLoaded && !(
+        userAccepted && 
+        xiaoquAccepted && 
+        sineAgreementAccepted && 
+        sinePrivacyAccepted && 
+        wysMarketAgreementAccepted && 
+        wysMarketPrivacyAccepted
+    )
+
+    BBQTheme(appDarkTheme = ThemeManager.isAppDarkTheme) {
+        Scaffold(
+            modifier = Modifier.fillMaxSize(),
+            content = { innerPadding ->
+                Surface(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .roundScreenPadding()
+                        .padding(innerPadding),
+                    color = MaterialTheme.colorScheme.background
+                ) {
+                    // 主程序内容
+                    MainComposeApp(snackbarHostState = snackbarHostState)
+                    CheckForUpdates(snackbarHostState)
+
+                    // 5. 协议对话框逻辑
+                    if (showAgreementDialog) {
+                        UserAgreementDialog(
+                            onAgreed = {
+                                // 当 Dialog 流程全部走完时调用
+                                // 实际的写入已经在 Dialog 内部的 saveAgreement 中分步完成了
+                            },
+                            onDismissRequest = {
+                                // 如果用户中途退出或点击不同意，直接关闭 App
+//TODO                                finish()
+                            }
+                        )
+                    }
                 }
             }
-
-            BBQTheme(appDarkTheme = ThemeManager.isAppDarkTheme) {
-                Scaffold(
-                    modifier = Modifier.fillMaxSize(),
-                    content = { innerPadding ->
-                        Surface(
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .roundScreenPadding()  // 新增：圆屏 padding
-                                .padding(innerPadding),
-                            color = MaterialTheme.colorScheme.background
-                        ) {
-                            MainComposeApp(snackbarHostState = snackbarHostState)
-                            CheckForUpdates(snackbarHostState)
-
-                            // 修复：正确使用状态控制对话框显示
-                            if (showAgreementDialog) {
-                                UserAgreementDialog(
-                                    onDismissRequest = { /* 禁止取消 */ },
-                                    onAgreed = {
-                                        // 当用户同意所有协议后，状态会自动更新，对话框会消失
-                                    }
-                                )
-                            }
-                        }
-                    }
-                )
-            }
-        }
+        )
+    }
+}
 
         lifecycleScope.launch {
             delay(10000)

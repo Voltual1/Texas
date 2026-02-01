@@ -190,14 +190,14 @@ private fun loadRawResourceText(context: android.content.Context, resId: Int): S
     }
 }
 
-// 存储逻辑封装
+// 存储逻辑封装：适配新版 DataStore 的版本号机制
 private suspend fun saveAgreement(ds: UserAgreementDataStore, index: Int) {
     when (index) {
-        0 -> ds.setUserAgreementAccepted(true)
-        1 -> ds.setXiaoquUserAgreementAccepted(true)
-        2 -> ds.setSineUserAgreementAccepted(true)
-        3 -> ds.setSinePrivacyPolicyAccepted(true)
-        4 -> ds.setWysAppMarketUserAgreementAccepted(true)
-        5 -> ds.setWysAppMarketPrivacyPolicyAccepted(true)
+        0 -> ds.acceptUserAgreement()       // 对应 AgreementVersions.USER_AGREEMENT
+        1 -> ds.acceptXiaoquAgreement()     // 对应 AgreementVersions.XIAOQU_AGREEMENT
+        2 -> ds.acceptSineAgreement()       
+        3 -> ds.acceptSinePrivacy()         // 对应 AgreementVersions.SINE_PRIVACY
+        4 -> ds.acceptWysMarketAgreement()  
+        5 -> ds.acceptWysMarketPrivacy()    
     }
 }
