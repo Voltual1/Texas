@@ -272,8 +272,7 @@ composable(route = CreateRefundPost(0, 0, "", 0).route, arguments = CreateRefund
 
 composable(Download.route) {
     val context = LocalContext.current
-    navController = navController, // 传递 navController
-    
+    // 使用外部传入的 navController，而不是重新 remember 一个
     var showInstallDialog by remember { mutableStateOf(false) }
 
     val idmPackages = listOf(
@@ -286,19 +285,23 @@ composable(Download.route) {
         val pm = context.packageManager
         var targetIntent: Intent? = null
 
+        // 查找已安装的 IDM 相关应用
         for (pkg in idmPackages) {
             targetIntent = pm.getLaunchIntentForPackage(pkg)
             if (targetIntent != null) break
         }
 
         if (targetIntent != null) {
-            targetIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-            context.startActivity(targetIntent)
-            
-            // --- 核心改动：使用同步立即返回 ---
-            // 某些情况下 popBackStack 需要在 UI 线程队列中稍微排队
-            navController.navigateUp() 
+            try {
+                targetIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                context.startActivity(targetIntent)
+            } catch (e: Exception) {
+                // 防止启动失败导致卡死在空白路由
+            }
+            // 启动成功后，将当前的下载路由从栈中弹出，回到上一页
+            navController.popBackStack()
         } else {
+            // 未找到应用，显示安装对话框
             showInstallDialog = true
         }
     }
@@ -307,11 +310,11 @@ composable(Download.route) {
         IDMTransferDialog(
             onDismiss = {
                 showInstallDialog = false
+                // 对话框消失时，也需要将该路由弹出，否则会停留在空白页
                 navController.popBackStack()
             }
         )
     }
-    navController.popBackStack()
 }
 composable(route = MyComments.route) {
     MyCommentsScreen(
