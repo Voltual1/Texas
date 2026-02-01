@@ -14,6 +14,7 @@ import cc.bbq.xq.data.DeviceNameDataStore
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.navigation.NavController
+import cc.bbq.xq.ui.theme.AppShapes
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -139,6 +140,7 @@ fun PostCreateScreen(
     if (showRestoreDialog) {
         AlertDialog(
             onDismissRequest = { viewModel.onRestoreDialogDismiss() },
+            shape = AppShapes.medium,
             title = { Text("恢复草稿") },
             text = { Text("检测到未完成的草稿，是否恢复？") },
             confirmButton = {

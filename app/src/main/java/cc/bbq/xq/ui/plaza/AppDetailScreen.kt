@@ -23,6 +23,7 @@ import cc.bbq.xq.util.DownloadManager
 // import androidx.compose.material.pullrefresh.rememberPullRefreshState
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.combinedClickable
+import cc.bbq.xq.ui.theme.AppShapes
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -377,6 +378,7 @@ val shareUrl = "https://apk.wysteam.cn/app/?id=${detail.id}"
         AlertDialog(
             onDismissRequest = { showDeleteAppDialog = false },
             title = { Text("确认删除应用") },
+            shape = AppShapes.medium,
             text = { Text("确定要删除此应用吗？此操作不可撤销。") },
             confirmButton = {
                 TextButton(onClick = {
@@ -401,6 +403,7 @@ val shareUrl = "https://apk.wysteam.cn/app/?id=${detail.id}"
         AlertDialog(
             onDismissRequest = { showDeleteCommentDialog = false },
             title = { Text("确认删除评论") },
+            Shape = AppShapes.medium,
             text = { Text("确定要删除这条评论吗？") },
             confirmButton = {
                 TextButton(onClick = {

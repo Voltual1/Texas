@@ -24,6 +24,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import cc.bbq.xq.ui.theme.AppShapes
 import cc.bbq.xq.AppStore
 import cc.bbq.xq.data.unified.UnifiedComment
 import cc.bbq.xq.ui.AppDetail
@@ -152,6 +153,7 @@ fun MyReviewsScreen(
         AlertDialog(
             onDismissRequest = { viewModel.hideDeleteReviewDialog() },
             title = { Text("确认删除评价") },
+            shape = AppShapes.medium,
             text = { Text("确定要删除这条评价吗？此操作不可撤销。") },
             confirmButton = {
                 TextButton(

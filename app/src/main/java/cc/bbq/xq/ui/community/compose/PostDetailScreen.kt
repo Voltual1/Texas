@@ -28,6 +28,7 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import cc.bbq.xq.ui.theme.AppShapes
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.text.selection.SelectionContainer
 import io.ktor.client.call.*
@@ -408,6 +409,7 @@ fun PostDetailScreen(
         AlertDialog(
             onDismissRequest = { showShareDialog = false },
             title = { Text("分享帖子") },
+            shape = AppShapes.medium,
             text = { Text("复制链接: $shareText") },
             confirmButton = {
                 TextButton(
@@ -680,6 +682,7 @@ fun CommentDialog(
         AlertDialog(
             onDismissRequest = { },
             title = { Text("上传中") },
+            shape = AppShapes.medium,
             text = { Text(progressMessage) },
             confirmButton = { }
         )
@@ -721,6 +724,7 @@ fun CommentItem(
         AlertDialog(
             onDismissRequest = { showDeleteDialog = false },
             title = { Text("删除评论") },
+            shape = AppShapes.medium,
             text = { Text("确定要删除这条评论吗？") },
             confirmButton = {
                 TextButton(

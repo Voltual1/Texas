@@ -20,6 +20,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import cc.bbq.xq.ui.theme.AppShapes
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import cc.bbq.xq.AppStore
@@ -149,6 +150,7 @@ fun MyCommentsScreen(
         AlertDialog(
             onDismissRequest = { viewModel.hideDeleteCommentDialog() },
             title = { Text("确认删除评论") },
+            shape = AppShapes.medium,
             text = { Text("确定要删除这条评论吗？此操作不可撤销。") },
             confirmButton = {
                 TextButton(

@@ -299,6 +299,7 @@ fun ImportConfigDialog(onDismiss: () -> Unit, onConfirm: (String) -> Unit) {
     AlertDialog(
         onDismissRequest = onDismiss,
         title = { Text("从 JSON 导入") },
+        shape = AppShapes.medium,
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 Text("粘贴 Guise 导出的机型列表 JSON", style = MaterialTheme.typography.bodySmall)
