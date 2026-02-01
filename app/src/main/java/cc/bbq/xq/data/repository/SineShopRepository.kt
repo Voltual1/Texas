@@ -1,10 +1,21 @@
+//Copyright (C) 2025 Voltual
+// 本程序是自由软件：你可以根据自由软件基金会发布的 GNU 通用公共许可证第3版
+//（或任意更新的版本）的条款重新分发和/或修改它。
+//本程序是基于希望它有用而分发的，但没有任何担保；甚至没有适销性或特定用途适用性的隐含担保。
+// 有关更多细节，请参阅 GNU 通用公共许可证。
+//
+// 你应该已经收到了一份 GNU 通用公共许可证的副本
+// 如果没有，请查阅 <http://www.gnu.org/licenses/>.
 package cc.bbq.xq.data.repository
 
 import cc.bbq.xq.SineShopClient
 import cc.bbq.xq.data.unified.*
 import java.io.File
+import cc.bbq.xq.AuthManager
 import kotlin.math.ceil
 import org.koin.core.annotation.Single
+import cc.bbq.xq.BBQApplication
+import kotlinx.coroutines.flow.first
 
 @Single
 class SineShopRepository : IAppStoreRepository {
@@ -12,6 +23,10 @@ class SineShopRepository : IAppStoreRepository {
     private fun calculateTotalPages(totalItems: Int, pageSize: Int = 10): Int {
         if (totalItems <= 0) return 1
         return ceil(totalItems.toDouble() / pageSize).toInt()
+    }
+    
+    private suspend fun getToken(): String {
+        return AuthManager.getSineMarketToken(BBQApplication.instance).first()
     }
 
     // ==========================================================
@@ -32,13 +47,14 @@ class SineShopRepository : IAppStoreRepository {
     } catch (e: Exception) { Result.failure(e) }
 
     override suspend fun getApps(categoryId: String?, page: Int, userId: String?): Result<Pair<List<UnifiedAppItem>, Int>> = try {
+        // 部分“我的”分类接口需要 Token
         val result = when {
             userId != null -> SineShopClient.getAppsList(userId = userId.toInt(), page = page)
             categoryId == "-1" -> SineShopClient.getLatestAppsList(page = page)
             categoryId == "-2" -> SineShopClient.getMostDownloadedAppsList(page = page)
-            categoryId == "-3" -> SineShopClient.getMyUploadAppsList(page = page)
-            categoryId == "-4" -> SineShopClient.getMyFavouriteAppsList(page = page)
-            categoryId == "-5" -> SineShopClient.getMyHistoryAppsList(page = page)
+            categoryId == "-3" -> SineShopClient.getMyUploadAppsList(page = page, token = getToken())
+            categoryId == "-4" -> SineShopClient.getMyFavouriteAppsList(page = page, token = getToken())
+            categoryId == "-5" -> SineShopClient.getMyHistoryAppsList(page = page, token = getToken())
             else -> {
                 categoryId?.toIntOrNull()?.let { tagId ->
                     SineShopClient.getAppsList(tag = tagId, page = page)
@@ -57,7 +73,8 @@ class SineShopRepository : IAppStoreRepository {
     } catch (e: Exception) { Result.failure(e) }
 
     override suspend fun getAppDetail(appId: String, versionId: Long): Result<UnifiedAppDetail> = try {
-        SineShopClient.getSineShopAppInfo(appId = appId.toInt()).map { it.toUnifiedAppDetail() }
+        // 获取详情时传入 Token 可以获取该用户是否已收藏 (is_favourite)
+        SineShopClient.getSineShopAppInfo(appId = appId.toInt(), token = getToken()).map { it.toUnifiedAppDetail() }
     } catch (e: Exception) { Result.failure(e) }
 
     // ==========================================================
@@ -71,36 +88,37 @@ class SineShopRepository : IAppStoreRepository {
     } catch (e: Exception) { Result.failure(e) }
 
     override suspend fun postComment(appId: String, versionId: Long, content: String, parentCommentId: String?, mentionUserId: String?): Result<Unit> = try {
+        val token = getToken()
         val res = if (parentCommentId == null) {
-            SineShopClient.postSineShopAppRootComment(appId = appId.toInt(), content = content)
+            SineShopClient.postSineShopAppRootComment(appId = appId.toInt(), content = content, token = token)
         } else {
             if (mentionUserId != null) {
-                SineShopClient.postSineShopAppReplyCommentWithMention(parentCommentId.toInt(), content, mentionUserId.toInt())
+                SineShopClient.postSineShopAppReplyCommentWithMention(parentCommentId.toInt(), content, mentionUserId.toInt(), token = token)
             } else {
-                SineShopClient.postSineShopAppReplyComment(parentCommentId.toInt(), content)
+                SineShopClient.postSineShopAppReplyComment(parentCommentId.toInt(), content, token = token)
             }
         }
         res.map { Unit }
     } catch (e: Exception) { Result.failure(e) }
 
     override suspend fun deleteComment(commentId: String): Result<Unit> = try {
-        SineShopClient.deleteSineShopComment(commentId = commentId.toInt())
+        SineShopClient.deleteSineShopComment(commentId = commentId.toInt(), token = getToken())
     } catch (e: Exception) { Result.failure(e) }
 
     override suspend fun getMyComments(page: Int): Result<Pair<List<UnifiedComment>, Int>> = try {
-        SineShopClient.getMyComments(page = page).map { 
+        SineShopClient.getMyComments(page = page, token = getToken()).map { 
             Pair(it.list.map { c -> c.toUnifiedComment() }, calculateTotalPages(it.total))
         }
     } catch (e: Exception) { Result.failure(e) }
 
     override suspend fun getMyReviews(page: Int): Result<Pair<List<UnifiedComment>, Int>> = try {
-        SineShopClient.getMyReviews(page = page).map { 
+        SineShopClient.getMyReviews(page = page, token = getToken()).map { 
             Pair(it.list.map { it.toUnifiedReview() }, calculateTotalPages(it.total))
         }
     } catch (e: Exception) { Result.failure(e) }
 
     override suspend fun deleteReview(reviewId: String): Result<Unit> = try {
-        SineShopClient.deleteSineShopReview(reviewId = reviewId.toInt())
+        SineShopClient.deleteSineShopReview(reviewId = reviewId.toInt(), token = getToken())
     } catch (e: Exception) { Result.failure(e) }
 
     // ==========================================================
@@ -108,36 +126,40 @@ class SineShopRepository : IAppStoreRepository {
     // ==========================================================
 
     override suspend fun getCurrentUserDetail(): Result<UnifiedUserDetail> = try {
-        SineShopClient.getUserInfo().map { it.toUnifiedUserDetail() }
+        SineShopClient.getUserInfo(token = getToken()).map { it.toUnifiedUserDetail() }
     } catch (e: Exception) { Result.failure(e) }
 
     override suspend fun updateUserProfile(params: UpdateUserProfileParams): Result<Unit> = try {
         if (params.displayName.isNullOrEmpty() && params.description.isNullOrEmpty()) {
             Result.success(Unit)
         } else {
-            SineShopClient.editUserInfo(params.displayName ?: "", params.description ?: "").map { 
+            SineShopClient.editUserInfo(
+                params.displayName ?: "", 
+                params.description ?: "", 
+                token = getToken()
+            ).map { 
                 if (it) Unit else throw Exception("更新失败")
             }
         }
     } catch (e: Exception) { Result.failure(e) }
 
     override suspend fun uploadAvatar(imageBytes: ByteArray, filename: String): Result<String> = try {
-        SineShopClient.uploadAvatar(imageBytes, filename).map { if (it) "上传成功" else throw Exception("失败") }
+        SineShopClient.uploadAvatar(imageBytes, filename, token = getToken()).map { 
+            if (it) "上传成功" else throw Exception("失败") 
+        }
     } catch (e: Exception) { Result.failure(e) }
 
     override suspend fun getAppDownloadSources(appId: String, versionId: Long): Result<List<UnifiedDownloadSource>> = try {
-        SineShopClient.getAppDownloadSources(appId.toInt()).map { sources -> 
+        // 有些私有下载源可能需要 Token 校验
+        SineShopClient.getAppDownloadSources(appId.toInt(), token = getToken()).map { sources -> 
             sources.map { it.toUnifiedDownloadSource() }
         }
     } catch (e: Exception) { Result.failure(e) }
 
-    // 仓库特有方法（非接口要求）
+    // 仓库特有方法
     suspend fun getAppVersionsByAppId(appId: Int, page: Int = 1): Result<Pair<List<UnifiedAppItem>, Int>> = try {
         SineShopClient.getAppVersionsByAppId(appid = appId, page = page).map { 
             Pair(it.list.map { item -> item.toUnifiedAppItem() }, calculateTotalPages(it.total))
         }
     } catch (e: Exception) { Result.failure(e) }
-
-    // 注意：toggleFavorite, deleteApp, releaseApp, uploadImage, uploadApk, deleteComment(appId, id)
-    // 这些在接口中已有默认“不支持”或“默认转发”实现的方法，全部删除了。
 }

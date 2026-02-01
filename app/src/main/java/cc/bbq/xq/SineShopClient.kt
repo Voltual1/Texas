@@ -437,7 +437,7 @@ data class SineShopReview(
         }
     }
 
-    /** 获取应用列表：支持可选 token 以获取个性化推荐或状态 */
+    /** 获取应用列表*/
     suspend fun getAppsList(
         tag: Int? = null, 
         page: Int = 1, 
@@ -456,27 +456,27 @@ data class SineShopReview(
     }
     
         /** 获取标签列表 */
-    suspend fun getAppTagList(token: String? = null): Result<List<AppTag>> {
-        return get<BaseResponse<AppTagListData>>("/tag/list", token = token).map {
+    suspend fun getAppTagList(): Result<List<AppTag>> {
+        return get<BaseResponse<AppTagListData>>("/tag/list").map {
             if (it.code == 0) it.data?.list ?: emptyList() else throw IOException(it.msg)
         }
     }
 
     /** 获取最新应用列表 */
-    suspend fun getLatestAppsList(page: Int = 1, token: String? = null): Result<AppListData> {
+    suspend fun getLatestAppsList(page: Int = 1): Result<AppListData> {
         val params = Parameters.build {
             append("time", "")
             append("page", page.toString())
         }
-        return get<BaseResponse<AppListData>>("/app/list", params, token = token).map {
+        return get<BaseResponse<AppListData>>("/app/list", params).map {
             if (it.code == 0) it.data ?: AppListData(0, emptyList()) else throw IOException(it.msg)
         }
     }
 
     /** 获取下载排行列表 */
-    suspend fun getMostDownloadedAppsList(page: Int = 1, token: String? = null): Result<AppListData> {
+    suspend fun getMostDownloadedAppsList(page: Int = 1): Result<AppListData> {
         val params = Parameters.build { append("page", page.toString()) }
-        return get<BaseResponse<AppListData>>("/leaderboard/app_download", params, token = token).map {
+        return get<BaseResponse<AppListData>>("/leaderboard/app_download", params).map {
             if (it.code == 0) it.data ?: AppListData(0, emptyList()) else throw IOException(it.msg)
         }
     }
@@ -490,23 +490,23 @@ data class SineShopReview(
     }
 
     /** 获取应用评价列表 */
-    suspend fun getSineShopAppReviews(appId: Int, page: Int = 1, token: String? = null): Result<SineShopReviewListData> {
+    suspend fun getSineShopAppReviews(appId: Int, page: Int = 1): Result<SineShopReviewListData> {
         val params = Parameters.build {
             append("appid", appId.toString())
             append("page", page.toString())
         }
-        return get<BaseResponse<SineShopReviewListData>>("/review/list", params, token = token).map {
+        return get<BaseResponse<SineShopReviewListData>>("/review/list", params).map {
             if (it.code == 0) it.data ?: SineShopReviewListData(0, emptyList()) else throw IOException(it.msg)
         }
     }
 
     /** 获取应用评论列表 */
-    suspend fun getSineShopAppComments(appId: Int, page: Int = 1, token: String? = null): Result<SineShopCommentListData> {
+    suspend fun getSineShopAppComments(appId: Int, page: Int = 1): Result<SineShopCommentListData> {
         val params = Parameters.build {
             append("appid", appId.toString())
             append("page", page.toString())
         }
-        return get<BaseResponse<SineShopCommentListData>>("/reply/list", params, token = token).map {
+        return get<BaseResponse<SineShopCommentListData>>("/reply/list", params).map {
             if (it.code == 0) it.data ?: SineShopCommentListData(0, emptyList()) else throw IOException(it.msg)
         }
     }
