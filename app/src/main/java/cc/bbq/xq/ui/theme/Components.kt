@@ -105,6 +105,16 @@ import androidx.compose.material3.pulltorefresh.PullToRefreshDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+// 针对 LazyColumn 的状态管理
+import androidx.compose.foundation.lazy.LazyListState
+import androidx.compose.foundation.lazy.rememberLazyListState
+
+// 针对跑马灯和文字溢出处理
+import androidx.compose.foundation.basicMarquee
+import androidx.compose.ui.text.style.TextOverflow
+
+// 确保高度约束可用
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.ui.graphics.Shape
 
 // 基础按钮组件
@@ -726,6 +736,77 @@ fun AppGridItem(
     }
 }
 
+@Composable
+fun AppListItem(
+    app: UnifiedAppItem,
+    onClick: () -> Unit,
+) {
+    Card(
+        onClick = onClick,
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 4.dp), // 列表项之间的间距
+        shape = AppShapes.medium,
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceVariant,
+            contentColor = MaterialTheme.colorScheme.onSurfaceVariant,
+        ),
+        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
+    ) {
+        Row(
+            modifier = Modifier
+                .padding(12.dp)
+                .fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically // 垂直居中对齐
+        ) {
+            // 1. 左侧图标
+            AsyncImage(
+                model = ImageRequest.Builder(LocalContext.current)
+                    .data(app.iconUrl)
+                    .crossfade(true)
+                    .build(),
+                contentDescription = app.name,
+                modifier = Modifier
+                    .size(48.dp) // 列表模式图标稍小一点更精致
+                    .clip(MaterialTheme.shapes.small)
+            )
+
+            Spacer(modifier = Modifier.width(12.dp))
+
+            // 2. 右侧文本信息容器
+            Column(
+                modifier = Modifier.weight(1f), // 占据剩余所有横向空间
+                verticalArrangement = Arrangement.Center
+            ) {
+                // 应用名称
+                Text(
+                    text = app.name,
+                    style = MaterialTheme.typography.titleMedium,
+                    color = MaterialTheme.colorScheme.onSurface,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+
+                Spacer(modifier = Modifier.height(4.dp))
+
+                // Info 跑马灯
+                app.info?.let { infoText ->
+                    Text(
+                        text = infoText,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        maxLines = 1,
+                        modifier = Modifier.basicMarquee(
+                            iterations = Int.MAX_VALUE, // 无限循环
+                            repeatDelayMillis = 2000    // 每次循环延迟
+                        )
+                    )
+                }
+            }
+        }
+    }
+}
+
 /**
  * 应用网格组件
  * 显示应用列表的网格布局
@@ -749,6 +830,37 @@ fun AppGrid(
     ) {
         items(apps, key = { it.uniqueId }) { app ->
             AppGridItem(
+                app = app,
+                onClick = { onItemClick(app) }
+            )
+        }
+    }
+}
+
+/**
+ * 应用列表组件
+ * 显示应用列表的纵向滚动布局
+ */
+@Composable
+fun AppList(
+    apps: List<UnifiedAppItem>,
+    onItemClick: (UnifiedAppItem) -> Unit,
+    listState: LazyListState = rememberLazyListState() // 使用 LazyListState
+) {
+    LazyColumn(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.background),
+        // 这里的 contentPadding 左右留白建议和网格保持一致
+        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
+        verticalArrangement = Arrangement.spacedBy(4.dp), // 对应 ListItem 内部的 padding 调整
+        state = listState
+    ) {
+        items(
+            items = apps,
+            key = { it.uniqueId } // 保持 key 的唯一性，优化重组性能
+        ) { app ->
+            AppListItem(
                 app = app,
                 onClick = { onItemClick(app) }
             )
