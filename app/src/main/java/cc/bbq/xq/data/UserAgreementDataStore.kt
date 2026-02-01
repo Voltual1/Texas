@@ -33,52 +33,26 @@ class UserAgreementDataStore(context: Context) {
     }
 
     // --- 通用判断逻辑 ---
-
-    /**
-     * 检查某个协议是否已同意且为最新版本
-     */
     private fun isAccepted(key: Preferences.Key<Int>, currentVersion: Int): Flow<Boolean> =
         dataStore.data.map { prefs ->
             (prefs[key] ?: 0) >= currentVersion
         }
 
-    // --- 对外暴露的 Flow ---
-
+    // --- 对外暴露的 Flow (对应 MainActivity 监听) ---
     val isUserAgreementAccepted = isAccepted(Keys.USER_AGREEMENT_VER, AgreementVersions.USER_AGREEMENT)
-    
     val isXiaoquAccepted = isAccepted(Keys.XIAOQU_AGREEMENT_VER, AgreementVersions.XIAOQU_AGREEMENT)
-    
-    val isSinePrivacyAccepted = isAccepted(Keys.SINE_PRIVACY_VER, AgreementVersions.SINE_PRIVACY)
-    
     val isSineAgreementAccepted = isAccepted(Keys.SINE_AGREEMENT_VER, AgreementVersions.SINE_AGREEMENT_VER)
-val isWysMarketAgreementAccepted = isAccepted(Keys.WYSMARKET_AGREEMENT_VER, AgreementVersions.WYSMARKET_PRIVACY)
+    val isSinePrivacyAccepted = isAccepted(Keys.SINE_PRIVACY_VER, AgreementVersions.SINE_PRIVACY)
+    val isWysMarketAgreementAccepted = isAccepted(Keys.WYSMARKET_AGREEMENT_VER, AgreementVersions.WYSMARKET_PRIVACY)
+    val isWysMarketPrivacyAccepted = isAccepted(Keys.WYSMARKET_PRIVACY_VER, AgreementVersions.WYSMARKET_PRIVACY)
 
-
-    // --- 写入方法 ---
-
-    suspend fun acceptUserAgreement() {
-        saveVersion(Keys.USER_AGREEMENT_VER, AgreementVersions.USER_AGREEMENT)
-    }
-
-    suspend fun acceptXiaoquAgreement() {
-        saveVersion(Keys.XIAOQU_AGREEMENT_VER, AgreementVersions.XIAOQU_AGREEMENT)
-    }
-
-    suspend fun acceptSinePrivacy() {
-        saveVersion(Keys.SINE_PRIVACY_VER, AgreementVersions.SINE_PRIVACY)
-    }
-    
-    suspend fun acceptSineAgreement() {
-    saveVersion(Keys.SINE_AGREEMENT_VER, AgreementVersions.SINE_PRIVACY)
-}
-
-suspend fun acceptWysMarketAgreement() {
-    saveVersion(Keys.WYSMARKET_AGREEMENT_VER, AgreementVersions.WYSMARKET_PRIVACY)
-}
-
-suspend fun acceptWysMarketPrivacy() {
-    saveVersion(Keys.WYSMARKET_PRIVACY_VER, AgreementVersions.WYSMARKET_PRIVACY)
-}
+    // --- 写入方法 (对应 Dialog 调用) ---
+    suspend fun acceptUserAgreement() = saveVersion(Keys.USER_AGREEMENT_VER, AgreementVersions.USER_AGREEMENT)
+    suspend fun acceptXiaoquAgreement() = saveVersion(Keys.XIAOQU_AGREEMENT_VER, AgreementVersions.XIAOQU_AGREEMENT)
+    suspend fun acceptSineAgreement() = saveVersion(Keys.SINE_AGREEMENT_VER, AgreementVersions.SINE_PRIVACY)
+    suspend fun acceptSinePrivacy() = saveVersion(Keys.SINE_PRIVACY_VER, AgreementVersions.SINE_PRIVACY)
+    suspend fun acceptWysMarketAgreement() = saveVersion(Keys.WYSMARKET_AGREEMENT_VER, AgreementVersions.WYSMARKET_PRIVACY)
+    suspend fun acceptWysMarketPrivacy() = saveVersion(Keys.WYSMARKET_PRIVACY_VER, AgreementVersions.WYSMARKET_PRIVACY)
 
     private suspend fun saveVersion(key: Preferences.Key<Int>, version: Int) {
         dataStore.edit { it[key] = version }

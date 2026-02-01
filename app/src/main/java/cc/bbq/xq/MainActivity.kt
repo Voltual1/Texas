@@ -68,11 +68,10 @@ import org.koin.android.ext.android.inject
 import cc.bbq.xq.data.UserAgreementDataStore // 导入 UserAgreementDataStore
 
 class MainActivity : ComponentActivity() {
-
+private val agreementDataStore: UserAgreementDataStore by inject()
     override fun onCreate(savedInstanceState: Bundle?) {
     // 关键：在 super 之前切回主主题，不然你的启动图会一直垫在 Compose 下面
-        setTheme(R.style.Theme_BBQ_Main)
-        private val agreementDataStore: UserAgreementDataStore by inject()
+        setTheme(R.style.Theme_BBQ_Main)        
         super.onCreate(savedInstanceState)
 
         // 只有在用户启用自定义 DPI 的情况下才执行
