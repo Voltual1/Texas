@@ -141,4 +141,5 @@
 - 见 https://creativecommons.org/2015/10/08/cc-by-sa-4-0-now-one-way-compatible-with-gplv3/
 -MarkDown渲染借用了RikkaHub的代码。
 -PackageManagerExt是借用了Droid-ify的代码
--下载服务也借用了Droid-ify的代码
+-在一部分版本中的下载服务也借用了Droid-ify的代码
+-但自19.0之后将下载任务全权交给1DM
