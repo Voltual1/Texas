@@ -78,6 +78,32 @@ fun PaymentCenterScreen(
             DownloadManager.download(it, url, fileName, null)
         }
     }
+    
+    // 核心监听逻辑：在这里捕获下载事件
+    LaunchedEffect(Unit) {
+        viewModel.downloadEvent.collectLatest { event ->
+            // 1. 调起 1DM
+            DownloadManager.download(
+                activity = context as Activity,
+                url = event.url,
+                fileName = event.fileName
+            )
+
+            //  立即显示 SnackBar (它会显示在 1DM 下方，当用户从 1DM 回来时能看到)
+            scope.launch {
+                val result = snackbarHostState.showSnackbar(
+                    message = "任务已发送至 1DM: ${event.fileName}",
+                    actionLabel = "管理下载",
+                    withDismissAction = true,
+                    duration = SnackbarDuration.Indefinite
+                )
+                if (result == SnackbarResult.ActionPerformed) {
+                    // 跳转到你的下载管理页面
+                    navController.navigate(Download.route)
+                }
+            }
+        }
+    }
 
     when (paymentStatus) {
         PaymentStatus.SUCCESS -> {
@@ -293,21 +319,14 @@ fun PaymentResultDialog(
 
                 if (success && showDownloadButton) {
                     BBQButton(
-                        onClick = {
-                            onDownload?.invoke()
-                            if (snackbarHostState != null && coroutineScope != null && fileName != null) {
-                                coroutineScope.launch {
-                                    val result = snackbarHostState.showSnackbar(
-                                        message = "任务已发送: $fileName",
-                                        actionLabel = "管理",
-                                        duration = SnackbarDuration.Short
-                                    )
-                                    if (result == SnackbarResult.ActionPerformed) {
-                                        navController?.navigate(Download.route)
-                                    }
-                                }
-                            }
-                        },
+onClick = {
+    val url = viewModel.getDownloadUrl()
+    if (url != null) {
+        viewModel.startDownload(url, viewModel.getDownloadFileName())
+    }
+    // 关闭对话框
+    onDismiss() 
+},
                         modifier = Modifier.fillMaxWidth(),
                         text = { Text("下载应用") }
                     )

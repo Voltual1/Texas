@@ -15,6 +15,8 @@ import cc.bbq.xq.KtorClient
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.Dispatchers
@@ -29,6 +31,13 @@ import org.koin.android.annotation.KoinViewModel
 import android.content.Context // 导入 Context
 
 private val Context.dataStore by preferencesDataStore(name = "payment_requests")
+
+// 定义一个简单的包装类，传递下载所需信息
+data class DownloadEvent(
+    val url: String,
+    val fileName: String,
+    val headers: Map<String, String> = emptyMap()
+)
 
 @KoinViewModel
 class PaymentViewModel(application: Application) : AndroidViewModel(application) {
@@ -65,6 +74,10 @@ class PaymentViewModel(application: Application) : AndroidViewModel(application)
 
     private var _downloadUrl: String? = null
     private var _downloadFileName: String? = null
+    
+    //  添加事件流
+    private val _downloadEvent = MutableSharedFlow<DownloadEvent>()
+    val downloadEvent = _downloadEvent.asSharedFlow()
 
     fun getDownloadUrl(): String? = _downloadUrl
     
@@ -105,6 +118,17 @@ class PaymentViewModel(application: Application) : AndroidViewModel(application)
         // 设置默认下载文件名
         if (type == PaymentType.APP_PURCHASE && appName.isNotEmpty()) {
             _downloadFileName = "${appName.replace(" ", "_")}_v${versionId}.apk"
+        }
+    }
+    
+    fun startDownload(url: String, fileName: String?) {
+        viewModelScope.launch {
+            _downloadEvent.emit(
+                DownloadEvent(
+                    url = url,
+                    fileName = fileName ?: "download_${System.currentTimeMillis()}.apk"
+                )
+            )
         }
     }
 
