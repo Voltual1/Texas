@@ -24,6 +24,7 @@ class UserProfileViewModel(
         val isLoading: Boolean = false,
         val userDetail: UnifiedUserDetail? = null,
         val currentDevice: DeviceConfig = DeviceConfig(),
+        val isUploading: Boolean = false,
         val allDevices: List<DeviceConfig> = emptyList(),
         val error: String? = null
     )
