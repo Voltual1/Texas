@@ -20,7 +20,7 @@ import androidx.compose.ui.window.DialogProperties
 import cc.bbq.xq.ui.theme.AppShapes
 import cc.bbq.xq.R
 import cc.bbq.xq.data.UserAgreementDataStore
-import org.koin.android.ext.android.inject
+import org.koin.compose.koinInject
 import cc.bbq.xq.ui.animation.materialSharedAxisX
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch // 必须：用于 onClick 中的滚动动画
