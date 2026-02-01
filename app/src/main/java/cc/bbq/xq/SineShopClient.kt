@@ -349,7 +349,7 @@ data class SineShopReview(
     }
 
     /** 获取个人信息：该请求通常需要携带 Token */
-    suspend fun getUserInfo(token: String? = null): Result<SineShopUserInfo> {
+    suspend fun getUserInfo(token: String): Result<SineShopUserInfo> {
         return get<BaseResponse<SineShopUserInfo>>("/user/info", token = token).map {
             if (it.code == 0) it.data ?: throw IOException("Data is null") else throw IOException(it.msg)
         }
