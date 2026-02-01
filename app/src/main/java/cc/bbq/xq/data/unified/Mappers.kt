@@ -25,6 +25,7 @@ import cc.bbq.xq.SineShopClient.SineShopDownloadSource
 import cc.bbq.xq.SineShopClient.SineShopUserInfo
 import cc.bbq.xq.LingMarketClient
 import cc.bbq.xq.WysAppMarketClient
+import cc.bbq.xq.AbiFlag
 // 新增导入
 import cc.bbq.xq.AppVersionType
 import cc.bbq.xq.CpuArch
@@ -123,6 +124,13 @@ fun KtorClient.AppDetail.toUnifiedAppDetail(): UnifiedAppDetail {
 // --- SineShopClient (弦应用商店) Mappers ---
 
 fun SineShopClient.SineShopApp.toUnifiedAppItem(): UnifiedAppItem {
+    // 解析 ABI 标签
+    val abiLabel = AbiFlag.parseAbi(this.app_abi)
+    
+    // 拼接 info 字符串：类型 + 版本类型 + 版本名 + ABI
+    // 示例结果: "工具 正式版 1.0.0 ARM64"
+    val infoString = "${this.app_type} ${this.app_version_type} ${this.version_name} $abiLabel"
+
     return UnifiedAppItem(
         uniqueId = "${AppStore.SIENE_SHOP}-${this.id}",
         navigationId = this.id.toString(),
@@ -130,7 +138,8 @@ fun SineShopClient.SineShopApp.toUnifiedAppItem(): UnifiedAppItem {
         store = AppStore.SIENE_SHOP,
         name = this.app_name,
         iconUrl = this.app_icon,
-        versionName = this.version_name
+        versionName = this.version_name,
+        info = infoString // 填充新增的 info 字段
     )
 }
 
@@ -410,7 +419,8 @@ fun WysAppMarketClient.WysAppListItem.toUnifiedAppItem(): UnifiedAppItem {
         store = AppStore.WYSAPPMARKET,
         name = this.name,
         iconUrl = buildWysAppMarketIconUrl(this.logo),
-        versionName = this.version
+        versionName = this.version,
+        info = this.info
     )
 }
 
