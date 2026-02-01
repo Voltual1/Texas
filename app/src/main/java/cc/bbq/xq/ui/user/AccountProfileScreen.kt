@@ -66,7 +66,8 @@ fun AccountProfileScreen(
         state.userDetail?.let {
             nickname = it.displayName ?: ""
             description = it.description ?: ""
-            qqNumber = it.qq ?: "" 
+            // 修正：UnifiedUserDetail 中对应的字段是 bindQq (Long?)
+            qqNumber = it.bindQq?.toString() ?: "" 
         }
         brand = state.currentDevice.brand
         model = state.currentDevice.model
@@ -137,7 +138,7 @@ fun AccountProfileScreen(
                     val params = UpdateUserProfileParams(
                         nickname = nickname,
                         description = description,
-                        qq = qqNumber,
+                        qqNumber = qqNumber,
                         deviceName = model 
                     )
                     val updatedConfig = state.currentDevice.copy(
