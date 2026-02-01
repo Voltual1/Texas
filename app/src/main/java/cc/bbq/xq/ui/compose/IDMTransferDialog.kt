@@ -15,21 +15,36 @@ import androidx.compose.ui.window.Dialog
 fun IDMTransferDialog(onDismiss: () -> Unit) {
     // 既然有 MarkDownText，我们可以直接在这里定义符合 MD 语法的文案
 val noticeContent = """
-        嘿孩子们，从浊燃18.4 版本开始，本项目的下载服务已经整体移交给 **1DM** 家族了。
-        所以你需要安装1DM系列的应用哦
-        **注意：** 是数字 **1**（一），不是字母 "I" 哦！
-        或者自己核对一下应用包名是不是这几个咯
+        嘿孩子们，从 **Pyrolysis18.4** 版本开始，本项目的下载服务已经整体移交给 **1DM** 家族了。
 
-        **核对包名：**
-        * `idm.internet.download.manager.plus`
-        * `idm.internet.download.manager`
-        * `idm.internet.download.manager.adm.lite`
+所以你需要安装 1DM 系列的应用哦。
 
-        现在的逻辑很简单：浊燃只负责获取到下载url并通过 Intent 叫醒1DM，至于你设备上装的1DM是原版、Plus 版还是那种“懂的都懂”的修改版，我管不着，也不做了校验。
+> **注意：** 是数字 **1**（一），不是字母 "I" 哦！
 
-        **关于获取途径：**
-        为了避嫌，你V哥在此处不提供安装包。如果你觉得免费版1DM广告多，我推荐你上Plus版本也就是 **1DM+**。至于 1DM+ 要付费？这个嘛……
-        你可以去咨询 [Bing 大小姐](https://www.bing.com/search?q=1DM%2B)
+或者自己核对一下应用包名是不是这几个：
+
+### **核对包名：**
+
+* `idm.internet.download.manager.plus`
+* `idm.internet.download.manager`
+* `idm.internet.download.manager.adm.lite`
+
+现在的逻辑很简单：**浊燃只负责获取到下载 URL 并通过 Intent 叫醒 1DM**。至于你设备上装的 1DM 是原版、Plus 版还是那种“懂的都懂”的修改版，我管不着，也没做校验。
+
+---
+
+### **关于获取途径：**
+
+为了避嫌，你 V 哥在此处不提供安装包。如果你觉得免费版 1DM 广告多，我推荐你上 Plus 版本，也就是 **1DM+**。
+
+至于 1DM+ 要付费？这个嘛……你可以去咨询 [Bing 大小姐](https://www.bing.com/search?q=1DM%2B)
+
+### **为什么这是个好主意？**
+
+1DM（原名 IDM+）是安卓端公认的下载神器。把下载任务全权交给它，是因为：
+
+* **极致的速度优化**：它支持高达 32 线程的分段下载，能够压榨出服务器带宽的极限。
+* **断点续传的稳定性**：对于大文件，1DM 的校验机制和重连能力非常成熟，比大多数应用内置的下载器要稳得多。
     """.trimIndent()
 
     Dialog(onDismissRequest = onDismiss) {

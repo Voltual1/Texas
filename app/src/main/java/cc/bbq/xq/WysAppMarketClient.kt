@@ -48,7 +48,7 @@ object WysAppMarketClient {
 
 
     private const val DEFAULT_DEVICE_MODEL = "浊燃"
-    private const val DEFAULT_BUILD_NUMBER = "9999"
+    private const val DEFAULT_BUILD_NUMBER = "3210"
     
     // Ktor HttpClient 实例
     val httpClient = HttpClient(OkHttp) {
