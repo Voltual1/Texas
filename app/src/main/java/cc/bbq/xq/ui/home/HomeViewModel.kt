@@ -357,7 +357,7 @@ class HomeViewModel : ViewModel() {
                 }
 
                 val sineShopUserInfoResult = withContext(Dispatchers.IO) {
-                    SineShopClient.getUserInfo(token=sineShopTokenFlow)
+                    SineShopClient.getUserInfo(token=sineShopToken)
                 }
 
                 sineShopUserInfoResult.onSuccess { userInfo ->
