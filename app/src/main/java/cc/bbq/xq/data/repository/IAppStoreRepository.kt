@@ -75,7 +75,10 @@ interface IAppStoreRepository {
 
     suspend fun uploadAvatar(imageBytes: ByteArray, filename: String): Result<String> =
         Result.failure(UnsupportedOperationException("当前商店不支持上传头像"))
-    suspend fun getAppVersionsByPackageName(packageName: String): Result<Pair<List<UnifiedAppItem>, Int>> = 
-        Result.failure(UnsupportedOperationException("当前商店不支持获取版本列表"))
-
+    suspend fun getAppVersionsByPackageName(packageName: String): Result<List<UnifiedAppItem>> {
+    return Result.failure(UnsupportedOperationException("当前商店不支持获取版本列表"))
+}
+    suspend fun getAppVersionsByPackageName(packageName: String,page: Int): Result<Pair<List<UnifiedAppItem>, Int>> {
+    return Result.failure(UnsupportedOperationException("当前商店不支持获取分页的版本列表"))
+}
 }

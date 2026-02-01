@@ -51,7 +51,7 @@ import cc.bbq.xq.ui.rank.RankingListViewModel
 import cc.bbq.xq.ui.settings.update.UpdateSettingsViewModel
 //import cc.bbq.xq.ui.download.DownloadViewModel
 import cc.bbq.xq.ui.home.HomeViewModel
-import cc.bbq.xq.ui.plaza.VersionListViewModel
+//import cc.bbq.xq.ui.plaza.VersionListViewModel
 import cc.bbq.xq.data.UserFilterDataStore
 import cc.bbq.xq.data.UserAgreementDataStore
 import cc.bbq.xq.ui.user.MyCommentsViewModel
@@ -92,7 +92,7 @@ val appModule = module {
     viewModel { UpdateSettingsViewModel() }
     viewModel { SignInSettingsViewModel() }
     viewModel { HomeViewModel() }
-    viewModel { VersionListViewModel(androidApplication(), get<SineShopRepository>()) }
+//    viewModel { VersionListViewModel(androidApplication(), get<SineShopRepository>()) }
 //    viewModel { DownloadViewModel(androidApplication(), get<DownloadTaskRepository>()) }
     viewModel { MyCommentsViewModel(androidApplication(), get()) }
     viewModel { MyReviewsViewModel(androidApplication(), get()) }

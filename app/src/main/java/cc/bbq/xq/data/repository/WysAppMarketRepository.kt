@@ -71,6 +71,12 @@ class WysAppMarketRepository(
             processClientPagination(apps, page)
         }
     } catch (e: Exception) { Result.failure(e) }
+    
+    override suspend fun getAppVersionsByPackageName(packageName: String): Result<List<UnifiedAppItem>> = try {
+        WysAppMarketClient.getAppVersionsByPackage(packageName=packageName).map { apps ->
+            processClientPagination(apps, page)
+        }
+    } catch (e: Exception) { Result.failure(e) }
 
     override suspend fun getAppDetail(appId: String, versionId: Long): Result<UnifiedAppDetail> = try {
         WysAppMarketClient.getAppInfo(appId.toInt()).map { it.toUnifiedAppDetail() }
