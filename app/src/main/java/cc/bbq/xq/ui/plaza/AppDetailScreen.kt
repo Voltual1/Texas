@@ -110,27 +110,43 @@ fun AppDetailScreen(
     var commentToDeleteId by remember { mutableStateOf<String?>(null) }
     var showMoreMenu by remember { mutableStateOf(false) }
     
-    // 监听下载事件
-    LaunchedEffect(Unit) {
-        viewModel.downloadEvent.collectLatest { downloadEvent ->
-            // 这里可以获取到 Activity 上下文
-            val activity = context as? Activity
-            if (activity != null) {
-                // 调用 DownloadManager 启动下载
-                DownloadManager.download(
-                    activity = activity,
-                    url = downloadEvent.url,
-                    fileName = downloadEvent.fileName,
-                    headers = downloadEvent.headers
+    // 在 AppDetailScreen 内部
+
+LaunchedEffect(Unit) {
+    viewModel.downloadEvent.collectLatest { downloadEvent ->
+        val activity = context as? Activity
+        if (activity != null) {
+            // 1. 启动 1DM 下载 (它是 Activity 形式，会覆盖当前 UI)
+            DownloadManager.download(
+                activity = activity,
+                url = downloadEvent.url,
+                fileName = downloadEvent.fileName,
+                headers = downloadEvent.headers
+            )
+
+            // 2. 启动 1DM 后，立即在底层界面弹出“持久化” SnackBar
+            coroutineScope.launch {
+                val result = snackbarHostState.showSnackbar(
+                    message = "任务已发送至 1DM: ${downloadEvent.fileName}",
+                    actionLabel = "管理下载", // 按钮文案
+                    withDismissAction = true, // MD3 支持显示右侧的 X 按钮
+                    duration = SnackbarDuration.Indefinite // 关键：除非点击否则不消失
                 )
-            } else {
-                // 如果不是 Activity 上下文，使用 Toast 或 Snackbar 提示
-                coroutineScope.launch {
-                    snackbarHostState.showSnackbar("无法启动下载，上下文错误")
+
+                // 3. 处理 SnackBar 的点击事件
+                when (result) {
+                    SnackbarResult.ActionPerformed -> {
+                        // 用户点击了“管理下载”，执行静默导航
+                        navController.navigate(Download.route)
+                    }
+                    SnackbarResult.Dismissed -> {
+                        // 用户点击了 X 或者手动关闭
+                    }
                 }
             }
         }
     }
+}
 
     LaunchedEffect(appId, versionId, storeName) {
         viewModel.initializeData(appId, versionId, storeName)

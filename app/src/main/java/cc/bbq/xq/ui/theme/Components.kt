@@ -441,12 +441,17 @@ fun BBQSnackbarHost(
     hostState: SnackbarHostState,
     modifier: Modifier = Modifier,
     snackbar: @Composable (SnackbarData) -> Unit = { snackbarData ->
-        BBQSnackbar(snackbarData)
+        // 逻辑：如果包含“1DM”关键词，使用 Info 样式，否则用普通样式
+        if (snackbarData.visuals.message.contains("1DM")) {
+            BBQInfoSnackbar(snackbarData) 
+        } else {
+            BBQSnackbar(snackbarData)
+        }
     }
 ) {
     SnackbarHost(
         hostState = hostState,
-        modifier = modifier, 
+        modifier = modifier,
         snackbar = snackbar
     )
 }
