@@ -44,23 +44,27 @@ fun AccountProfileScreen(
     val coroutineScope = rememberCoroutineScope()
     val state by viewModel.uiState.collectAsStateWithLifecycle()
 
+    // 基础信息状态
     var nickname by remember { mutableStateOf("") }
-    var qqNumber by remember { mutableStateOf("") }
     var description by remember { mutableStateOf("") }
     
-    // 设备配置状态本地临时变量
+    // 当前编辑的设备配置临时状态
     var brand by remember { mutableStateOf("") }
     var model by remember { mutableStateOf("") }
+    var alias by remember { mutableStateOf("") }
     
     var showImportDialog by remember { mutableStateOf(false) }
 
-    LaunchedEffect(state.userDetail, state.deviceConfig) {
+    // 监听数据层变化，刷新 UI 字段
+    LaunchedEffect(state.userDetail, state.currentDevice) {
         state.userDetail?.let {
             nickname = it.displayName ?: ""
             description = it.description ?: ""
         }
-        brand = state.deviceConfig.brand
-        model = state.deviceConfig.model
+        // 当切换选中的设备或加载完成时，同步表单
+        brand = state.currentDevice.brand
+        model = state.currentDevice.model
+        alias = state.currentDevice.alias
     }
 
     LaunchedEffect(store) {
@@ -71,9 +75,11 @@ fun AccountProfileScreen(
         ImportConfigDialog(
             onDismiss = { showImportDialog = false },
             onConfirm = { json ->
-                viewModel.importDeviceConfig(json) { success ->
+                viewModel.importDeviceConfig(json) { success, count ->
                     coroutineScope.launch {
-                        snackbarHostState.showSnackbar(if (success) "导入成功" else "解析失败，请检查格式")
+                        snackbarHostState.showSnackbar(
+                            if (success) "成功导入 $count 个机型" else "导入失败，请检查格式"
+                        )
                     }
                 }
                 showImportDialog = false
@@ -106,14 +112,15 @@ fun AccountProfileScreen(
                 store = store,
                 nickname = nickname,
                 onNicknameChange = { nickname = it },
-                qqNumber = qqNumber,
-                onQqChange = { qqNumber = it },
                 description = description,
                 onDescriptionChange = { description = it },
                 brand = brand,
                 onBrandChange = { brand = it },
                 model = model,
                 onModelChange = { model = it },
+                allDevices = state.allDevices,
+                currentDevice = state.currentDevice,
+                onDeviceSelect = { viewModel.switchDevice(it) },
                 onImportClick = { showImportDialog = true }
             )
 
@@ -124,19 +131,167 @@ fun AccountProfileScreen(
                         description = description,
                         deviceName = model 
                     )
-                    val newConfig = state.deviceConfig.copy(brand = brand, model = model)
-                    viewModel.updateProfile(store, params, newConfig) { _, msg ->
+                    // 保存当前正在编辑的配置（允许用户手动修改 brand/model 后保存）
+                    val updatedConfig = state.currentDevice.copy(
+                        brand = brand, 
+                        model = model,
+                        alias = alias 
+                    )
+                    viewModel.updateProfile(store, params, updatedConfig) { _, msg ->
                         coroutineScope.launch { snackbarHostState.showSnackbar(msg) }
                     }
                 },
                 modifier = Modifier.fillMaxWidth().padding(top = 32.dp),
                 enabled = !state.isLoading
             ) {
-                if (state.isLoading) CircularProgressIndicator(Modifier.size(24.dp), color = MaterialTheme.colorScheme.onPrimary)
-                else Text("保存全部修改")
+                if (state.isLoading) {
+                    CircularProgressIndicator(Modifier.size(24.dp), color = MaterialTheme.colorScheme.onPrimary)
+                } else {
+                    Text("保存全部修改")
+                }
             }
         }
     }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun ProfileFields(
+    store: AppStore,
+    nickname: String,
+    onNicknameChange: (String) -> Unit,
+    description: String,
+    onDescriptionChange: (String) -> Unit,
+    brand: String,
+    onBrandChange: (String) -> Unit,
+    model: String,
+    onModelChange: (String) -> Unit,
+    allDevices: List<DeviceConfig>,
+    currentDevice: DeviceConfig,
+    onDeviceSelect: (DeviceConfig) -> Unit,
+    onImportClick: () -> Unit
+) {
+    var expanded by remember { mutableStateOf(false) }
+
+    Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+        Text("账户信息", style = MaterialTheme.typography.titleMedium)
+        
+        OutlinedTextField(
+            value = nickname,
+            onValueChange = onNicknameChange,
+            label = { Text("昵称") },
+            modifier = Modifier.fillMaxWidth(),
+            singleLine = true
+        )
+
+        if (store == AppStore.SIENE_SHOP || store == AppStore.LING_MARKET) {
+            OutlinedTextField(
+                value = description,
+                onValueChange = onDescriptionChange,
+                label = { Text("个性签名") },
+                modifier = Modifier.fillMaxWidth(),
+                minLines = 2
+            )
+        }
+
+        HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
+        
+        // 设备伪装标题栏
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text("设备伪装库", style = MaterialTheme.typography.titleMedium)
+            TextButton(onClick = onImportClick) {
+                Icon(Icons.Default.ContentPaste, null, modifier = Modifier.size(18.dp))
+                Spacer(Modifier.width(8.dp))
+                Text("导入 Guise")
+            }
+        }
+
+        // 机型选择下拉列表
+        ExposedDropdownMenuBox(
+            expanded = expanded,
+            onExpandedChange = { expanded = !expanded }
+        ) {
+            OutlinedTextField(
+                value = currentDevice.alias.ifEmpty { "未命名配置" },
+                onValueChange = {},
+                readOnly = true,
+                label = { Text("当前选中的模板") },
+                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
+                colors = ExposedDropdownMenuDefaults.outlinedTextFieldColors(),
+                modifier = Modifier.menuAnchor().fillMaxWidth()
+            )
+
+            ExposedDropdownMenu(
+                expanded = expanded,
+                onDismissRequest = { expanded = false }
+            ) {
+                allDevices.forEach { device ->
+                    DropdownMenuItem(
+                        text = {
+                            Column {
+                                Text(device.alias, style = MaterialTheme.typography.bodyLarge)
+                                Text("${device.brand} ${device.model}", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.outline)
+                            }
+                        },
+                        onClick = {
+                            onDeviceSelect(device)
+                            expanded = false
+                        },
+                        contentPadding = ExposedDropdownMenuDefaults.ItemContentPadding
+                    )
+                }
+            }
+        }
+
+        // 详细参数编辑
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            OutlinedTextField(
+                value = brand,
+                onValueChange = onBrandChange,
+                label = { Text("品牌") },
+                modifier = Modifier.weight(1f),
+                singleLine = true
+            )
+            OutlinedTextField(
+                value = model,
+                onValueChange = onModelChange,
+                label = { Text("型号") },
+                modifier = Modifier.weight(1f),
+                singleLine = true
+            )
+        }
+    }
+}
+
+@Composable
+fun ImportConfigDialog(onDismiss: () -> Unit, onConfirm: (String) -> Unit) {
+    var text by remember { mutableStateOf("") }
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("从 JSON 导入") },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                Text("粘贴 Guise 导出的机型列表 JSON", style = MaterialTheme.typography.bodySmall)
+                OutlinedTextField(
+                    value = text,
+                    onValueChange = { text = it },
+                    placeholder = { Text("[{...}] 或 {\"configuration\":\"...\"}") },
+                    modifier = Modifier.fillMaxWidth().height(150.dp),
+                    textStyle = MaterialTheme.typography.bodySmall
+                )
+            }
+        },
+        confirmButton = {
+            Button(onClick = { onConfirm(text) }, enabled = text.isNotBlank()) { Text("导入") }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) { Text("取消") }
+        }
+    )
 }
 
 @Composable
@@ -195,139 +350,6 @@ fun AvatarSection(
             }
         }
     }
-}
-
-@Composable
-fun ProfileFields(
-    store: AppStore,
-    nickname: String,
-    onNicknameChange: (String) -> Unit,
-    qqNumber: String,
-    onQqChange: (String) -> Unit,
-    description: String,
-    onDescriptionChange: (String) -> Unit,
-    brand: String,
-    onBrandChange: (String) -> Unit,
-    model: String,
-    onModelChange: (String) -> Unit,
-    onImportClick: () -> Unit,
-    allDevices: List<DeviceConfig>,
-    currentDevice: DeviceConfig,
-    onDeviceSelect: (DeviceConfig) -> Unit
-) {
-    Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
-        Text("账户信息", style = MaterialTheme.typography.titleMedium)
-        
-        OutlinedTextField(
-            value = nickname,
-            onValueChange = onNicknameChange,
-            label = { Text("昵称") },
-            modifier = Modifier.fillMaxWidth(),
-            singleLine = true
-        )
-
-        if (store == AppStore.XIAOQU_SPACE) {
-            OutlinedTextField(
-                value = qqNumber,
-                onValueChange = onQqChange,
-                label = { Text("QQ 号码") },
-                modifier = Modifier.fillMaxWidth(),
-                singleLine = true
-            )
-        }
-
-        if (store == AppStore.SIENE_SHOP || store == AppStore.LING_MARKET) {
-            OutlinedTextField(
-                value = description,
-                onValueChange = onDescriptionChange,
-                label = { Text("个性签名") },
-                modifier = Modifier.fillMaxWidth(),
-                minLines = 2
-            )
-        }
-
-        HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
-        
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text("设备伪装管理", style = MaterialTheme.typography.titleMedium)
-            TextButton(onClick = onImportClick) {
-                Icon(Icons.Default.ContentPaste, null, Modifier.size(18.dp))
-                Spacer(Modifier.width(8.dp))
-                Text("导入 Guise")
-            }
-        }
-
-        // 机型切换下拉菜单
-        ExposedDropdownMenuBox(
-            expanded = expanded,
-            onExpandedChange = { expanded = !expanded }
-        ) {
-            OutlinedTextField(
-                value = currentDevice.alias.ifEmpty { currentDevice.model },
-                onValueChange = {},
-                readOnly = true,
-                label = { Text("当前选定的机型模板") },
-                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
-                modifier = Modifier.menuAnchor().fillMaxWidth()
-            )
-            ExposedDropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
-                allDevices.forEach { device ->
-                    DropdownMenuItem(
-                        text = { Text("${device.alias} (${device.model})") },
-                        onClick = {
-                            onDeviceSelect(device)
-                            expanded = false
-                        }
-                    )
-                }
-            }
-        }
-
-        OutlinedTextField(
-            value = brand,
-            onValueChange = onBrandChange,
-            label = { Text("品牌 (Brand)") },
-            modifier = Modifier.fillMaxWidth()
-        )
-
-        OutlinedTextField(
-            value = model,
-            onValueChange = onModelChange,
-            label = { Text("型号 (Model)") },
-            modifier = Modifier.fillMaxWidth()
-        )
-    }
-}
-
-@Composable
-fun ImportConfigDialog(onDismiss: () -> Unit, onConfirm: (String) -> Unit) {
-    var text by remember { mutableStateOf("") }
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        title = { Text("从 JSON 导入机型") },
-        text = {
-            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                Text("粘贴 Guise 的 configuration 字段内容：", style = MaterialTheme.typography.bodySmall)
-                OutlinedTextField(
-                    value = text,
-                    onValueChange = { text = it },
-                    placeholder = { Text("{\"brand\":\"...\", \"model\":\"...\"}") },
-                    modifier = Modifier.fillMaxWidth().height(120.dp),
-                    textStyle = MaterialTheme.typography.bodySmall
-                )
-            }
-        },
-        confirmButton = {
-            Button(onClick = { onConfirm(text) }) { Text("导入") }
-        },
-        dismissButton = {
-            TextButton(onClick = onDismiss) { Text("取消") }
-        }
-    )
 }
 
 // 辅助组件保持...
