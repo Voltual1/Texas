@@ -156,7 +156,7 @@ class SineShopRepository : IAppStoreRepository {
         }
     } catch (e: Exception) { Result.failure(e) }
 
-    override suspend fun getAppVersionsByPackageName(packageName: String, page: Int = 1): Result<Pair<List<UnifiedAppItem>, Int>> = try {
+    override suspend fun getAppVersionsByPackageName(packageName: String, page: Int): Result<Pair<List<UnifiedAppItem>, Int>> = try {
         SineShopClient.getAppVersionsByPackageName(packageName = packageName, page = page).map { 
             Pair(it.list.map { item -> item.toUnifiedAppItem() }, calculateTotalPages(it.total))
         }
