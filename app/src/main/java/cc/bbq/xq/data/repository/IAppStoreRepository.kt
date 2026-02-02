@@ -81,4 +81,12 @@ interface IAppStoreRepository {
     suspend fun getAppVersionsByPackageName(packageName: String,page: Int): Result<Pair<List<UnifiedAppItem>, Int>> {
     return Result.failure(UnsupportedOperationException("当前商店不支持获取分页的版本列表"))
 }
+    /**
+     * 获取应用相对于当前登录用户的收藏/点赞状态
+     * * [思路说明]:
+     * 1. 对于灵商店: 调用独立的 check 接口。
+     * 2. 对于其他商店 (如弦应用商店已在详情中包含状态): 此方法可作为缓存查询或直接返回详情中的状态。
+     */
+    suspend fun getFavoriteState(appId: String): Result<UnifiedFavoriteState> =
+        Result.success(UnifiedFavoriteState(isFavorite = false)) 
 }

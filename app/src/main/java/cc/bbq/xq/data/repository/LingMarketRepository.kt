@@ -103,6 +103,31 @@ class LingMarketRepository : IAppStoreRepository {
         res.getOrThrow()
         Result.success(Unit)
     } catch (e: Exception) { Result.failure(e) }
+    
+        override suspend fun getFavoriteState(appId: String): Result<UnifiedFavoriteState> = try {
+        // 直接调用刚刚在 LingMarketClient 中添加的新方法
+        LingMarketClient.checkFavoriteStatus(appId).map { res ->
+            UnifiedFavoriteState(
+                isFavorite = res.isFavorited,
+                favoriteCount = null // 如果 check 接口不返回总数，则传 null
+            )
+        }.getOrThrow().let { Result.success(it) }
+    } catch (e: Exception) {
+        Result.failure(e)
+    }
+    
+    // 重写收藏切换逻辑
+    override suspend fun toggleFavorite(appId: String, isCurrentlyFavorite: Boolean): Result<Boolean> = try {
+        val result = if (isCurrentlyFavorite) {
+            LingMarketClient.removeFromFavorites(appId)
+        } else {
+            LingMarketClient.addToFavorites(appId)
+        }
+        
+        result.map { it.isSuccess }.getOrThrow().let { Result.success(it) }
+    } catch (e: Exception) {
+        Result.failure(e)
+    }
 
     // ==========================================================
     // 用户资料
