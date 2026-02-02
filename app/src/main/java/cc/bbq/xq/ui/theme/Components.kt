@@ -846,13 +846,14 @@ fun AppGrid(
 fun AppList(
     apps: List<UnifiedAppItem>,
     onItemClick: (UnifiedAppItem) -> Unit,
-    listState: LazyListState = rememberLazyListState() // 使用 LazyListState
+    modifier: Modifier = Modifier, // 添加此参数
+    listState: LazyListState = rememberLazyListState()
 ) {
     LazyColumn(
-        modifier = Modifier
+        modifier = modifier //  将传入的 modifier 应用在这里
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background),
-        // 这里的 contentPadding 左右留白建议和网格保持一致
+            // 这里的 contentPadding 左右留白建议和网格保持一致
         contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
         verticalArrangement = Arrangement.spacedBy(4.dp), // 对应 ListItem 内部的 padding 调整
         state = listState
