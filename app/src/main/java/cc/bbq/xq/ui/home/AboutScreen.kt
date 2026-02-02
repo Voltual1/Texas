@@ -16,6 +16,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import java.util.Calendar
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -44,6 +45,11 @@ fun AboutScreen(
     val versionName = BuildConfig.VERSION_NAME
     val versionCode = BuildConfig.VERSION_CODE
     val scope = rememberCoroutineScope() // 创建 CoroutineScope
+    
+        // 动态获取当前年份
+    val currentYear = Calendar.getInstance().get(Calendar.YEAR)
+    // 保留了立项年份，也显示了当前活跃
+    val copyrightText = if (currentYear > 2025) "2025 - $currentYear" else "2025"
 
     Column(
         modifier = modifier
@@ -132,7 +138,7 @@ fun AboutScreen(
         DeveloperCard()
         Spacer(modifier = Modifier.height(32.dp))
         Text(
-            text = "© 2025 Voltula. 保留所有权利。",
+            text = "© $copyrightText Voltula. 保留所有权利。",
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f),
             textAlign = TextAlign.Center
@@ -219,13 +225,13 @@ fun DeveloperCard() {
             )
             Spacer(modifier = Modifier.height(12.dp))
             Text(
-                text = "开发者: Voltula (Voltual)",
+                text = "开发者(owner): Voltula (Voltual)",
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
             Spacer(modifier = Modifier.height(4.dp))
             Text(
-                text = "目前由Voltual独立完成整个项目的开发",
+                text = "项目目前由暂无其他贡献者",
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
             )
