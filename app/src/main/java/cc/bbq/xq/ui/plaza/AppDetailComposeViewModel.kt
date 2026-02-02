@@ -28,7 +28,8 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import org.koin.android.annotation.KoinViewModel
 import cc.bbq.xq.LingMarketClient
-//import cc.bbq.xq.service.download.DownloadService
+import kotlinx.coroutines.async
+import kotlinx.coroutines.coroutineScope
 
 @KoinViewModel
 class AppDetailComposeViewModel(
@@ -304,27 +305,30 @@ private suspend fun handleLingMarketDownload(detail: UnifiedAppDetail) {
 
     viewModelScope.launch {
         try {
-            // 1. 并行发起详情和收藏状态请求
-            val detailDeferred = async { repository.getAppDetail(currentAppId, currentVersionId) }
-            val favoriteDeferred = async { repository.getFavoriteState(currentAppId) }
+            // 使用 coroutineScope 确保内部的 async 能正常工作
+            coroutineScope {
+                // 并行发起请求
+                val detailDeferred = async { repository.getAppDetail(currentAppId, currentVersionId) }
+                val favoriteDeferred = async { repository.getFavoriteState(currentAppId) }
 
-            val detailResult = detailDeferred.await()
-            val favoriteResult = favoriteDeferred.await()
+                // 等待结果
+                val detailResult = detailDeferred.await()
+                val favoriteResult = favoriteDeferred.await()
 
-            if (detailResult.isSuccess) {
-                var detail = detailResult.getOrThrow()
-                
-                // 2. 整合收藏状态
-                // 如果 favoriteResult 成功，则使用最新的状态覆盖详情中的默认值
-                favoriteResult.onSuccess { state ->
-                    detail = detail.copy(isFavorite = state.isFavorite)
+                if (detailResult.isSuccess) {
+                    // 明确指定类型，避免编译器的类型推断错误
+                    var detail: UnifiedAppDetail = detailResult.getOrThrow()
+                    
+                    // 获取收藏状态并更新
+                    favoriteResult.onSuccess { state ->
+                        detail = detail.copy(isFavorite = state.isFavorite)
+                    }
+
+                    _appDetail.value = detail
+                    loadComments()
+                } else {
+                    _errorMessage.value = "加载详情失败: ${detailResult.exceptionOrNull()?.message}"
                 }
-
-                _appDetail.value = detail
-                loadComments()
-                
-            } else {
-                _errorMessage.value = "加载详情失败: ${detailResult.exceptionOrNull()?.message}"
             }
         } catch (e: Exception) {
             _errorMessage.value = "网络错误: ${e.message}"
