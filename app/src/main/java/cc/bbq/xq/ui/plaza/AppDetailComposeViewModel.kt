@@ -219,30 +219,38 @@ class AppDetailComposeViewModel(
         return null
     }
     
- /**
+/**
  * 切换收藏状态
  */
 fun toggleFavorite() {
     val currentDetail = _appDetail.value ?: return
-    val targetState = currentDetail.isFavorite // 目标状态是当前状态的取反
+    val targetState = currentDetail.isFavorite 
 
     viewModelScope.launch {
         // 调用仓库执行 收藏/取消收藏 操作
         val result = repository.toggleFavorite(currentAppId, currentDetail.isFavorite)
 
         if (result.isSuccess) {
-            // 获取操作后的实际状态（有些 API 会返回最终状态，有些只返回成功与否）
+            // 获取操作后的实际状态
             val finalFavoriteState = result.getOrNull() ?: targetState
             
-            // 更新本地 StateFlow 以立即刷新 UI
-            _appDetail.value = currentDetail.copy(
-                isFavorite = finalFavoriteState,
-                // 如果需要，也可以根据状态手动增减 favoriteCount 的数值
-                favoriteCount = if (finalFavoriteState) {
+            // 计算新的收藏数
+            val newFavoriteCount = if (currentDetail.store == AppStore.LING_MARKET) {
+                // 如果是灵应用商店，保持原样，不手动增减
+                currentDetail.favoriteCount
+            } else {
+                // 其他商店，手动计算增减
+                if (finalFavoriteState) {
                     (currentDetail.favoriteCount ?: 0) + 1
                 } else {
                     maxOf(0, (currentDetail.favoriteCount ?: 1) - 1)
                 }
+            }
+
+            // 更新本地 StateFlow 以立即刷新 UI
+            _appDetail.value = currentDetail.copy(
+                isFavorite = finalFavoriteState,
+                favoriteCount = newFavoriteCount
             )
             
             // 发送 Snackbar 提示
