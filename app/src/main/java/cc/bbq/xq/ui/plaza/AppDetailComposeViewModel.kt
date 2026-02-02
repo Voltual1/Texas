@@ -219,7 +219,7 @@ class AppDetailComposeViewModel(
         return null
     }
     
-    /**
+ /**
  * 切换收藏状态
  */
 fun toggleFavorite() {
