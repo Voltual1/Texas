@@ -48,7 +48,8 @@ object WysAppMarketClient {
 
 
 //    private const val DEFAULT_DEVICE_MODEL = "浊燃"
-    private const val DEFAULT_BUILD_NUMBER = "3210"
+    private const val DEFAULT_BUILD_NUMBER = "3301"
+    private const val USER_AGENT_VALUE = "WysAppMarket/3.0 (Android; WearOS)"
     
     // Ktor HttpClient 实例
     val httpClient = HttpClient(OkHttp) {
@@ -60,6 +61,7 @@ object WysAppMarketClient {
         client.defaultRequest {
             url(BASE_URL)
             header(HttpHeaders.Accept, ContentType.Application.Json.toString())
+            header(HttpHeaders.UserAgent, USER_AGENT_VALUE)
         }
 
         // JSON 序列化配置
@@ -95,6 +97,16 @@ object WysAppMarketClient {
     ) {
         val isSuccess: Boolean get() = code == ApiResponseCode.SUCCESS.code
     }
+    
+    // 登录响应模型
+@Serializable
+data class LoginResponse(
+    val code: Int,
+    val url: String? = null,
+    val token: String? = null
+) {
+    val isSuccess: Boolean get() = code == 200 && token != null
+}
     
     // 应用列表项（用于搜索和列表接口）
     @Serializable
@@ -375,9 +387,7 @@ object SmartListSerializer : KSerializer<List<String>> {
         println("获取 StartKey URL: $url")
         
         return safeApiCall<StartKeyResponse> {
-            httpClient.get(url) {
-                header(HttpHeaders.UserAgent, "WysAppMarket/3.0 (Android; WearOS)")
-            }
+            httpClient.get(url)             
         }.map { response ->
             if (response.isSuccess) {
                 response.startKey ?: throw IOException("StartKey为空")
@@ -440,9 +450,7 @@ object SmartListSerializer : KSerializer<List<String>> {
         println("获取下载源 URL: $url")
         
         return safeApiCall<DownloadSourceResponse> {
-            httpClient.get(url) {
-                header(HttpHeaders.UserAgent, "WysAppMarket/3.0 (Android; WearOS)")
-            }
+            httpClient.get(url)             
         }.map { response ->
             if (response.isSuccess) {
                 response
@@ -450,9 +458,32 @@ object SmartListSerializer : KSerializer<List<String>> {
                 throw IOException("获取下载源失败，code: ${response.code}")
             }
         }
-    }    
-
-    // ===== 原有的 API 方法 =====
+    }
+    
+    /**
+ * 发起登录请求
+ * @param startKey 之前获取到的 startKey
+ * @return 返回 LoginResponse，包含授权 URL 和 Token
+ */
+suspend fun login(startKey: String): Result<LoginResponse> {
+    // 这里的 market 参数实际上就是 startkey
+    // URL 编码是必要的，因为 startkey 中包含 Base64 的特殊字符
+    val encodedMarket = urlEncode(startKey)
+    
+    val url = "$BASE_URL/market/user/login/?market=$encodedMarket"
+    
+    println("发起登录请求 URL: $url")
+    
+    return safeApiCall<LoginResponse> {
+        httpClient.get(url)                  
+    }.map { response ->
+        if (response.isSuccess) {
+            response
+        } else {
+            throw IOException("登录请求失败，code: ${response.code}")
+        }
+    }
+}    
     
     /**
      * 搜索应用
