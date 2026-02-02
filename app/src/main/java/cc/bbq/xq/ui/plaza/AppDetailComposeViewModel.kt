@@ -224,7 +224,7 @@ class AppDetailComposeViewModel(
  */
 fun toggleFavorite() {
     val currentDetail = _appDetail.value ?: return
-    val targetState = !currentDetail.isFavorite // 目标状态是当前状态的取反
+    val targetState = currentDetail.isFavorite // 目标状态是当前状态的取反
 
     viewModelScope.launch {
         // 调用仓库执行 收藏/取消收藏 操作

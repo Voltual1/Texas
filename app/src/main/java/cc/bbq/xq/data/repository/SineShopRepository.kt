@@ -154,6 +154,29 @@ class SineShopRepository : IAppStoreRepository {
     } catch (e: Exception) {
         Result.failure(e)
     }
+    
+    override suspend fun toggleFavorite(appId: String, isCurrentlyFavorite: Boolean): Result<Boolean> = try {
+    val token = getToken()
+    val result = if (isCurrentlyFavorite) {
+        // 当前已收藏，执行取消收藏
+        SineShopClient.dislikeApp(appId = appId.toInt(), token = token)
+    } else {
+        // 当前未收藏，执行收藏
+        SineShopClient.likeApp(appId = appId.toInt(), token = token)
+    }
+    
+    result.map { success ->
+        if (success) {
+            // 操作成功，返回新的收藏状态（取反）
+            !isCurrentlyFavorite
+        } else {
+            // 操作失败，保持原状态
+            isCurrentlyFavorite
+        }
+    }
+} catch (e: Exception) {
+    Result.failure(e)
+}
 
     override suspend fun uploadAvatar(imageBytes: ByteArray, filename: String): Result<String> = try {
         SineShopClient.uploadAvatar(imageBytes, filename, token = getToken()).map { 
