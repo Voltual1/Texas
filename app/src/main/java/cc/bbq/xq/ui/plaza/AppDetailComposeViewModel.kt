@@ -319,7 +319,7 @@ private suspend fun handleLingMarketDownload(detail: UnifiedAppDetail) {
                 val downloadUrl = result.getOrThrow().url
                 startDownload(downloadUrl)
             } else {
-                _errorMessage.value = "获取下载链接失败: ${result.exceptionOrNull()?.message}"
+                _errorMessage.value = "获取下载链接失败: ${result.exceptionOrNull()?.message}你可能没有登录灵应用商店哦"
             }
         } else {
             _isLoading.value = false

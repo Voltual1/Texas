@@ -118,16 +118,19 @@ class LingMarketRepository : IAppStoreRepository {
     
     // 重写收藏切换逻辑
     override suspend fun toggleFavorite(appId: String, isCurrentlyFavorite: Boolean): Result<Boolean> = try {
-        val result = if (isCurrentlyFavorite) {
-            LingMarketClient.removeFromFavorites(appId)
-        } else {
-            LingMarketClient.addToFavorites(appId)
-        }
-        
-        result.map { it.isSuccess }.getOrThrow().let { Result.success(it) }
-    } catch (e: Exception) {
-        Result.failure(e)
+    val result = if (isCurrentlyFavorite) {
+        LingMarketClient.removeFromFavorites(appId)
+    } else {
+        LingMarketClient.addToFavorites(appId)
     }
+    
+    result.map { 
+        // 操作成功，返回新的收藏状态（取反）
+        !isCurrentlyFavorite
+    }.getOrThrow().let { Result.success(it) }
+} catch (e: Exception) {
+    Result.failure(e)
+}
 
     // ==========================================================
     // 用户资料
@@ -153,15 +156,10 @@ class LingMarketRepository : IAppStoreRepository {
     } catch (e: Exception) { Result.failure(e) }
 
     override suspend fun getAppDownloadSources(appId: String, versionId: Long): Result<List<UnifiedDownloadSource>> =
-    try {
-        val sources = getAppDetail(appId, versionId).map { detail ->
-            detail.downloadUrl?.let { listOf(UnifiedDownloadSource("默认下载源", it, true)) } ?: emptyList()
-        }.getOrThrow()
-        
-        Result.success(sources)
-    } catch (e: Exception) {
-        // 在这里自定义提示文案
-        Result.failure(Exception("获取下载源失败：你可能没有登录灵应用商店哦", e))
+    getAppDetail(appId, versionId).map { detail ->
+        detail.downloadUrl?.let { 
+            listOf(UnifiedDownloadSource("默认下载源", it, true)) 
+        } ?: emptyList()
     }
 
     // 其余不支持的方法（toggleFavorite, deleteApp, releaseApp, uploadApk 等）
