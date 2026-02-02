@@ -102,6 +102,12 @@ object LingMarketClient {
     ) {
         val isSuccess: Boolean get() = code == null || code == 200 || code == 201
     }
+    
+    @Serializable
+data class FavoriteCheckResponse(
+    @SerialName("isFavorited") val isFavorited: Boolean,
+    @SerialName("favoritedAt") val favoritedAt: String? = null
+)
 
     // 登录请求
     @Serializable
@@ -758,6 +764,18 @@ suspend fun addToFavorites(appId: String): Result<FavoriteResponse> {
 }
 
 /**
+ * 检查用户是否已收藏该应用
+ * @param appId 应用ID
+ * @return 收藏状态模型
+ */
+suspend fun checkFavoriteStatus(appId: String): Result<FavoriteCheckResponse> {
+    val token = getToken() ?: return Result.failure(IOException("No token available"))
+    val url = "favorites/$appId/check"
+    
+    return get(url, token)
+}
+
+/**
  * 取消收藏应用
  * @param appId 应用ID
  * @return 取消收藏结果
@@ -857,8 +875,7 @@ suspend fun getFileDownloadUrl(
         suspend fun getFavorites(page: Int, limit: Int): Result<FavoritesResponse>
         suspend fun getCategories(includeInactive: Boolean): Result<List<LingMarketCategory>>
         suspend fun getAppsByCategory(category: String, page: Int, limit: Int): Result<LingMarketAppListResponse>
-        // 新增：更新用户个人资料
-    suspend fun updateUserProfile(nickname: String, bio: String?): Result<UpdateProfileResponse>
+        suspend fun updateUserProfile(nickname: String, bio: String?): Result<UpdateProfileResponse>
         suspend fun getAppDetail(appId: String): Result<LingMarketApp>
         suspend fun searchApps(query: String, page: Int, limit: Int): Result<LingMarketAppListResponse>
         suspend fun getRecentlyUpdatedApps(page: Int, limit: Int): Result<LingMarketAppListResponse>
@@ -866,12 +883,13 @@ suspend fun getFileDownloadUrl(
         suspend fun postCommentReply(appId: String, commentId: String, content: String): Result<LingMarketBaseResponse<LingMarketReply>>
         suspend fun deleteComment(appId: String, commentId: String): Result<DeleteResponse>
         suspend fun getAppComments(appId: String, page: Int, limit: Int): Result<CommentListResponse>
+        suspend fun checkFavoriteStatus(appId: String): Result<FavoriteCheckResponse>
         suspend fun uploadAvatar(imageData: ByteArray, filename: String): Result<AvatarUploadResponse>
         suspend fun getUserProfile(): Result<LingMarketUser>  // 修改返回类型
         suspend fun getFileDownloadUrl(fileKey: String, type: String): Result<LingMarketClient.LingMarketFileUrlResponse>
         suspend fun addToFavorites(appId: String): Result<FavoriteResponse>
-    suspend fun removeFromFavorites(appId: String): Result<FavoriteResponse>
-    suspend fun getViewHistory(page: Int, limit: Int): Result<HistoryResponse>
+        suspend fun removeFromFavorites(appId: String): Result<FavoriteResponse>
+        suspend fun getViewHistory(page: Int, limit: Int): Result<HistoryResponse>
         suspend fun getCommentReplies(appId: String, commentId: String, page: Int, limit: Int): Result<LingMarketBaseResponse<List<LingMarketReply>>>
     }
 
@@ -930,6 +948,9 @@ suspend fun getFileDownloadUrl(
         
         override suspend fun updateUserProfile(nickname: String, bio: String?): Result<UpdateProfileResponse> {
         return this@LingMarketClient.updateUserProfile(nickname, bio)
+    }
+    override suspend fun checkFavoriteStatus(appId: String): Result<FavoriteCheckResponse> {
+        return this@LingMarketClient.checkFavoriteStatus(appId)
     }
 
         override suspend fun getCommentReplies(appId: String, commentId: String, page: Int, limit: Int): Result<LingMarketBaseResponse<List<LingMarketReply>>> {

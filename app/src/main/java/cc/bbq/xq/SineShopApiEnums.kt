@@ -1,6 +1,7 @@
 package cc.bbq.xq
 
 import java.util.ArrayList
+
 /**
  * app_abi字段的位掩码解析逻辑
  */
@@ -33,6 +34,25 @@ enum class AbiFlag(val mask: Int, val label: String) {
             } else {
                 supportedAbis.joinToString("/")
             }
+        }
+    }
+}
+
+/**
+ * is_favourite字段的逻辑转换
+ * 1 表示已收藏，0 表示未收藏
+ */
+enum class FavouriteState(val value: Int, val isFavourite: Boolean) {
+    FAVOURITE(1, true),
+    NOT_FAVOURITE(0, false);
+
+    companion object {
+        /**
+         * 将 API 返回的整数值转换为 Boolean
+         * 如果值不匹配（防御性编程），默认返回 false
+         */
+        fun isFavourite(value: Int): Boolean {
+            return values().find { it.value == value }?.isFavourite ?: false
         }
     }
 }

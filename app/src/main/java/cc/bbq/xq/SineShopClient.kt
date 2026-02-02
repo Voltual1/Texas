@@ -224,7 +224,7 @@ data class SineShopReview(
         @SerialName("tags") val tags: List<AppTag>?,
         @SerialName("download_count") val download_count: Int,
         @SerialName("is_favourite") val is_favourite: Int,
-        @SerialName("favourite_count") val favourite_count: Int,
+        @SerialName("favourite_count") val favourite_count: Int,//总收藏人数
         @SerialName("review_count") val review_count: Int,
         // 新增：审核状态和审核原因字段
         @SerialName("audit_status") val audit_status: Int?,
@@ -558,7 +558,23 @@ data class SineShopReview(
         return get<DownloadSourceResponse>("/download/app", params, token = token).map {
             if (it.code == 0) it.data ?: emptyList() else throw IOException(it.msg)
         }
+    }   
+
+/** 收藏应用 */
+suspend fun likeApp(appId: Int, token: String? = null): Result<Boolean> {
+    val params = Parameters.build { append("appid", appId.toString()) }
+    return get<BaseResponse<Boolean>>("/app/like", params, token = token).map {
+        if (it.code == 0) it.data ?: false else throw IOException(it.msg)
     }
+}
+
+/** 取消收藏应用 */
+suspend fun dislikeApp(appId: Int, token: String? = null): Result<Boolean> {
+    val params = Parameters.build { append("appid", appId.toString()) }
+    return get<BaseResponse<Boolean>>("/app/dislike", params, token = token).map {
+        if (it.code == 0) it.data ?: false else throw IOException(it.msg)
+    }
+}
 
     /** 根据ID获取用户信息 */
     suspend fun getUserInfoById(userId: Long, token: String? = null): Result<SineShopUserInfo> {

@@ -288,10 +288,6 @@ class XiaoQuRepository(private val apiClient: KtorClient.ApiService) : IAppStore
         }
     }
 
-    override suspend fun toggleFavorite(appId: String, isCurrentlyFavorite: Boolean): Result<Boolean> {
-        return Result.failure(Exception("Not supported"))
-    }
-
     override suspend fun deleteApp(appId: String, versionId: Long): Result<Unit> {
         return try {
             val token = getToken()
