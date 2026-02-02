@@ -109,7 +109,7 @@ class LingMarketRepository : IAppStoreRepository {
         LingMarketClient.checkFavoriteStatus(appId).map { res ->
             UnifiedFavoriteState(
                 isFavorite = res.isFavorited,
-                favoriteCount = null // 如果 check 接口不返回总数，则传 null
+                favoriteCount = null //  灵应用商店的接口不返回总数，传 null
             )
         }.getOrThrow().let { Result.success(it) }
     } catch (e: Exception) {

@@ -26,7 +26,7 @@ import cc.bbq.xq.SineShopClient.SineShopUserInfo
 import cc.bbq.xq.LingMarketClient
 import cc.bbq.xq.WysAppMarketClient
 import cc.bbq.xq.AbiFlag
-// 新增导入
+import cc.bbq.xq.FavouriteState
 import cc.bbq.xq.AppVersionType
 import cc.bbq.xq.CpuArch
 import cc.bbq.xq.OsCompatibility
@@ -186,7 +186,8 @@ fun SineShopClient.SineShopAppDetail.toUnifiedAppDetail(): UnifiedAppDetail {
         user = this.user.toUnifiedUser(),
         tags = this.tags?.map { it.name },
         downloadCount = this.download_count,
-        isFavorite = this.is_favourite == 1,
+        // 使用枚举类进行转换，消除魔法数字
+        isFavorite = FavouriteState.isFavourite(this.is_favourite),
         favoriteCount = this.favourite_count,
         reviewCount = this.review_count,
         downloadUrl = null,

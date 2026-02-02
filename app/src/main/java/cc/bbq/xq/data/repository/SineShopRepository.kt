@@ -142,6 +142,18 @@ class SineShopRepository : IAppStoreRepository {
             }
         }
     } catch (e: Exception) { Result.failure(e) }
+    
+    override suspend fun getFavoriteState(appId: String): Result<UnifiedFavoriteState> = try {
+        // 直接复用详情接口获取状态
+        getAppDetail(appId, 0).map { detail ->
+            UnifiedFavoriteState(
+                isFavorite = detail.isFavorite,
+                favoriteCount = detail.favoriteCount
+            )
+        }
+    } catch (e: Exception) {
+        Result.failure(e)
+    }
 
     override suspend fun uploadAvatar(imageBytes: ByteArray, filename: String): Result<String> = try {
         SineShopClient.uploadAvatar(imageBytes, filename, token = getToken()).map { 
