@@ -835,26 +835,32 @@ fun AppFavoriteCard(
     ) {
         Row(
             modifier = Modifier
-                .padding(12.dp)
+                .padding(16.dp) // 增加一点内边距，让单行时不显得太挤
                 .fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Column(modifier = Modifier.weight(1f)) {
+            Column(
+                modifier = Modifier.weight(1f),
+                verticalArrangement = Arrangement.Center // 确保单行时文字居中
+            ) {
                 Text(
                     text = if (state.isFavorite) "已加入收藏" else "收藏此应用",
                     style = MaterialTheme.typography.titleMedium,
                     color = if (state.isFavorite) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface,
                     fontWeight = FontWeight.Bold
                 )
-                Spacer(modifier = Modifier.height(4.dp))
-                Text(
-                    text = "已有 ${state.favoriteCount} 人收藏",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
+                
+                // 关键逻辑：只有当 count 不为 null 时才渲染统计行
+                state.favoriteCount?.let { count ->
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = "已有 $count 人收藏",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
             }
 
-            // 增加简单的动画效果
             val scale by animateFloatAsState(
                 targetValue = if (state.isFavorite) 1.2f else 1.0f,
                 animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy),
@@ -865,7 +871,7 @@ fun AppFavoriteCard(
                 imageVector = if (state.isFavorite) Icons.Filled.Star else Icons.Outlined.Star,
                 contentDescription = null,
                 modifier = Modifier
-                    .size(32.dp)
+                    .size(28.dp)
                     .graphicsLayer(scaleX = scale, scaleY = scale),
                 tint = if (state.isFavorite) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
             )

@@ -90,8 +90,8 @@ data class UnifiedAppDetail(
  * 屏蔽不同商店 API 字段名（like, favorite, ratingCount）的差异
  */
 data class UnifiedFavoriteState(
-    val isFavorite: Boolean,      // 当前用户是否已收藏/点赞
-    val favoriteCount: Int       // 总收藏/点赞人数
+    val isFavorite: Boolean,// 当前用户是否已收藏/点赞
+    val favoriteCount: Int? = null //// 总收藏人数 如果 API 不支持，则传 null
 )
 
 /**
