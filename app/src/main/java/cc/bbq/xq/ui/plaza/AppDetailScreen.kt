@@ -301,62 +301,65 @@ val shareUrl = "https://apk.wysteam.cn/app/?id=${detail.id}"
         },
         modifier = modifier.fillMaxSize()
     ) {
-        // Box(modifier = modifier.fillMaxSize().pullRefresh(pullRefreshState)) { // 移除旧的 Box 包裹
-        if (isLoading && appDetail == null) { // 仅在初始加载且无数据时显示
-            CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
-        } else if (appDetail != null) {
-            val pageCount = when (appDetail!!.store) {
-                AppStore.SIENE_SHOP, AppStore.WYSAPPMARKET -> 2
-                else -> 1
-            }
-            val pagerState = rememberPagerState(pageCount = { pageCount })
+    if (isLoading && appDetail == null) {
+        CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
+    } else if (appDetail != null) {
+        val detail = appDetail!! // 建议在这里先解包，避免后面到处用 !!
+        val pageCount = when (detail.store) {
+            AppStore.SIENE_SHOP, AppStore.WYSAPPMARKET -> 2
+            else -> 1
+        }
+        val pagerState = rememberPagerState(pageCount = { pageCount })
+
+        // 关键点：使用 Column 或 Box 包裹 Pager，确保布局正确
+        Column(modifier = Modifier.fillMaxSize()) {
             HorizontalPager(
-                    state = pagerState, 
-                    modifier = Modifier.weight(1f) // 占据剩余空间
-                ) { page ->
-                    when (page) {
-                        0 -> {
-                            // 第一页：应用详情
-                            AppDetailContent(
+                state = pagerState,
+                // 注意：weight(1f) 后面不要跟 ()
+                modifier = Modifier.weight(1f) 
+            ) { page ->
+                when (page) {
+                    0 -> {
+                        AppDetailContent(
+                            navController = navController,
+                            appDetail = detail,
+                            comments = comments,
+                            onCommentReply = { comment -> viewModel.openReplyDialog(comment) },
+                            onDownloadClick = { viewModel.handleDownloadClick() },
+                            onCommentLongClick = { id: String -> // 明确指定类型
+                                commentToDeleteId = id
+                                showDeleteCommentDialog = true
+                            },
+                            onDeleteAppClick = { showDeleteAppDialog = true },
+                            onShareClick = { handleShare() },
+                            onMoreMenuClick = { },
+                            onImagePreview = { url: String -> // 明确指定类型
+                                navController.navigate(ImagePreview(url).createRoute())
+                            },
+                            onRefundClick = { viewModel.requestRefund() },
+                            onUpdateClick = { viewModel.requestUpdate() }
+                        )
+                    }
+                    1 -> {
+                        val packageName = detail.packageName
+                        if (packageName.isNotEmpty()) {
+                            VersionListScreen(
+                                packageName = packageName,
+                                storeName = detail.store.name,
                                 navController = navController,
-                                appDetail = appDetail!!,
-                                comments = comments,
-                                onCommentReply = { viewModel.openReplyDialog(it) },
-                                onDownloadClick = { viewModel.handleDownloadClick() },
-                                onCommentLongClick = { commentId ->
-                                    commentToDeleteId = commentId
-                                    showDeleteCommentDialog = true
-                                },
-                                onDeleteAppClick = { showDeleteAppDialog = true },
-                                onShareClick = { handleShare() },
-                                onMoreMenuClick = { showMoreMenu = true },
-                                onImagePreview = { url ->
-                                    navController.navigate(ImagePreview(url).createRoute())
-                                },
-                                onRefundClick = { viewModel.requestRefund() },
-                                onUpdateClick = { viewModel.requestUpdate() }
+                                modifier = Modifier.fillMaxSize()
                             )
-                        }
-                        1 -> {
-                            // 第二页：版本列表
-                            // 传递 packageName 和 storeName 给 VersionListScreen
-                            val packageName = appDetail!!.packageName
-                            if (packageName.isNotEmpty()) {
-                                VersionListScreen(
-                                    packageName = packageName,
-                                    storeName = appDetail!!.store.name,
-                                    navController = navController,
-                                    modifier = Modifier.fillMaxSize()
-                                )
-                            } else {
-                                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                                    Text("该应用无包名，无法获取版本列表")
-                                }
+                        } else {
+                            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                                Text("该应用无包名，无法获取版本列表")
                             }
                         }
                     }
+                }
+            }
         }
-        // 浮动评论按钮
+        
+        // FAB 需要放在这里，因为它相对于 Box 布局对齐
         FloatingActionButton(
             onClick = { viewModel.openCommentDialog() },
             modifier = Modifier.align(Alignment.BottomEnd).padding(16.dp),
@@ -365,17 +368,10 @@ val shareUrl = "https://apk.wysteam.cn/app/?id=${detail.id}"
         ) {
             Icon(Icons.AutoMirrored.Filled.Comment, "评论")
         }
-        // 移除旧的 PullRefreshIndicator
-        // PullRefreshIndicator(
-        //     refreshing,
-        //     pullRefreshState,
-        //     Modifier.align(Alignment.TopCenter),
-        //     backgroundColor = MaterialTheme.colorScheme.surface,
-        //     contentColor = MaterialTheme.colorScheme.primary
-        // )
+        
         BBQSnackbarHost(snackbarHostState, Modifier.align(Alignment.BottomCenter))
-        // } // End of old Box
-    } // End of PullToRefreshBox
+    }
+}
 
     // 删除应用确认对话框
     if (showDeleteAppDialog) {
