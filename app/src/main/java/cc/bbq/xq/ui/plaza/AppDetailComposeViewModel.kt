@@ -299,39 +299,40 @@ private suspend fun handleLingMarketDownload(detail: UnifiedAppDetail) {
     }
 
     private fun loadData() {
-        _isLoading.value = true
-        _errorMessage.value = ""
+    _isLoading.value = true
+    _errorMessage.value = ""
 
-        viewModelScope.launch {
-            try {
-                val detailResult = repository.getAppDetail(currentAppId, currentVersionId)
+    viewModelScope.launch {
+        try {
+            // 1. 并行发起详情和收藏状态请求
+            val detailDeferred = async { repository.getAppDetail(currentAppId, currentVersionId) }
+            val favoriteDeferred = async { repository.getFavoriteState(currentAppId) }
 
-                if (detailResult.isSuccess) {
-                    var detail = detailResult.getOrThrow()
-                    
-                    // 如果是弦应用商店，需要在 raw 数据中添加设备SDK信息
-                    if (currentStore == AppStore.SIENE_SHOP && detail.raw is cc.bbq.xq.SineShopClient.SineShopAppDetail) {
-                        val raw = detail.raw as cc.bbq.xq.SineShopClient.SineShopAppDetail
-                        // 这里我们不需要修改 raw 对象，因为在 Composable 中会动态计算
-                    }
-                    
-                    _appDetail.value = detail
-                    loadComments()
-                    
-                    // 移除：不再在此处加载版本列表
-                    //if (currentStore == AppStore.SIENE_SHOP) {
-                    //    loadVersionList()
-                    //}
-                } else {
-                    _errorMessage.value = "加载详情失败: ${detailResult.exceptionOrNull()?.message}"
+            val detailResult = detailDeferred.await()
+            val favoriteResult = favoriteDeferred.await()
+
+            if (detailResult.isSuccess) {
+                var detail = detailResult.getOrThrow()
+                
+                // 2. 整合收藏状态
+                // 如果 favoriteResult 成功，则使用最新的状态覆盖详情中的默认值
+                favoriteResult.onSuccess { state ->
+                    detail = detail.copy(isFavorite = state.isFavorite)
                 }
-            } catch (e: Exception) {
-                _errorMessage.value = "网络错误: ${e.message}"
-            } finally {
-                _isLoading.value = false
+
+                _appDetail.value = detail
+                loadComments()
+                
+            } else {
+                _errorMessage.value = "加载详情失败: ${detailResult.exceptionOrNull()?.message}"
             }
+        } catch (e: Exception) {
+            _errorMessage.value = "网络错误: ${e.message}"
+        } finally {
+            _isLoading.value = false
         }
     }
+}
 
     private fun loadComments() {
         viewModelScope.launch {
