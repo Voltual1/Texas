@@ -337,7 +337,8 @@ val shareUrl = "https://apk.wysteam.cn/app/?id=${detail.id}"
                                 navController.navigate(ImagePreview(url).createRoute())
                             },
                             onRefundClick = { viewModel.requestRefund() },
-                            onUpdateClick = { viewModel.requestUpdate() }
+                            onUpdateClick = { viewModel.requestUpdate() },
+                            onFavoriteToggle = { viewModel.toggleFavorite() }
                         )
                     }
                     1 -> {
@@ -470,7 +471,8 @@ fun AppDetailContent(
      onMoreMenuClick: () -> Unit, // 这个可能不再需要，因为逻辑移到了 Header 组件里
     onImagePreview: (String) -> Unit,
     onRefundClick: () -> Unit,
-    onUpdateClick: () -> Unit
+    onUpdateClick: () -> Unit,
+    onFavoriteToggle: () -> Unit // 新增参数
 ) {
     LazyColumn(
         modifier = Modifier.fillMaxSize().padding(16.dp),
@@ -507,6 +509,19 @@ fun AppDetailContent(
                     }
                 }
             }
+        }
+        
+        item {
+            // 构造 UI 状态模型
+            val favoriteState = UnifiedFavoriteState(
+                isFavorite = appDetail.isFavorite,
+                favoriteCount = appDetail.favoriteCount
+            )
+            
+            AppFavoriteCard(
+                state = favoriteState,
+                onToggle = { onFavoriteToggle() } // 调用传入的切换方法
+            )
         }
 
         // --- 更新日志 ---
