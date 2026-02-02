@@ -17,7 +17,9 @@ import cc.bbq.xq.data.unified.UnifiedAppItem
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import org.koin.android.annotation.KoinViewModel
 
+@KoinViewModel
 class VersionListViewModel(
     application: Application,
     private val repositories: Map<AppStore, IAppStoreRepository>
