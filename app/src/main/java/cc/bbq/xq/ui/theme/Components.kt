@@ -87,11 +87,11 @@ import coil3.compose.AsyncImage
 import coil3.compose.SubcomposeAsyncImage
 import coil3.compose.rememberAsyncImagePainter
 import coil3.request.ImageRequest
+import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.outlined.Star
 import cc.bbq.xq.AppStore
-import cc.bbq.xq.data.unified.UnifiedAppItem
-import cc.bbq.xq.data.unified.UnifiedDownloadSource
 import androidx.compose.foundation.ScrollState
-import cc.bbq.xq.data.unified.UnifiedComment
+import cc.bbq.xq.data.unified.*
 import cc.bbq.xq.ui.compose.LinkifyText
 import kotlinx.coroutines.launch
 import androidx.compose.foundation.ExperimentalFoundationApi
@@ -869,6 +869,65 @@ fun AppList(
         }
     }
 }
+
+@Composable
+fun AppFavoriteCard(
+    state: UnifiedFavoriteState,
+    onToggle: (Boolean) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Card(
+        onClick = { onToggle(!state.isFavorite) },
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(vertical = 8.dp),
+        shape = AppShapes.medium,
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceVariant,
+            contentColor = MaterialTheme.colorScheme.onSurfaceVariant,
+        ),
+        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
+    ) {
+        Row(
+            modifier = Modifier
+                .padding(12.dp)
+                .fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = if (state.isFavorite) "已加入收藏" else "收藏此应用",
+                    style = MaterialTheme.typography.titleMedium,
+                    color = if (state.isFavorite) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface,
+                    fontWeight = FontWeight.Bold
+                )
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = "已有 ${state.favoriteCount} 人收藏",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+
+            // 增加简单的动画效果
+            val scale by animateFloatAsState(
+                targetValue = if (state.isFavorite) 1.2f else 1.0f,
+                animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy),
+                label = "starScale"
+            )
+
+            Icon(
+                imageVector = if (state.isFavorite) Icons.Filled.Star else Icons.Outlined.Star,
+                contentDescription = null,
+                modifier = Modifier
+                    .size(32.dp)
+                    .graphicsLayer(scaleX = scale, scaleY = scale),
+                tint = if (state.isFavorite) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
+    }
+}
+
 /**
  * 评论项组件
  * 显示单条评论，支持回复和长按操作
