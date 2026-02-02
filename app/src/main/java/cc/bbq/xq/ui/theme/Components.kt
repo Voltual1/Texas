@@ -835,13 +835,13 @@ fun AppFavoriteCard(
     ) {
         Row(
             modifier = Modifier
-                .padding(16.dp) // 增加一点内边距，让单行时不显得太挤
+                .padding(16.dp)
                 .fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Column(
                 modifier = Modifier.weight(1f),
-                verticalArrangement = Arrangement.Center // 确保单行时文字居中
+                verticalArrangement = Arrangement.Center
             ) {
                 Text(
                     text = if (state.isFavorite) "已加入收藏" else "收藏此应用",
@@ -850,11 +850,12 @@ fun AppFavoriteCard(
                     fontWeight = FontWeight.Bold
                 )
                 
-                // 关键逻辑：只有当 count 不为 null 时才渲染统计行
-                state.favoriteCount?.let { count ->
+                // 关键逻辑修改：判断 count 存在且有效（>= 0）
+                // state.favoriteCount 是 Int，所以直接比较即可
+                if (state.favoriteCount >= 0) {
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(
-                        text = "已有 $count 人收藏",
+                        text = "已有 ${state.favoriteCount} 人收藏",
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )

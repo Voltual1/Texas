@@ -381,7 +381,7 @@ fun LingMarketClient.LingMarketApp.toUnifiedAppDetail(): UnifiedAppDetail {
         tags = this.tags,
         downloadCount = this.downloads,
         isFavorite = false,
-        favoriteCount = null,
+        favoriteCount = -1,
         reviewCount = this.ratingCount,
         downloadUrl = null, // 留空，由 ViewModel 处理下载
         raw = this
