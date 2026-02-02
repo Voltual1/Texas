@@ -381,7 +381,7 @@ object SmartListSerializer : KSerializer<List<String>> {
                   "?build=$buildNumber" +
                   "&device=$encodedDevice" +
                   "&_=$timestamp" +
-                  "&platform=ce" +
+                  "&os=ce" +
                   "&|=$signature"
         
         println("获取 StartKey URL: $url")
