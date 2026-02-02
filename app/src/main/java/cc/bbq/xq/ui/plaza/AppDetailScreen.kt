@@ -64,8 +64,7 @@ import kotlinx.coroutines.launch
 // Project Specific (App Logic & UI)
 import cc.bbq.xq.AppStore
 import cc.bbq.xq.LingMarketClient
-import cc.bbq.xq.data.unified.UnifiedAppDetail
-import cc.bbq.xq.data.unified.UnifiedComment
+import cc.bbq.xq.data.unified.*
 import cc.bbq.xq.ui.*
 import cc.bbq.xq.ui.community.compose.CommentDialog
 import cc.bbq.xq.ui.community.compose.CommentItem
@@ -511,18 +510,19 @@ fun AppDetailContent(
             }
         }
         
-        item {
-            // 构造 UI 状态模型
-            val favoriteState = UnifiedFavoriteState(
-                isFavorite = appDetail.isFavorite,
-                favoriteCount = appDetail.favoriteCount
-            )
-            
-            AppFavoriteCard(
-                state = favoriteState,
-                onToggle = { onFavoriteToggle() } // 调用传入的切换方法
-            )
-        }
+        if (appDetail.store == AppStore.SIENE_SHOP || appDetail.store == AppStore.LING_MARKET) {
+    item {
+        val favoriteState = UnifiedFavoriteState(
+            isFavorite = appDetail.isFavorite,
+            favoriteCount = appDetail.favoriteCount
+        )
+        
+        AppFavoriteCard(
+            state = favoriteState,
+            onToggle = { onFavoriteToggle() }
+        )
+    }
+}
 
         // --- 更新日志 ---
 // 判断是否显示
