@@ -20,6 +20,7 @@ import cc.bbq.xq.ui.billing.BillingViewModel
 import org.koin.android.ext.koin.androidContext
 import cc.bbq.xq.data.repository.WysAppMarketRepository
 import cc.bbq.xq.ui.community.CommunityViewModel
+import cc.bbq.xq.ui.plaza.VersionListViewModel // 新增导入
 import cc.bbq.xq.ui.community.FollowingPostsViewModel
 import cc.bbq.xq.ui.community.HotPostsViewModel
 import cc.bbq.xq.data.DeviceNameDataStore
@@ -83,6 +84,7 @@ val appModule = module {
     viewModel { PostCreateViewModel(androidApplication()) }
     viewModel { MyPostsViewModel(get()) }
     viewModel { PaymentViewModel(androidApplication()) }
+    viewModel { VersionListViewModel(androidApplication(), get()) } // 注册 ViewModel
     viewModel { UserDetailViewModel(androidApplication()) }
     viewModel { StoreManagerViewModel(androidApplication()) }
     
