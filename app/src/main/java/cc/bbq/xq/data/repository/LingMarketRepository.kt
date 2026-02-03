@@ -16,12 +16,13 @@ class LingMarketRepository : IAppStoreRepository {
 
     override suspend fun getCategories(): Result<List<UnifiedCategory>> = try {
         LingMarketClient.getCategories(includeInactive = false).map { categories ->
-            val special = listOf(UnifiedCategory("-1", "最近更新"))
+            val special = listOf(UnifiedCategory("-1", "最近更新"),UnifiedCategory("-4", "我的收藏"))
             special + categories.map { it.toUnifiedCategory() }
         }.recover {
             // API 失败时的 Fallback
             listOf(
                 UnifiedCategory("-1", "最近更新"), UnifiedCategory("browser", "浏览器"),
+                UnifiedCategory("-4", "我的收藏"),  // 添加我的收藏分类
                 UnifiedCategory("Games", "游戏"), UnifiedCategory("tools", "实用工具"),
                 UnifiedCategory("Apps", "应用商店"), UnifiedCategory("video", "视频播放"),
                 UnifiedCategory("teach", "教育学习"), UnifiedCategory("read", "图文阅读"),
@@ -40,7 +41,19 @@ class LingMarketRepository : IAppStoreRepository {
     override suspend fun getApps(categoryId: String?, page: Int, userId: String?): Result<Pair<List<UnifiedAppItem>, Int>> = try {
         val call = if (categoryId == "-1" || categoryId == null) {
             LingMarketClient.getRecentlyUpdatedApps(page, 20)
-        } else {
+        }
+        categoryId == "-4" -> {
+                // 我的收藏分类：获取收藏列表
+                LingMarketClient.getFavorites(page, 20)
+                    .map { response ->
+                        // 将收藏响应转换为统一的 AppListResponse 格式
+                        LingMarketClient.LingMarketAppListResponse(
+                            apps = response.favorites.map { it.app },
+                            pagination = response.pagination
+                        )
+                    }
+            }
+         else {
             LingMarketClient.getAppsByCategory(categoryId, page, 20)
         }
         call.map { res -> Pair(res.apps.map { it.toUnifiedAppItem() }, res.pagination.pages) }.getOrThrow()
