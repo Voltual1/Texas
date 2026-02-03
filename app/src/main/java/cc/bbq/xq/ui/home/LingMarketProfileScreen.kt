@@ -140,7 +140,7 @@ fun LingMarketProfileScreen(
                 navController.navigate(
                     ResourcePlaza(
                         isMyResource = false, // 注意：对于灵应用商店，这个参数可能意义不同
-                        userId = null, // 可以是null，因为灵商店有自己的token验证
+                        userId = -1, // 灵应用商店看的是Authorization头
                         mode = "my_favourite",
                         storeName = AppStore.LING_MARKET
                     ).createRoute()
