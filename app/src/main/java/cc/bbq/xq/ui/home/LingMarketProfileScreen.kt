@@ -142,7 +142,7 @@ fun LingMarketProfileScreen(
                         isMyResource = false, // 注意：对于灵应用商店，这个参数可能意义不同
                         userId = -1, // 灵应用商店看的是Authorization头
                         mode = "my_favourite",
-                        storeName = AppStore.LING_MARKET
+                        storeName = AppStore.LING_MARKET.name
                     ).createRoute()
                 )
             }
