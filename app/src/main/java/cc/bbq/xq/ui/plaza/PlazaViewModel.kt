@@ -260,7 +260,7 @@ class PlazaViewModel(
                     // 当前商店不支持该模式，显示错误或空列表
                     _categories.value = emptyList()
                     _isLoading.value = false
-                    _errorMessage.value = "当前商店不支持$currentMode功能"
+                    _errorMessage.value = "当前商店不支持${currentMode}功能"
                     return@launch
                 }
                 
