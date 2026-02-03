@@ -10,7 +10,7 @@ import org.koin.core.annotation.Single
 
 // 定义当前的协议版本号
 object AgreementVersions {
-    const val USER_AGREEMENT = 2
+    const val USER_AGREEMENT = 3
     const val XIAOQU_AGREEMENT = 1 
     const val SINE_PRIVACY = 1
     const val SINE_AGREEMENT = 1

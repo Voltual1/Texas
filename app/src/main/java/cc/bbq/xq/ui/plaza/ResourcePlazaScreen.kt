@@ -156,11 +156,17 @@ fun ResourcePlazaContent(
             exit = slideOutVertically(targetOffsetY = { -it })
         ) {
             AppStoreDropdownMenu(
-                selectedStore = selectedAppStore,
-                onStoreChange = { viewModel.setAppStore(it) },
-                modifier = Modifier.fillMaxWidth(),
-                appStores = remember { AppStore.entries.filter { it != AppStore.LOCAL && it != AppStore.SINE_OPEN_MARKET } }
-            )
+    selectedStore = selectedAppStore,
+    onStoreChange = { viewModel.setAppStore(it) },
+    modifier = Modifier.fillMaxWidth(),
+    appStores = remember { 
+        AppStore.entries.filter { 
+            it != AppStore.LOCAL && 
+            it != AppStore.SINE_OPEN_MARKET &&
+            it != AppStore.WYSAPPMARKET 
+        } 
+    }
+)
         }
 
         // 修正：仅在非"我的资源"模式且非"查看特定用户"模式下显示搜索框
