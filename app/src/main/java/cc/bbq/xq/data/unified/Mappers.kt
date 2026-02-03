@@ -139,7 +139,7 @@ fun SineShopClient.SineShopApp.toUnifiedAppItem(): UnifiedAppItem {
         name = this.app_name,
         iconUrl = this.app_icon,
         versionName = this.version_name,
-        info = infoString // 填充新增的 info 字段
+        info = infoString 
     )
 }
 
@@ -151,7 +151,6 @@ fun SineShopClient.SineShopUserInfoLite.toUnifiedUser(): UnifiedUser {
     )
 }
 
-// 修改 Mappers.kt 中的映射函数
 fun SineShopClient.SineShopComment.toUnifiedComment(): UnifiedComment {
     return UnifiedComment(
         id = this.id.toString(),
@@ -161,7 +160,6 @@ fun SineShopClient.SineShopComment.toUnifiedComment(): UnifiedComment {
         childCount = this.child_count,
         fatherReply = this.father_reply?.toUnifiedComment(),
         raw = this,
-        // 直接在这里处理 appId 的逻辑
         appId = if (this.app_id == -1) null else this.app_id.toString(),
         versionId = null
     )
@@ -207,7 +205,7 @@ fun SineShopClient.SineShopDownloadSource.toUnifiedDownloadSource(): UnifiedDown
     return UnifiedDownloadSource(
         name = this.name,
         url = this.url,
-        isOfficial = this.isExtra == 1 // 假设 1 代表官方/主要线路
+        isOfficial = this.isExtra == 1
     )
 }
 
@@ -242,10 +240,10 @@ fun KtorClient.UserInformationData.toUnifiedUserDetail(): UnifiedUserDetail {
         hierarchy = this.hierarchy,
         followersCount = this.followerscount,
         fansCount = this.fanscount,
-        followStatus = followStatus,  // 添加关注状态
+        followStatus = followStatus,  
         postCount = this.postcount,
         likeCount = this.likecount,
-        money = this.money, // Int 类型，正确
+        money = this.money,
         commentCount = this.commentcount?.toIntOrNull(), // 从 String? 转换为 Int?
         seriesDays = this.series_days,
         lastActivityTime = this.last_activity_time,
@@ -254,7 +252,6 @@ fun KtorClient.UserInformationData.toUnifiedUserDetail(): UnifiedUserDetail {
     )
 }
 
-// 修正 SineShopClient (弦应用商店) 映射
 fun SineShopClient.SineShopUserInfo.toUnifiedUserDetail(): UnifiedUserDetail {
     return UnifiedUserDetail(
         id = this.id.toLong(),
@@ -291,8 +288,8 @@ fun SineShopClient.SineShopReview.toUnifiedReview(): UnifiedComment {
         childCount = 0, 
         fatherReply = null,
         raw = this,
-        appId = this.appId.toString(),       // 使用 appId (Kotlin 属性名)
-        versionId = this.appVersion.toLongOrNull(), // 使用 appVersion (Kotlin 属性名)
+        appId = this.appId.toString(),       
+        versionId = this.appVersion.toLongOrNull(), 
         rating = this.rating,
         isCountedInRating = this.isCountedInRating
     )
@@ -496,7 +493,7 @@ fun WysAppMarketClient.WysAppDetail.toUnifiedAppDetail(): UnifiedAppDetail {
         reviewCount = 0,
         downloadUrl = this.link,
         raw = this,
-        // 新增的微思应用商店专用字段
+        // 微思应用商店专用字段
         minsdkDisplay = minSdkVersion.displayName,
         targetsdkDisplay = targetSdkVersion.displayName,
         cpuArchDisplay = cpuArch.displayName,

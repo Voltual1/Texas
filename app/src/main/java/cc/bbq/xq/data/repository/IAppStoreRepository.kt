@@ -5,9 +5,7 @@ import java.io.File
 
 interface IAppStoreRepository {
 
-    // ==========================================================
-    // 核心功能：给默认实现返回"不支持"
-    // ==========================================================
+    // 给默认实现返回"不支持"
 
     suspend fun getCategories(): Result<List<UnifiedCategory>> =
         Result.failure(UnsupportedOperationException("当前商店不支持获取分类"))
@@ -20,9 +18,7 @@ interface IAppStoreRepository {
 
     suspend fun getAppDetail(appId: String, versionId: Long): Result<UnifiedAppDetail> =
         Result.failure(UnsupportedOperationException("当前商店不支持获取应用详情"))
-    // ==========================================================
-    // 扩展功能：默认“不支持”，子类按需重写
-    // ==========================================================
+    // 默认“不支持”，子类按需重写
 
     suspend fun getAppComments(appId: String, versionId: Long, page: Int): Result<Pair<List<UnifiedComment>, Int>> =
         Result.failure(UnsupportedOperationException("当前商店不支持查看评论"))

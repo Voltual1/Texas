@@ -1,4 +1,11 @@
-// /app/src/main/java/cc/bbq/xq/data/unified/UnifiedModels.kt
+//Copyright (C) 2025 Voltual
+// 本程序是自由软件：你可以根据自由软件基金会发布的 GNU 通用公共许可证第3版
+//（或任意更新的版本）的条款重新分发和/或修改它。
+//本程序是基于希望它有用而分发的，但没有任何担保；甚至没有适销性或特定用途适用性的隐含担保。
+// 有关更多细节，请参阅 GNU 通用公共许可证。
+//
+// 你应该已经收到了一份 GNU 通用公共许可证的副本
+// 如果没有，请查阅 <http://www.gnu.org/licenses/>.
 package cc.bbq.xq.data.unified
 
 import cc.bbq.xq.AppStore
@@ -27,8 +34,8 @@ data class UnifiedComment(
     val raw: Any,
     val appId: String? = null,
     val versionId: Long? = null,
-    val rating: Int? = null, // 新增：评分（可为空）
-    val isCountedInRating: Boolean? = null // 新增：是否计入评分（可为空）
+    val rating: Int? = null,
+    val isCountedInRating: Boolean? = null 
 )
 
 /**
@@ -74,7 +81,7 @@ data class UnifiedAppDetail(
     val reviewCount: Int,
     val downloadUrl: String?, // 直接可用的下载URL
     val raw: Any,
-    // 新增微思应用商店专用字段
+    // 微思应用商店专用字段
     val minsdkDisplay: String? = null,
     val targetsdkDisplay: String? = null,
     val cpuArchDisplay: String? = null,
@@ -215,7 +222,7 @@ data class UnifiedAppReleaseParams(
     val screenshots: List<File>? = null // 本地截图文件列表
 )
 
-// 添加小趣空间关注状态密封类
+// 小趣空间关注状态密封类
 sealed class FollowStatus(val value: Int) {
     data object MutualFollow : FollowStatus(0)      // 已互关
     data object FollowedYou : FollowStatus(1)       // 关注了你

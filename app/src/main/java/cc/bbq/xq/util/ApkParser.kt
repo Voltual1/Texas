@@ -23,16 +23,13 @@ import java.io.FileOutputStream
 import java.io.InputStream
 import kotlin.math.roundToInt
 
-// 新增：ApkInfo 数据类，包含 SDK 信息
 data class ApkInfo(
     val appName: String,
     val packageName: String,
     val versionName: String,
     val versionCode: Long,
-    val minSdkVersion: Int,        // 新增：最小 SDK 版本
-    val targetSdkVersion: Int,    // 新增：目标 SDK 版本
-    // **FIXED**: The problematic Drawable field is now completely removed.
-    // val icon: Drawable?,
+    val minSdkVersion: Int,        
+    val targetSdkVersion: Int,    
     val sizeInMb: Double,
     val tempApkFile: File,
     val tempIconFile: File?,
@@ -61,8 +58,6 @@ object ApkParser {
                 @Suppress("DEPRECATION")
                 pm.getPackageArchiveInfo(archivePath, flags)
             }
-
-            // 修复：使用局部变量来避免智能转换问题
             val appInfo = packageInfo?.applicationInfo
             if (appInfo == null) {
                 tempApkFile.delete()
@@ -82,12 +77,8 @@ object ApkParser {
                 packageInfo.versionCode.toLong()
             }
             
-            // **修复**：使用安全调用符 ?. 来访问 minSdkVersion 和 targetSdkVersion
-            // 如果 applicationInfo 为 null，则使用默认值 0
             val minSdkVersion = packageInfo.applicationInfo?.minSdkVersion ?: 0
             val targetSdkVersion = packageInfo.applicationInfo?.targetSdkVersion ?: 0
-
-            // Load the drawable, but only to save it to a file. Do not pass it on.
             val iconDrawable = appInfo.loadIcon(pm)
             val tempIconFileName = generateUniqueFileName("icon", "png")
             val tempIconFile = drawableToTempFile(context, iconDrawable, tempIconFileName)
@@ -101,8 +92,8 @@ object ApkParser {
                 packageName = packageName,
                 versionName = versionName,
                 versionCode = versionCode,
-                minSdkVersion = minSdkVersion,      // 新增
-                targetSdkVersion = targetSdkVersion,// 新增
+                minSdkVersion = minSdkVersion,     
+                targetSdkVersion = targetSdkVersion,
                 sizeInMb = sizeInMb,
                 tempApkFile = tempApkFile,
                 tempIconFile = tempIconFile,

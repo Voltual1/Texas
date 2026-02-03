@@ -37,7 +37,7 @@ import androidx.navigation.NavController
 import androidx.navigation.NavBackStackEntry
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import cc.bbq.xq.ui.compose.UserAgreementDialog// 确保导入 UserAgreementDialog
+import cc.bbq.xq.ui.compose.UserAgreementDialog
 import cc.bbq.xq.ui.theme.BBQTheme
 import cc.bbq.xq.ui.theme.ThemeColorStore
 import cc.bbq.xq.ui.theme.ThemeCustomizeScreen
@@ -51,7 +51,7 @@ import cc.bbq.xq.ui.theme.*
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import cc.bbq.xq.data.db.LogEntry
-import java.io.IOException // 导入 IOException
+import java.io.IOException
 import cc.bbq.xq.data.UpdateInfo
 import kotlinx.serialization.json.Json
 import io.ktor.client.call.body
@@ -59,18 +59,18 @@ import cc.bbq.xq.ui.compose.UpdateDialog
 import kotlinx.serialization.decodeFromString
 import cc.bbq.xq.data.UpdateSettingsDataStore
 import kotlinx.coroutines.flow.first
-import cc.bbq.xq.util.UpdateChecker//导入公共的更新函数
+import cc.bbq.xq.util.UpdateChecker
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.window.DialogWindowProvider
 import android.app.Activity
 import cc.bbq.xq.ui.theme.BBQSnackbarHost
 import org.koin.android.ext.android.inject
-import cc.bbq.xq.data.UserAgreementDataStore // 导入 UserAgreementDataStore
+import cc.bbq.xq.data.UserAgreementDataStore 
 
 class MainActivity : ComponentActivity() {
 private val agreementDataStore: UserAgreementDataStore by inject()
     override fun onCreate(savedInstanceState: Bundle?) {
-    // 关键：在 super 之前切回主主题，不然你的启动图会一直垫在 Compose 下面
+    // 在 super 之前切回主主题，不然启动图会一直垫在 Compose 下面
         setTheme(R.style.Theme_BBQ_Main)        
         super.onCreate(savedInstanceState)
 
@@ -126,7 +126,7 @@ private val agreementDataStore: UserAgreementDataStore by inject()
                     MainComposeApp(snackbarHostState = snackbarHostState)
                     CheckForUpdates(snackbarHostState)
 
-                    // 5. 协议对话框逻辑
+                    // 协议对话框逻辑
                     if (showAgreementDialog) {
                         UserAgreementDialog(
                             onAgreed = {
@@ -147,7 +147,7 @@ private val agreementDataStore: UserAgreementDataStore by inject()
 
         lifecycleScope.launch {
             delay(10000)
-            val contextForHeartbeat = this@MainActivity // fixed: rename context to avoid shadowing
+            val contextForHeartbeat = this@MainActivity 
             val userCredentialsFlow = AuthManager.getCredentials(contextForHeartbeat)
             val userCredentials = userCredentialsFlow.first()
             if (userCredentials != null) {
@@ -213,7 +213,7 @@ private val agreementDataStore: UserAgreementDataStore by inject()
 }
 
 @Composable
-fun CheckForUpdates(snackbarHostState: SnackbarHostState) { // 添加 snackbarHostState 参数
+fun CheckForUpdates(snackbarHostState: SnackbarHostState) {
     val context = LocalContext.current
     var updateInfo by remember { mutableStateOf<UpdateInfo?>(null) }
     var showDialog by remember { mutableStateOf(false) }
@@ -254,7 +254,6 @@ fun CheckForUpdates(snackbarHostState: SnackbarHostState) { // 添加 snackbarHo
     }
 }
 
-// 移到此处，成为包级函数
 fun restartMainActivity(context: Context) {
     val packageManager = context.packageManager
     val intent = packageManager.getLaunchIntentForPackage(context.packageName)
@@ -281,7 +280,7 @@ private fun tryAutoLogin(
     password: String,
     context: Context,
     navController: NavController,
-    snackbarHostState: SnackbarHostState // 添加 SnackbarHostState 参数
+    snackbarHostState: SnackbarHostState 
 ) {
     CoroutineScope(Dispatchers.IO).launch {
         try {
@@ -308,15 +307,13 @@ private fun tryAutoLogin(
                                 )
                                 // 登录成功，不需要额外导航，因为已经在主页面
                             } else {
-                                AuthManager.clearCredentials(context)
-                                //Toast.makeText(context, "登录数据为空", Toast.LENGTH_SHORT).show()
+                                AuthManager.clearCredentials(context)                                
                                 CoroutineScope(Dispatchers.Main).launch { snackbarHostState.showSnackbar("登录数据为空") }
                                 navController.navigate(Login.route)
                             }
                         } else {
                             AuthManager.clearCredentials(context)
-                            val errorMsg = loginResponse?.msg ?: "登录失败"
-                            //Toast.makeText(context, errorMsg, Toast.LENGTH_SHORT).show()
+                            val errorMsg = loginResponse?.msg ?: "登录失败"                            
                             CoroutineScope(Dispatchers.Main).launch { snackbarHostState.showSnackbar(errorMsg) }
                             navController.navigate(Login.route)
                         }
@@ -333,8 +330,7 @@ private fun tryAutoLogin(
                                 }
                             }
                             else -> "登录异常: ${exception?.message ?: "未知错误"}"
-                        }
-                        //Toast.makeText(context, errorMsg, Toast.LENGTH_SHORT).show()
+                        }                        
                         CoroutineScope(Dispatchers.Main).launch { snackbarHostState.showSnackbar(errorMsg) }
                         navController.navigate(Login.route)
                     }
@@ -342,8 +338,7 @@ private fun tryAutoLogin(
             }
         } catch (e: Exception) {
             withContext(Dispatchers.Main) {
-                AuthManager.clearCredentials(context)
-                //Toast.makeText(context, "登录异常: ${e.message}", Toast.LENGTH_SHORT).show()
+                AuthManager.clearCredentials(context)                
                 CoroutineScope(Dispatchers.Main).launch { snackbarHostState.showSnackbar("登录异常: ${e.message}") }
                 navController.navigate(Login.route)
             }
@@ -389,7 +384,7 @@ fun getTitleForDestination(backStackEntry: NavBackStackEntry?): String {
         CreateAppRelease.route -> "发布应用"
         "app_release_update" -> "更新应用"
         LogViewer.route -> "日志"
-        "account_profile" -> "账号资料"  // 注意：这里也要修改
+        "account_profile" -> "账号资料"  
         FollowList.route -> "我的关注"
         FanList.route -> "我的粉丝"
         MyLikes.route -> "我喜欢的"
@@ -463,7 +458,7 @@ fun MainComposeApp(snackbarHostState: SnackbarHostState) {
     val drawerHeaderBackgroundUri = if (useDarkTheme) darkBgUri else lightBgUri
 
 
-    // 新增：检查用户是否已登录
+    // 检查用户是否已登录
     val isLoggedIn = remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {
@@ -572,8 +567,7 @@ fun MainComposeApp(snackbarHostState: SnackbarHostState) {
                 AppNavHost(
                     navController = navController,
                     modifier = Modifier.padding(contentPadding),
-                    snackbarHostState = snackbarHostState // 传递 SnackbarHostState
-//                    restartAppCallback = restartAppCallback
+                    snackbarHostState = snackbarHostState 
                 )
             }
         )

@@ -87,18 +87,18 @@ object LingMarketClient {
 
     // ===== 数据模型 =====
 
-    // 基础响应模型（灵应用商店响应格式）
+    // 基础响应模型
     @Serializable
     data class LingMarketBaseResponse<T>(
-        val code: Int? = null, // 成功时为null，错误时可能有错误码
+        val code: Int? = null, // 成功时为null，错误时有错误码
         @SerialName("message") val msg: String? = null,
         val data: T? = null,
         val token: String? = null,
         val user: LingMarketUser? = null,
         val comment: LingMarketComment? = null,
         val reply: LingMarketReply? = null,
-        val comments: List<LingMarketComment>? = null, // 用于评论列表响应
-        val pagination: LingMarketPagination? = null // 用于分页响应
+        val comments: List<LingMarketComment>? = null, 
+        val pagination: LingMarketPagination? = null 
     ) {
         val isSuccess: Boolean get() = code == null || code == 200 || code == 201
     }
@@ -128,15 +128,15 @@ data class FavoriteCheckResponse(
     data class LingMarketUser(
         @SerialName("_id") val id: String,
         val username: String,
-        val password: String? = null, // 登录响应中可能有加密密码
+        val password: String? = null, 
         val nickname: String,
-        val email: String? = null, // 从请求示例看，用户详情可能没有email
+        val email: String? = null, 
         val role: String,
-        val status: String? = null, // 从请求示例看，用户详情可能没有status
+        val status: String? = null,
         @SerialName("createdAt") val createdAt: String,
-        @SerialName("__v") val version: Int? = 0, // 从请求示例看，用户详情可能没有version
+        @SerialName("__v") val version: Int? = 0, 
         @SerialName("avatarUrl") val avatarUrl: String? = null,
-        val bio: String? = null  // 新增：个性签名字段
+        val bio: String? = null  
     )
 
     // 精简用户信息（用于评论/回复）
@@ -168,7 +168,7 @@ data class FavoriteCheckResponse(
         @SerialName("replyToUser") val replyToUser: LingMarketUserLite
     )
 
-    // 评论列表响应（根据请求示例）
+    // 评论列表响应
     @Serializable
     data class CommentListResponse(
         val comments: List<LingMarketComment>,
@@ -834,7 +834,7 @@ suspend fun getFavorites(page: Int = 1, limit: Int = 20): Result<FavoritesRespon
  * 获取文件下载URL
  * 根据请求示例：GET /files/url/{type}/{key}
  * type: APK (或 ICON 等)
- * key: 文件key，如 "APK/d8460c09-443a-4dd4-8137-5c06c9e04807.apk"
+ * key: 文件key，如 "APK/XXX.apk"
  */
 suspend fun getFileDownloadUrl(
     fileKey: String,

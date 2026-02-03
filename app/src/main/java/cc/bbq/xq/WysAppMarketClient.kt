@@ -195,7 +195,7 @@ object SmartListSerializer : KSerializer<List<String>> {
         }
     }
 
-    // 关键修正：确保签名完全匹配 List<String>
+    // 确保签名完全匹配 List<String>
     override fun serialize(encoder: Encoder, value: List<String>) {
         // 直接序列化为数组格式，保持数据规范化
         val jsonEncoder = encoder as? JsonEncoder ?: throw Exception("只能在 JSON 格式下序列化")

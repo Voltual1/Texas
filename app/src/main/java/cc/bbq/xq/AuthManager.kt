@@ -25,7 +25,7 @@ import java.io.File
 
 // 定义扩展属性，将 Serializer 与 Tink 绑定
 private val Context.credentialsStore: DataStore<UserCredentials> by dataStore(
-    fileName = "user_credentials_v2.pb", // 建议换个文件名以区分旧的 EncryptedFile
+    fileName = "user_credentials_v2.pb", 
     serializer = UserCredentialsSerializer(AuthManager.getAead())
 )
 
@@ -80,12 +80,10 @@ fun initialize(context: Context) {
         context.credentialsStore.updateData { it.toBuilder().setSineOpenMarketToken(token).build() }
     }
 
-    // 新增：保存灵应用商店Token
     suspend fun saveLingMarketToken(context: Context, token: String) {
         context.credentialsStore.updateData { it.toBuilder().setLingMarketToken(token).build() }
     }
 
-    // --- 3. 获取逻辑 (Flow 保持一致) ---
     fun getCredentials(context: Context): Flow<UserCredentials?> = context.credentialsStore.data
 
     fun getSineMarketToken(context: Context): Flow<String> = 
@@ -94,7 +92,6 @@ fun initialize(context: Context) {
     fun getSineOpenMarketToken(context: Context): Flow<String> = 
         getCredentials(context).map { it?.sineOpenMarketToken ?: "" }
 
-    // 新增：获取灵应用商店Token
     fun getLingMarketToken(context: Context): Flow<String> = 
         getCredentials(context).map { it?.lingMarketToken ?: "" }
 
@@ -104,14 +101,12 @@ fun initialize(context: Context) {
     fun getDeviceId(context: Context): Flow<String> = 
         getCredentials(context).map { it?.deviceId ?: generateDeviceId() }
 
-    // --- 4. 其他操作 ---
     suspend fun clearCredentials(context: Context) {
         context.credentialsStore.updateData { UserCredentials.getDefaultInstance() }
     }
 
     private fun generateDeviceId(): String = (1..15).map { (0..9).random() }.joinToString("")
 
-    // --- 迁移 SharedPreferences 到加密存储 ---
     suspend fun migrateFromSharedPreferences(context: Context) {
         val sharedPrefs = context.getSharedPreferences("bbq_auth", Context.MODE_PRIVATE)
 
@@ -146,9 +141,7 @@ fun initialize(context: Context) {
                 val oldEncryptedFile = File(context.filesDir, "user_credentials_encrypted.pb")
                 if (oldEncryptedFile.exists()) {
                     oldEncryptedFile.delete()
-                }
-                
-                // 同时清理可能存在的旧 DataStore 备份（如果之前有用过 DataStore Preferences）
+                }                
                 val oldDataStoreFile = File(context.filesDir, "datastore/auth_preferences.pb")
                 if (oldDataStoreFile.exists()) {
                     oldDataStoreFile.delete()

@@ -33,11 +33,10 @@ import java.io.File
 import java.io.IOException
 
 object OpenMarketSineWorldClient {
-    private const val BASE_URL = "https://open.sineshop.xin"
-    //从"https://open.market.sineworld.cn"改为https://open.sineshop.xin
+    private const val BASE_URL = "https://open.sineshop.xin"    
     private const val MAX_RETRIES = 3
     private const val RETRY_DELAY = 1000L
-    private const val REQUEST_TIMEOUT = 60000L // 上传文件可能需要更长时间
+    private const val REQUEST_TIMEOUT = 60000L
     private const val CONNECT_TIMEOUT = 30000L
     private const val SOCKET_TIMEOUT = 60000L
 
@@ -96,10 +95,10 @@ object OpenMarketSineWorldClient {
     @Serializable
     data class LoginData(
         val token: String,
-        val user: SineShopUserInfoLite // 复用 SineShopClient 中的简易用户信息模型，或者定义新的
+        val user: SineShopUserInfoLite // 复用 SineShopClient 中的简易用户信息模型
     )
 
-    // 简单的用户信息模型 (根据登录响应定义)
+    // 简单的用户信息模型
     @Serializable
     data class SineShopUserInfoLite(
         val id: Int,
@@ -129,10 +128,10 @@ object OpenMarketSineWorldClient {
         val appName: String,
         val packageName: String,
         val versionName: String,
-        val versionCode: String, // 接口似乎接受字符串
+        val versionCode: String,
         val appTypeId: Int,
         val appVersionTypeId: Int,
-        val appTags: String, // ID, 如 "3"
+        val appTags: String, 
         val appSdkMin: Int,
         val appSdkTarget: Int,
         val appDeveloper: String,
@@ -300,7 +299,6 @@ object OpenMarketSineWorldClient {
      */
     private fun getToken(): String {
         return runBlocking {
-            // 假设 BBQApplication.instance 可用，如果不可用需要调整获取 Context 的方式
             AuthManager.getSineOpenMarketToken(BBQApplication.instance).first()
         }
     }

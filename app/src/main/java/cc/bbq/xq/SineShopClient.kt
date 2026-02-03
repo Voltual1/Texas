@@ -36,8 +36,6 @@ object SineShopClient {
     private const val REQUEST_TIMEOUT = 30000L
     private const val CONNECT_TIMEOUT = 30000L
     private const val SOCKET_TIMEOUT = 30000L
-
-    // 基础 User-Agent 前缀
     private const val UA_PREFIX = "Token:"
 
     val httpClient = HttpClient(OkHttp) {
@@ -74,7 +72,7 @@ object SineShopClient {
         }
     }
     
-    // 基础响应模型 - 弦应用商店的统一响应格式
+    // 基础响应模型
     @kotlinx.serialization.Serializable
     data class BaseResponse<T>(
         val code: Int,
@@ -94,7 +92,7 @@ object SineShopClient {
         val isSuccess: Boolean get() = code == 0
     }
 
-    // 新增：用户信息模型
+    // 用户信息模型
     @Serializable
     data class SineShopUserInfo(
         val id: Int,
@@ -126,7 +124,7 @@ object SineShopClient {
         @SerialName("Valid") val valid: Boolean?
     )
 
-    // 新增：应用分类标签模型
+    // 应用分类标签模型
     @Serializable
     data class AppTag(
         val id: Int,
@@ -134,13 +132,13 @@ object SineShopClient {
         val icon: String?
     )
     
-    // 新增：评价数据模型
+    // 评价数据模型
 @Serializable
 data class SineShopReview(
     val id: Int,
-    @SerialName("app_id") val appId: Int,          // 新增: 应用 ID (Int)
+    @SerialName("app_id") val appId: Int,        
     @SerialName("package_name") val packageName: String,
-    @SerialName("app_version") val appVersion: String, // 注意：Kotlin 字段名是 appVersion，JSON key 是 app_version
+    @SerialName("app_version") val appVersion: String, 
     val rating: Int,
     val content: String,
     @SerialName("upvote_count") val upvoteCount: Int,
@@ -189,7 +187,7 @@ data class SineShopReview(
         val list: List<SineShopApp>
     )
 
-    // 新增：弦应用商店专用用户信息模型
+    // 弦应用商店专用用户信息模型
     @Serializable
     data class SineShopUserInfoLite(
         val id: Int,
@@ -210,7 +208,7 @@ data class SineShopReview(
         @SerialName("app_version_type") val app_version_type: String,
         @SerialName("app_abi") val app_abi: Int,
         @SerialName("app_sdk_min") val app_sdk_min: Int,
-        @SerialName("app_sdk_target") val app_sdk_target: Int?, // 新增：目标SDK版本（可为空）
+        @SerialName("app_sdk_target") val app_sdk_target: Int?, // 目标SDK版本（可为空）
         @SerialName("app_previews") val app_previews: List<String>?,
         @SerialName("app_describe") val app_describe: String?,
         @SerialName("app_update_log") val app_update_log: String?,
@@ -226,10 +224,10 @@ data class SineShopReview(
         @SerialName("is_favourite") val is_favourite: Int,
         @SerialName("favourite_count") val favourite_count: Int,//总收藏人数
         @SerialName("review_count") val review_count: Int,
-        // 新增：审核状态和审核原因字段
+        // 审核状态和审核原因字段
         @SerialName("audit_status") val audit_status: Int?,
         @SerialName("audit_reason") val audit_reason: String?,
-        // 新增：审核员信息
+        // 审核员信息
         @SerialName("audit_user") val audit_user: SineShopUserInfoLite?
     )
 

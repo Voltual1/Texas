@@ -185,7 +185,7 @@ enum class AppFamily(val displayName: String) {
 
 /**
  * Android SDK 版本（对应 minsdk 和 targetsdk 字段）
- * 为了用户友好，我们使用 "Android X.X (版本名称)" 的格式
+ * 为了用户友好，使用 "Android X.X (版本名称)" 的格式
  */
 enum class AndroidSdkVersion(val apiLevel: Int, val displayName: String) {
     JELLY_BEAN_MR1(17, "Android 4.2 (Jelly Bean)"),

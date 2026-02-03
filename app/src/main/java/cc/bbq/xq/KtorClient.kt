@@ -282,7 +282,7 @@ data class UserData(
     val create_time: String = "",
     val signlasttime: String = "",
     val series_days: Int = 0,
-    val sign_today: Boolean = false  // 添加签今日是否签到字段
+    val sign_today: Boolean = false  
 )
 
     // 应用列表模型

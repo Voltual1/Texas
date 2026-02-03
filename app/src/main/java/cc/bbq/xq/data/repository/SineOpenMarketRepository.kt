@@ -24,7 +24,7 @@ class SineOpenMarketRepository : IAppStoreRepository {
     
     override suspend fun uploadApk(file: File, serviceType: String): Result<String> = Result.success(file.absolutePath)
 
-    // --- 核心功能：发布应用 ---
+    // --- 发布应用 ---
 
     override suspend fun releaseApp(params: UnifiedAppReleaseParams): Result<Unit> {
         return try {

@@ -32,13 +32,13 @@ interface BrowseHistoryDao {
     @Query("DELETE FROM browse_history")
     suspend fun clearAll()
 
-    // 新增：一个用于清理旧记录的查询
+    // 一个用于清理旧记录的查询
     @Query("DELETE FROM browse_history WHERE postId IN (SELECT postId FROM browse_history ORDER BY timestamp ASC LIMIT :limit)")
     suspend fun deleteOldest(limit: Int)
 
     @Query("SELECT COUNT(*) FROM browse_history")
     suspend fun getCount(): Int
-    // 新增：按关键字搜索历史
+    // 按关键字搜索历史
     @Query("SELECT * FROM browse_history WHERE title LIKE :query OR previewContent LIKE :query ORDER BY timestamp DESC")
     fun searchHistory(query: String): Flow<List<BrowseHistory>>
 }

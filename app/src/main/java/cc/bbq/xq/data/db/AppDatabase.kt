@@ -18,7 +18,7 @@ import cc.bbq.xq.ui.community.BrowseHistory
 
 @Database(
     entities = [LogEntry::class, BrowseHistory::class, NetworkCacheEntry::class, PostDraft::class],
-    version = 7, // 升级到版本7，移除下载表
+    version = 7,
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -55,7 +55,6 @@ abstract class AppDatabase : RoomDatabase() {
             }
         }
 
-        // 保留旧的迁移脚本，但在新版本中不包含下载表
         private val MIGRATION_4_5 = object : Migration(4, 5) {
             override fun migrate(db: SupportSQLiteDatabase) {
                 db.execSQL(
@@ -66,7 +65,6 @@ abstract class AppDatabase : RoomDatabase() {
 
         private val MIGRATION_5_6 = object : Migration(5, 6) {
             override fun migrate(db: SupportSQLiteDatabase) {
-                // 添加speed和errorMessage字段
                 db.execSQL(
                     "ALTER TABLE `download_tasks` ADD COLUMN `speed` TEXT"
                 )
@@ -76,26 +74,19 @@ abstract class AppDatabase : RoomDatabase() {
             }
         }
 
-        // 新增迁移脚本：从版本6到版本7，删除下载表
         private val MIGRATION_6_7 = object : Migration(6, 7) {
             override fun migrate(db: SupportSQLiteDatabase) {
-                // 删除下载表
                 db.execSQL("DROP TABLE IF EXISTS `download_tasks`")
             }
         }
 
-        // 从版本4直接到版本7的迁移（跳过下载表的创建）
         private val MIGRATION_4_7 = object : Migration(4, 7) {
             override fun migrate(db: SupportSQLiteDatabase) {
-                // 什么都不做，因为我们已经移除了下载表
-                // 这个迁移适用于那些还在版本4的用户，他们直接升级到版本7
             }
         }
 
-        // 从版本5直接到版本7的迁移
         private val MIGRATION_5_7 = object : Migration(5, 7) {
             override fun migrate(db: SupportSQLiteDatabase) {
-                // 删除下载表（如果存在）
                 db.execSQL("DROP TABLE IF EXISTS `download_tasks`")
             }
         }
@@ -111,14 +102,12 @@ abstract class AppDatabase : RoomDatabase() {
                         MIGRATION_1_2, 
                         MIGRATION_2_3, 
                         MIGRATION_3_4,
-                        // 提供多条迁移路径
                         MIGRATION_4_5,
                         MIGRATION_5_6,
                         MIGRATION_6_7,
                         MIGRATION_4_7,
                         MIGRATION_5_7
                     )
-//                    .fallbackToDestructiveMigration() // 如果迁移失败，重建数据库（数据会丢失，但避免崩溃）
                     .build()
                 INSTANCE = instance
                 instance

@@ -29,10 +29,6 @@ class SineShopRepository : IAppStoreRepository {
         return AuthManager.getSineMarketToken(BBQApplication.instance).first()
     }
 
-    // ==========================================================
-    // 基础查询功能
-    // ==========================================================
-
     override suspend fun getCategories(): Result<List<UnifiedCategory>> = try {
         SineShopClient.getAppTagList().map { tagList ->
             val specialCategories = listOf(
@@ -76,10 +72,6 @@ class SineShopRepository : IAppStoreRepository {
         // 获取详情时传入 Token 可以获取该用户是否已收藏 (is_favourite)
         SineShopClient.getSineShopAppInfo(appId = appId.toInt(), token = getToken()).map { it.toUnifiedAppDetail() }
     } catch (e: Exception) { Result.failure(e) }
-
-    // ==========================================================
-    // 评论与反馈功能
-    // ==========================================================
 
     override suspend fun getAppComments(appId: String, versionId: Long, page: Int): Result<Pair<List<UnifiedComment>, Int>> = try {
         SineShopClient.getSineShopAppComments(appId = appId.toInt(), page = page).map { 
@@ -185,7 +177,6 @@ class SineShopRepository : IAppStoreRepository {
     } catch (e: Exception) { Result.failure(e) }
 
     override suspend fun getAppDownloadSources(appId: String, versionId: Long): Result<List<UnifiedDownloadSource>> = try {
-        // 有些私有下载源可能需要 Token 校验
         SineShopClient.getAppDownloadSources(appId.toInt(), token = getToken()).map { sources -> 
             sources.map { it.toUnifiedDownloadSource() }
         }

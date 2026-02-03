@@ -1,4 +1,11 @@
-// /app/src/main/java/cc/bbq/xq/data/repository/XiaoQuRepository.kt
+//Copyright (C) 2025 Voltual
+// 本程序是自由软件：你可以根据自由软件基金会发布的 GNU 通用公共许可证第3版
+//（或任意更新的版本）的条款重新分发和/或修改它。
+//本程序是基于希望它有用而分发的，但没有任何担保；甚至没有适销性或特定用途适用性的隐含担保。
+// 有关更多细节，请参阅 GNU 通用公共许可证。
+//
+// 你应该已经收到了一份 GNU 通用公共许可证的副本
+// 如果没有，请查阅 <http://www.gnu.org/licenses/>.
 package cc.bbq.xq.data.repository
 
 import cc.bbq.xq.AuthManager
@@ -25,7 +32,7 @@ class XiaoQuRepository(private val apiClient: KtorClient.ApiService) : IAppStore
         return AuthManager.getCredentials(BBQApplication.instance).first()?.token ?: ""
     }
     
-    // 新增：获取当前用户详情
+    // 获取当前用户详情
     override suspend fun getCurrentUserDetail(): Result<UnifiedUserDetail> {
         return try {
             val token = getToken()
@@ -36,7 +43,6 @@ class XiaoQuRepository(private val apiClient: KtorClient.ApiService) : IAppStore
             val result = apiClient.getUserInfo(token = token)
             result.map { response ->
                 if (response.code == 1) {
-                    // 将 UserData 转换为 UnifiedUserDetail
                     UnifiedUserDetail(
                         id = response.data.id,
                         username = response.data.username,
@@ -60,7 +66,7 @@ class XiaoQuRepository(private val apiClient: KtorClient.ApiService) : IAppStore
         }
     }
     
-    // 新增：更新用户资料
+    // 更新用户资料
     override suspend fun updateUserProfile(params: UpdateUserProfileParams): Result<Unit> {
         return try {
             val token = getToken()
@@ -98,7 +104,7 @@ class XiaoQuRepository(private val apiClient: KtorClient.ApiService) : IAppStore
         }
     }
     
-    // 新增：上传头像
+    // 上传头像
     override suspend fun uploadAvatar(imageBytes: ByteArray, filename: String): Result<String> {
         return try {
             val token = getToken()
@@ -256,7 +262,7 @@ class XiaoQuRepository(private val apiClient: KtorClient.ApiService) : IAppStore
                 token = token,
                 content = content,
                 appsId = appId.toLong(),
-                appsVersionId = versionId, // 修正：使用传入的 versionId
+                appsVersionId = versionId, 
                 parentId = parentId,
                 imageUrl = null
             )
@@ -465,7 +471,6 @@ override suspend fun deleteComment(appId: String, commentId: String): Result<Uni
     return deleteComment(commentId)
 }
     
-    // 添加 getMyComments 方法
 override suspend fun getMyComments(page: Int): Result<Pair<List<UnifiedComment>, Int>> {
     return Result.failure(NotImplementedError("小趣空间不支持获取我的评论"))
 }

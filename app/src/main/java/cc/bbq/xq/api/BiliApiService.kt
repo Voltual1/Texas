@@ -185,7 +185,7 @@ object BiliApiManager {
 
         override suspend fun getDanmaku(cid: Long): Result<ByteArray> {
             return safeApiCall {
-                // 弹幕接口返回的是 XML 格式的压缩数据，我们需要原始字节
+                // 弹幕接口返回的是 XML 格式的压缩数据，需要解压
                 httpClient.get("x/v1/dm/list.so") {
                     parameter("oid", cid)
                 }.body<ByteArray>()

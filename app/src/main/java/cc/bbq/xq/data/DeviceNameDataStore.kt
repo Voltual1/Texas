@@ -1,3 +1,11 @@
+//Copyright (C) 2025 Voltual
+// 本程序是自由软件：你可以根据自由软件基金会发布的 GNU 通用公共许可证第3版
+//（或任意更新的版本）的条款重新分发和/或修改它。
+//本程序是基于希望它有用而分发的，但没有任何担保；甚至没有适销性或特定用途适用性的隐含担保。
+// 有关更多细节，请参阅 GNU 通用公共许可证。
+//
+// 你应该已经收到了一份 GNU 通用公共许可证的副本
+// 如果没有，请查阅 <http://www.gnu.org/licenses/>.
 package cc.bbq.xq.data
 
 import android.content.Context
@@ -8,8 +16,8 @@ import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.first // 必须导入此项以支持 .first()
-import kotlinx.coroutines.flow.take  // 建议导入
+import kotlinx.coroutines.flow.first 
+import kotlinx.coroutines.flow.take  
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
@@ -46,9 +54,7 @@ class DeviceNameDataStore(context: Context) {
 
     private fun generateRandomModel() = "${(1000..9999).random()}-${('A'..'Z').random()}"
 
-    // --- 修复部分 ---
     suspend fun applyEmergencyRandomModel() {
-        // 1. 确保获取的是 List<DeviceConfig>
         val currentList: List<DeviceConfig> = deviceListFlow.first()
         val randomModel = generateRandomModel()
 

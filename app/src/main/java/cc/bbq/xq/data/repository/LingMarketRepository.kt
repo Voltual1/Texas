@@ -22,7 +22,7 @@ class LingMarketRepository : IAppStoreRepository {
             // API 失败时的 Fallback
             listOf(
                 UnifiedCategory("-1", "最近更新"), UnifiedCategory("browser", "浏览器"),
-                UnifiedCategory("-4", "我的收藏"),  // 添加我的收藏分类
+                UnifiedCategory("-4", "我的收藏"),
                 UnifiedCategory("Games", "游戏"), UnifiedCategory("tools", "实用工具"),
                 UnifiedCategory("Apps", "应用商店"), UnifiedCategory("video", "视频播放"),
                 UnifiedCategory("teach", "教育学习"), UnifiedCategory("read", "图文阅读"),
@@ -89,10 +89,6 @@ class LingMarketRepository : IAppStoreRepository {
             .let { Result.success(it) }
     } catch (e: Exception) { Result.failure(e) }
 
-    // ==========================================================
-    // 评论系统（灵商店支持评论和删除）
-    // ==========================================================
-
     override suspend fun getAppComments(appId: String, versionId: Long, page: Int): Result<Pair<List<UnifiedComment>, Int>> = try {
         LingMarketClient.getAppComments(appId, page, 20).map { res ->
             val unified = res.comments.map { comment ->
@@ -125,7 +121,6 @@ class LingMarketRepository : IAppStoreRepository {
     } catch (e: Exception) { Result.failure(e) }
     
         override suspend fun getFavoriteState(appId: String): Result<UnifiedFavoriteState> = try {
-        // 直接调用刚刚在 LingMarketClient 中添加的新方法
         LingMarketClient.checkFavoriteStatus(appId).map { res ->
             UnifiedFavoriteState(
                 isFavorite = res.isFavorited,
@@ -136,7 +131,6 @@ class LingMarketRepository : IAppStoreRepository {
         Result.failure(e)
     }
     
-    // 重写收藏切换逻辑
     override suspend fun toggleFavorite(appId: String, isCurrentlyFavorite: Boolean): Result<Boolean> = try {
     val result = if (isCurrentlyFavorite) {
         LingMarketClient.removeFromFavorites(appId)
@@ -151,10 +145,6 @@ class LingMarketRepository : IAppStoreRepository {
 } catch (e: Exception) {
     Result.failure(e)
 }
-
-    // ==========================================================
-    // 用户资料
-    // ==========================================================
 
     override suspend fun getCurrentUserDetail(): Result<UnifiedUserDetail> = try {
         LingMarketClient.getUserProfile().map { it.toUnifiedUserDetail() }.getOrThrow()

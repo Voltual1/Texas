@@ -46,7 +46,6 @@ class UserCredentialsSerializer(private val aead: Aead) : Serializer<UserCredent
     }
 
     override suspend fun writeTo(t: UserCredentials, output: OutputStream) {
-        // 转换成字节数组 -> 加密 -> 写入
         val rawBytes = t.toByteArray()
         val encryptedData = aead.encrypt(rawBytes, null)
         output.write(encryptedData)

@@ -9,18 +9,16 @@
 package cc.bbq.xq
 
 import cc.bbq.xq.data.db.AppDatabase
-//import cc.bbq.xq.data.db.DownloadTaskDao  
 import cc.bbq.xq.data.repository.IAppStoreRepository
 import cc.bbq.xq.data.repository.SineShopRepository
 import cc.bbq.xq.data.repository.XiaoQuRepository
-import cc.bbq.xq.data.repository.SineOpenMarketRepository // 添加这个导入
-//import cc.bbq.xq.data.db.DownloadTaskRepository
+import cc.bbq.xq.data.repository.SineOpenMarketRepository
 import cc.bbq.xq.ui.auth.LoginViewModel
 import cc.bbq.xq.ui.billing.BillingViewModel
 import org.koin.android.ext.koin.androidContext
 import cc.bbq.xq.data.repository.WysAppMarketRepository
 import cc.bbq.xq.ui.community.CommunityViewModel
-import cc.bbq.xq.ui.plaza.VersionListViewModel // 新增导入
+import cc.bbq.xq.ui.plaza.VersionListViewModel
 import cc.bbq.xq.ui.community.FollowingPostsViewModel
 import cc.bbq.xq.ui.community.HotPostsViewModel
 import cc.bbq.xq.data.DeviceNameDataStore
@@ -50,13 +48,11 @@ import cc.bbq.xq.ui.community.BrowseHistoryViewModel
 import cc.bbq.xq.ui.community.PostDetailViewModel
 import cc.bbq.xq.ui.rank.RankingListViewModel
 import cc.bbq.xq.ui.settings.update.UpdateSettingsViewModel
-//import cc.bbq.xq.ui.download.DownloadViewModel
 import cc.bbq.xq.ui.home.HomeViewModel
-//import cc.bbq.xq.ui.plaza.VersionListViewModel
 import cc.bbq.xq.data.UserFilterDataStore
 import cc.bbq.xq.data.UserAgreementDataStore
 import cc.bbq.xq.ui.user.MyCommentsViewModel
-import cc.bbq.xq.data.repository.LingMarketRepository //新增灵应用商店仓库
+import cc.bbq.xq.data.repository.LingMarketRepository
 
 val appModule = module {
     // ViewModel definitions
@@ -67,9 +63,7 @@ val appModule = module {
     viewModel { HotPostsViewModel() }
     viewModel { MyLikesViewModel(androidApplication()) }
     viewModel { LogViewModel(androidApplication()) }
-    viewModel { MessageViewModel(androidApplication()) }
-    
-    // 修正：注入 repositories 参数
+    viewModel { MessageViewModel(androidApplication()) }   
     viewModel { AppDetailComposeViewModel(androidApplication(), get()) }
     
     viewModel { AppReleaseViewModel(androidApplication()) }
@@ -84,7 +78,7 @@ val appModule = module {
     viewModel { PostCreateViewModel(androidApplication()) }
     viewModel { MyPostsViewModel(get()) }
     viewModel { PaymentViewModel(androidApplication()) }
-    viewModel { VersionListViewModel(androidApplication(), get()) } // 注册 ViewModel
+    viewModel { VersionListViewModel(androidApplication(), get()) }
     viewModel { UserDetailViewModel(androidApplication()) }
     viewModel { StoreManagerViewModel(androidApplication()) }
     
@@ -94,51 +88,34 @@ val appModule = module {
     viewModel { UpdateSettingsViewModel() }
     viewModel { SignInSettingsViewModel() }
     viewModel { HomeViewModel() }
-//    viewModel { VersionListViewModel(androidApplication(), get<SineShopRepository>()) }
-//    viewModel { DownloadViewModel(androidApplication(), get<DownloadTaskRepository>()) }
     viewModel { MyCommentsViewModel(androidApplication(), get()) }
     viewModel { MyReviewsViewModel(androidApplication(), get()) }
 
-    // Singletons
-//    single { AuthManager }AuthManager是object天生单例这里不再用koin管理
-    
-    single { UserFilterDataStore(get()) }
-    
-single { UserAgreementDataStore(androidContext()) }
-    
-    // 数据库相关 - 添加 DownloadTaskDao 定义
+    // Singletons    
+    single { UserFilterDataStore(get()) }    
+    single { UserAgreementDataStore(androidContext()) }    
     single { BBQApplication.instance.database }
-    single { get<AppDatabase>().logDao() }  // 如果需要的话
-    single { get<AppDatabase>().browseHistoryDao() }  // 如果需要的话
-    single { get<AppDatabase>().networkCacheDao() }  // 如果需要的话
-    single { get<AppDatabase>().postDraftDao() }  
-//    single { get<AppDatabase>().downloadTaskDao() }  // 关键：添加 DownloadTaskDao 的定义
-    
+    single { get<AppDatabase>().logDao() }  
+    single { get<AppDatabase>().browseHistoryDao() } 
+    single { get<AppDatabase>().networkCacheDao() }  
+    single { get<AppDatabase>().postDraftDao() }         
     single { SearchHistoryDataStore(androidApplication()) }
     single { StorageSettingsDataStore(androidApplication()) }
     viewModel { UserProfileViewModel(get(), get()) }
     
     single { DeviceNameDataStore(androidContext()) }
-
-    // Repositories - 修改 DownloadTaskRepository 的定义
     single { XiaoQuRepository(KtorClient.ApiServiceImpl) }
     single { SineShopRepository() }
-    single { SineOpenMarketRepository() } // 添加 SINE_OPEN_MARKET 的仓库
-//    single { DownloadTaskRepository(get()) }  // 这里会自动使用上面定义的 DownloadTaskDao
-
-// 这里的 get() 会自动匹配到上面的 DeviceNameDataStore
-single { WysAppMarketRepository(get()) }
-    
-    single { LingMarketRepository() } // 新增灵应用商店
-    
-    // 修正：显式指定 Map 的类型参数
+    single { SineOpenMarketRepository() } 
+    single { WysAppMarketRepository(get()) }    
+    single { LingMarketRepository() }    
     single<Map<AppStore, IAppStoreRepository>> {
     val map = mutableMapOf<AppStore, IAppStoreRepository>()
     map[AppStore.XIAOQU_SPACE] = get<XiaoQuRepository>()
     map[AppStore.SIENE_SHOP] = get<SineShopRepository>()
     map[AppStore.SINE_OPEN_MARKET] = get<SineOpenMarketRepository>()
     map[AppStore.LING_MARKET] = get<LingMarketRepository>()
-    map[AppStore.WYSAPPMARKET] = get<WysAppMarketRepository>() // 新增
+    map[AppStore.WYSAPPMARKET] = get<WysAppMarketRepository>()
     map
 }
 }

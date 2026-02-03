@@ -1,3 +1,11 @@
+//Copyright (C) 2025 Voltual
+// 本程序是自由软件：你可以根据自由软件基金会发布的 GNU 通用公共许可证第3版
+//（或任意更新的版本）的条款重新分发和/或修改它。
+//本程序是基于希望它有用而分发的，但没有任何担保；甚至没有适销性或特定用途适用性的隐含担保。
+// 有关更多细节，请参阅 GNU 通用公共许可证。
+//
+// 你应该已经收到了一份 GNU 通用公共许可证的副本
+// 如果没有，请查阅 <http://www.gnu.org/licenses/>.
 package cc.bbq.xq.data
 
 import android.content.Context
@@ -15,7 +23,7 @@ object AgreementVersions {
     const val SINE_PRIVACY = 1
     const val SINE_AGREEMENT = 1
     const val WYSMARKET_PRIVACY = 1
-    const val LING_AGREEMENT = 1 // 新增：灵应用商店协议版本
+    const val LING_AGREEMENT = 1 
 }
 
 private val Context.userAgreementDataStore: DataStore<Preferences> by preferencesDataStore(name = "user_agreement_prefs")
@@ -32,7 +40,7 @@ class UserAgreementDataStore(context: Context) {
         val SINE_PRIVACY_VER = intPreferencesKey("sine_privacy_policy_ver")
         val WYSMARKET_AGREEMENT_VER = intPreferencesKey("wysappmarket_user_agreement_ver")
         val WYSMARKET_PRIVACY_VER = intPreferencesKey("wysappmarket_privacy_policy_ver")
-        val LING_AGREEMENT_VER = intPreferencesKey("ling_user_agreement_ver") // 新增 Key
+        val LING_AGREEMENT_VER = intPreferencesKey("ling_user_agreement_ver") 
     }
 
     // --- 通用判断逻辑 ---
@@ -57,7 +65,7 @@ class UserAgreementDataStore(context: Context) {
     suspend fun acceptSinePrivacy() = saveVersion(Keys.SINE_PRIVACY_VER, AgreementVersions.SINE_PRIVACY)
     suspend fun acceptWysMarketAgreement() = saveVersion(Keys.WYSMARKET_AGREEMENT_VER, AgreementVersions.WYSMARKET_PRIVACY)
     suspend fun acceptWysMarketPrivacy() = saveVersion(Keys.WYSMARKET_PRIVACY_VER, AgreementVersions.WYSMARKET_PRIVACY)
-    suspend fun acceptLingAgreement() = saveVersion(Keys.LING_AGREEMENT_VER, AgreementVersions.LING_AGREEMENT) // 新增保存方法
+    suspend fun acceptLingAgreement() = saveVersion(Keys.LING_AGREEMENT_VER, AgreementVersions.LING_AGREEMENT) 
 
     private suspend fun saveVersion(key: Preferences.Key<Int>, version: Int) {
         dataStore.edit { it[key] = version }

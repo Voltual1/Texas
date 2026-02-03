@@ -49,7 +49,6 @@ class SearchHistoryDataStore(context: Context) {
     }
 
     suspend fun removeSearchQuery(query: String) {
-        // 核心修正: 使用正确的 dataStore 实例
         dataStore.edit { settings ->
             val currentHistory = settings[HISTORY_KEY]?.toMutableSet() ?: return@edit
             currentHistory.remove(query)
@@ -58,7 +57,6 @@ class SearchHistoryDataStore(context: Context) {
     }
 
     suspend fun clearAllHistory() {
-        // 核心修正: 使用正确的 dataStore 实例
         dataStore.edit { settings ->
             settings.remove(HISTORY_KEY)
         }
