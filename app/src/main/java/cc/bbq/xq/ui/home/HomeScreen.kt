@@ -161,21 +161,26 @@ fun HomeScreen(
                         userInfo = sineShopUserInfo,
                         modifier = Modifier.fillMaxSize(),
                         onNavigateToResourcePlaza = { mode ->
-                            when (mode) {
-                                "my_upload" -> {
-                                    navController.navigate(ResourcePlaza(isMyResource = true, mode = "my_upload").createRoute())
-                                }
-                                "my_favourite" -> {
-                                    navController.navigate(ResourcePlaza(isMyResource = true, mode = "my_favourite").createRoute())
-                                }
-                                "my_history" -> {
-                                    navController.navigate(ResourcePlaza(isMyResource = true, mode = "my_history").createRoute())
-                                }
-                                else -> {
-                                    navController.navigate(ResourcePlaza(false).createRoute())
-                                }
-                            }
-                        },
+    when (mode) {
+        "my_upload", "my_favourite", "my_history" -> {
+            navController.navigate(
+                ResourcePlaza(
+                    isMyResource = true,
+                    mode = mode,
+                    storeName = storeName
+                ).createRoute()
+            )
+        }
+        else -> {
+            navController.navigate(
+                ResourcePlaza(
+                    isMyResource = false,
+                    storeName = storeName
+                ).createRoute()
+            )
+        }
+    }
+},
                         onNavigateToUpdate = onNavigateToUpdate,
                         onNavigateToMyComments = onNavigateToMyComments,
                         onNavigateToMyReviews = onNavigateToMyReviews,

@@ -120,12 +120,12 @@ fun SineShopProfileScreen(
         FunctionCard(
             icon = Icons.AutoMirrored.Filled.List, // 使用自动镜像版本
             label = "我的上传",
-            onClick = { onNavigateToResourcePlaza("my_upload") } // 修改为导航到资源广场
+            onClick = { onNavigateToResourcePlaza("my_upload",AppStore.SIENE_SHOP.name) } // 修改为导航到资源广场
         )
         FunctionCard(
             icon = Icons.Filled.Favorite,
             label = "我的收藏",
-            onClick = { onNavigateToResourcePlaza("my_favourite") } // 修改为导航到资源广场
+            onClick = { onNavigateToResourcePlaza("my_favourite",AppStore.SIENE_SHOP.name ) } // 修改为导航到资源广场
         )
         FunctionCard(
             icon = Icons.Filled.Star,
@@ -140,7 +140,7 @@ fun SineShopProfileScreen(
         FunctionCard(
             icon = Icons.Filled.History,
             label = "我的历史足迹",
-            onClick = { onNavigateToResourcePlaza("my_history") } // 修改为导航到资源广场
+            onClick = { onNavigateToResourcePlaza("my_history",AppStore.SIENE_SHOP.name) } // 修改为导航到资源广场
         )
 /*        FunctionCard(
             icon = Icons.Filled.Report,
