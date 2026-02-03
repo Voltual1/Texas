@@ -39,26 +39,33 @@ class LingMarketRepository : IAppStoreRepository {
     } catch (e: Exception) { Result.failure(e) }
 
     override suspend fun getApps(categoryId: String?, page: Int, userId: String?): Result<Pair<List<UnifiedAppItem>, Int>> = try {
-        val call = if (categoryId == "-1" || categoryId == null) {
-            LingMarketClient.getRecentlyUpdatedApps(page, 20)
-        }
-        categoryId == "-4" -> {
-                // 我的收藏分类：获取收藏列表
-                LingMarketClient.getFavorites(page, 20)
-                    .map { response ->
-                        // 将收藏响应转换为统一的 AppListResponse 格式
-                        LingMarketClient.LingMarketAppListResponse(
-                            apps = response.favorites.map { it.app },
-                            pagination = response.pagination
-                        )
-                    }
+        // 使用 when 替代不完整的 if-else
+        val callResult = when {
+            categoryId == "-1" || categoryId == null -> {
+                LingMarketClient.getRecentlyUpdatedApps(page, 20)
             }
-         else {
-            LingMarketClient.getAppsByCategory(categoryId, page, 20)
+            categoryId == "-4" -> {
+                // 我的收藏分类：获取收藏列表并转换为统一格式
+                LingMarketClient.getFavorites(page, 20).map { response ->
+                    LingMarketClient.LingMarketAppListResponse(
+                        apps = response.favorites.map { it.app },
+                        pagination = response.pagination
+                    )
+                }
+            }
+            else -> {
+                // 确保 categoryId 不为 null 时再调用，或者提供默认值
+                LingMarketClient.getAppsByCategory(categoryId, page, 20)
+            }
         }
-        call.map { res -> Pair(res.apps.map { it.toUnifiedAppItem() }, res.pagination.pages) }.getOrThrow()
-            .let { Result.success(it) }
-    } catch (e: Exception) { Result.failure(e) }
+
+        callResult.map { res -> 
+            Pair(res.apps.map { it.toUnifiedAppItem() }, res.pagination.pages) 
+        }.getOrThrow().let { Result.success(it) }
+        
+    } catch (e: Exception) { 
+        Result.failure(e) 
+    }
 
     override suspend fun searchApps(query: String, page: Int, userId: String?): Result<Pair<List<UnifiedAppItem>, Int>> = try {
         LingMarketClient.searchApps(query, page, 20).map { res ->
