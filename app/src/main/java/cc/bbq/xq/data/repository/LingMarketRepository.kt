@@ -122,7 +122,7 @@ class LingMarketRepository : IAppStoreRepository {
         LingMarketClient.checkFavoriteStatus(appId).map { res ->
             UnifiedFavoriteState(
                 isFavorite = res.isFavorited,
-                favoriteCount = -1 //  灵应用商店的接口不返回总数，传 null
+                favoriteCount = -1 //  灵应用商店的接口不返回总数，传 -1
             )
         }.getOrThrow().let { Result.success(it) }
     } catch (e: Exception) {
