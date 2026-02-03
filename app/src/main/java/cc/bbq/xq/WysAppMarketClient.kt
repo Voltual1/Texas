@@ -38,18 +38,17 @@ import java.security.MessageDigest
 import java.util.*
 
 object WysAppMarketClient {
-    private const val BASE_URL = "https://api.wysteam.cn"
+    private const val BASE_URL = "http://127.0.0.1"
     private const val MAX_RETRIES = 3
     private const val RETRY_DELAY = 1000L
     private const val REQUEST_TIMEOUT = 30000L
     private const val CONNECT_TIMEOUT = 30000L
     private const val SOCKET_TIMEOUT = 30000L
-    internal const val WYSAPPMARKET_ICON_BASE_URL = "https://image.apk.wysteam.cn/"
+    internal const val WYSAPPMARKET_ICON_BASE_URL = "https:http://127.0.0.1"
 
 
-//    private const val DEFAULT_DEVICE_MODEL = "浊燃"
-    private const val DEFAULT_BUILD_NUMBER = "3210"
-    private const val USER_AGENT_VALUE = "WysAppMarket/3.0 (Android; WearOS)"
+    private const val DEFAULT_BUILD_NUMBER = "null"
+    private const val USER_AGENT_VALUE = "null"
     
     // Ktor HttpClient 实例
     val httpClient = HttpClient(OkHttp) {
@@ -87,26 +86,7 @@ object WysAppMarketClient {
         }
     }
 
-    // ===== 数据模型定义 =====
-    
-    // 基础响应模型
-    @Serializable
-    data class WysApiResponse<T>(
-        val code: Int,
-        val data: T
-    ) {
-        val isSuccess: Boolean get() = code == ApiResponseCode.SUCCESS.code
-    }
-    
-    // 登录响应模型
-@Serializable
-data class LoginResponse(
-    val code: Int,
-    val url: String? = null,
-    val token: String? = null
-) {
-    val isSuccess: Boolean get() = code == 200 && token != null
-}
+    // ===== 数据模型定义 =====   
     
     // 应用列表项（用于搜索和列表接口）
     @Serializable
@@ -242,347 +222,13 @@ object SmartListSerializer : KSerializer<List<String>> {
         @SerialName("u") val url: String,
         @SerialName("n") val name: String
     )
-    
-    // StartKey 响应模型
-    @Serializable
-    data class StartKeyResponse(
-        val code: Int,
-        @SerialName("startkey") val startKey: String?
-    ) {
-        val isSuccess: Boolean get() = code == ApiResponseCode.SUCCESS.code && startKey != null
-    }
-
-    /**
-     * 安全地执行 Ktor 请求，并处理异常和重试
-     */
-    @Suppress("RedundantSuspendModifier")
-    internal suspend inline fun <reified T> safeApiCall(block: suspend () -> HttpResponse): Result<T> {
-        var attempts = 0
-        while (attempts < MAX_RETRIES) {
-            try {
-                val response = block()
-                if (!response.status.isSuccess()) {
-                    println("WysAppMarket Request failed with status: ${response.status}")
-                    throw IOException("Request failed with status: ${response.status}")
-                }
-                val responseBody: T = try {
-                    response.body()
-                } catch (e: Exception) {
-                    println("WysAppMarket Failed to deserialize response body: ${e.message}")
-                    throw e
-                }
-                return Result.success(responseBody)
-            } catch (e: IOException) {
-                attempts++
-                println("WysAppMarket Request failed, retrying in $RETRY_DELAY ms... (Attempt $attempts/$MAX_RETRIES)")
-                if (attempts < MAX_RETRIES) {
-                    delay(RETRY_DELAY)
-                }
-            } catch (e: Exception) {
-                println("WysAppMarket Request failed: ${e.message}")
-                return Result.failure(e)
-            }
-        }
-        println("WysAppMarket Request failed after $MAX_RETRIES attempts.")
-        return Result.failure(IOException("Request failed after $MAX_RETRIES attempts."))
-    }
-
-    /**
-     * 发起 GET 请求
-     */
-    internal suspend inline fun <reified T> get(
-        url: String,
-        parameters: Parameters = Parameters.Empty
-    ): Result<T> {
-        return safeApiCall {
-            httpClient.get(url) {
-                parameters.entries().forEach { (key, values) ->
-                    values.forEach { value ->
-                        parameter(key, value)
-                    }
-                }
-            }
-        }
-    }
 
     /**
      * 关闭 HttpClient（在应用退出时调用）
      */
     fun close() {
         httpClient.close()
-    }
-
-    // ===== 工具函数 =====
-    
-    /**
-     * 计算 SHA-256 哈希值
-     */
-    private fun sha256(input: String): String {
-        return try {
-            val digest = MessageDigest.getInstance("SHA-256")
-            val hashBytes = digest.digest(input.toByteArray(Charsets.UTF_8))
-            hashBytes.joinToString("") { "%02x".format(it) }
-        } catch (e: Exception) {
-            ""
-        }
-    }
-    
-    /**
-     * 获取当前时间戳（秒）
-     */
-    private fun getCurrentTimestamp(): Long {
-        return System.currentTimeMillis() / 1000
-    }
-    
-    /**
-     * URL 编码参数（参考Python原型）
-     */
-    private fun urlEncode(value: String): String {
-        return try {
-            URLEncoder.encode(value, "UTF-8")
-        } catch (e: Exception) {
-            value
-        }
-    }
-    
-    /**
-     * 构建签名（参考Python原型）
-     */
-    private fun buildSignature(timestamp: Long, vararg parts: String): String {
-        val raw = parts.joinToString("")
-        return sha256(raw)
-    }
-
-    // ===== 下载相关 API 方法 =====
-    
-    /**
-     * 获取 StartKey
-     * @param deviceModel 设备型号
-     * @param buildNumber 构建号
-     */
-    suspend fun getStartKey(
-        deviceModel: String, // 改为强制要求，由调用方保证传入
-        buildNumber: String = DEFAULT_BUILD_NUMBER
-    ): Result<String> {
-        val timestamp = getCurrentTimestamp()
-        
-        // 构建签名：WYS + timestamp + APP + buildNumber + STORE + deviceModel
-        val signature = buildSignature(
-            timestamp, 
-            "WYS", 
-            timestamp.toString(), 
-            "APP${buildNumber}STORE", 
-            deviceModel
-        )
-        
-        // 构建URL（注意：|= 不编码）
-        val encodedDevice = urlEncode(deviceModel)
-        val url = "$BASE_URL/market/start/" +
-                  "?build=$buildNumber" +
-                  "&device=$encodedDevice" +
-                  "&_=$timestamp" +
-                  "&os=ce" +
-                  "&|=$signature"
-        
-        println("获取 StartKey URL: $url")
-        
-        return safeApiCall<StartKeyResponse> {
-            httpClient.get(url)             
-        }.map { response ->
-            if (response.isSuccess) {
-                response.startKey ?: throw IOException("StartKey为空")
-            } else {
-                throw IOException("获取StartKey失败，code: ${response.code}")
-            }
-        }
-    }
-    
-    /**
-     * 获取应用下载链接（参考Python原型的 get_download_links 方法）
-     * @param appId 应用ID
-     * @param startKey StartKey，如果为空则自动获取
-     * @param deviceModel 设备型号，用于自动获取StartKey时使用
-     */
-    suspend fun getDownloadSources(
-        appId: Int,
-        startKey: String? = null,
-        deviceModel: String // 改为强制要求，由调用方保证传入
-    ): Result<DownloadSourceResponse> {
-        // 获取或使用提供的StartKey
-        val finalStartKey = if (startKey != null) {
-            startKey
-        } else {
-            // 自动获取StartKey
-            val startKeyResult = getStartKey(deviceModel)
-            if (startKeyResult.isSuccess) {
-                startKeyResult.getOrNull() ?: return Result.failure(
-                    IOException("无法获取StartKey")
-                )
-            } else {
-                return Result.failure(
-                    startKeyResult.exceptionOrNull() ?: IOException("获取StartKey失败")
-                )
-            }
-        }
-        
-        val timestamp = getCurrentTimestamp()
-        
-        // 构建签名：WYS + timestamp + APP0STORE + appId + " KEY=" + startKey
-        val signature = buildSignature(
-            timestamp,
-            "WYS",
-            timestamp.toString(),
-            "APP0STORE",
-            appId.toString(),
-            " KEY=",
-            finalStartKey
-        )
-        
-        // 构建URL
-        val encodedStartKey = urlEncode(finalStartKey)
-        val url = "$BASE_URL/market/app/down/" +
-                  "?|=$signature" +
-                  "&id=$appId" +
-                  "&token=0" +
-                  "&market=$encodedStartKey" +
-                  "&_=$timestamp"
-        
-        println("获取下载源 URL: $url")
-        
-        return safeApiCall<DownloadSourceResponse> {
-            httpClient.get(url)             
-        }.map { response ->
-            if (response.isSuccess) {
-                response
-            } else {
-                throw IOException("获取下载源失败，code: ${response.code}")
-            }
-        }
-    }
-    
-    /**
- * 发起登录请求
- * @param startKey 之前获取到的 startKey
- * @return 返回 LoginResponse，包含授权 URL 和 Token
- */
-suspend fun login(startKey: String): Result<LoginResponse> {
-    // 这里的 market 参数实际上就是 startkey
-    // URL 编码是必要的，因为 startkey 中包含 Base64 的特殊字符
-    val encodedMarket = urlEncode(startKey)
-    
-    val url = "$BASE_URL/market/user/login/?market=$encodedMarket"
-    
-    println("发起登录请求 URL: $url")
-    
-    return safeApiCall<LoginResponse> {
-        httpClient.get(url)                  
-    }.map { response ->
-        if (response.isSuccess) {
-            response
-        } else {
-            throw IOException("登录请求失败，code: ${response.code}")
-        }
-    }
-}    
-    
-    /**
-     * 搜索应用
-     * @param query 搜索关键词
-     * @param searchType 搜索类型，默认为关键词搜索
-     */
-    suspend fun searchApps(
-        query: String,
-        searchType: SearchType = SearchType.KEYWORD
-    ): Result<List<WysAppListItem>> {
-        val url = ApiEndpoint.SEARCH.path
-        val parameters = Parameters.build {
-            append("type", searchType.value.toString())
-            append("key", query)
-        }
-        
-        return get<WysApiResponse<List<WysAppListItem>>>(url, parameters).map { response ->
-            if (response.isSuccess) {
-                response.data
-            } else {
-                throw IOException("Search failed with code: ${response.code}")
-            }
-        }
     }   
-
-/**
- * 根据包名获取应用的所有版本列表
- * @param packageName 应用包名 (如 com.deepseek.chat)
- */
-suspend fun getAppVersionsByPackage(
-    packageName: String
-): Result<List<WysAppListItem>> {
-    // 复用 searchApps 逻辑，但固定使用 PACKAGE_NAME 类型
-    return searchApps(packageName, SearchType.PACKAGE_NAME)
-}
-    
-    /**
-     * 获取应用列表
-     * @param listType 列表类型，默认为最新上架
-     */
-    suspend fun getAppsList(
-        listType: AppListType = AppListType.LATEST
-    ): Result<List<WysAppListItem>> {
-        val url = ApiEndpoint.APP_LIST.path
-        val parameters = Parameters.build {
-            append("type", listType.value.toString())
-        }
-        
-        return get<WysApiResponse<List<WysAppListItem>>>(url, parameters).map { response ->
-            if (response.isSuccess) {
-                response.data
-            } else {
-                throw IOException("Get app list failed with code: ${response.code}")
-            }
-        }
-    }
-    
-    /**
-     * 获取应用详情
-     * @param appId 应用ID
-     */
-    suspend fun getAppInfo(
-        appId: Int
-    ): Result<WysAppDetail> {
-        val url = ApiEndpoint.APP_INFO.path
-        val parameters = Parameters.build {
-            append("id", appId.toString())
-        }
-        
-        return get<WysAppDetail>(url, parameters).map { detail ->
-            if (detail.code == ApiResponseCode.SUCCESS.code) {
-                detail
-            } else {
-                throw IOException("Get app info failed with code: ${detail.code}")
-            }
-        }
-    }
-    
-    /**
-     * 获取最新上架的应用列表
-     */
-    suspend fun getLatestApps(): Result<List<WysAppListItem>> {
-        return getAppsList(AppListType.LATEST)
-    }
-    
-    /**
-     * 获取最多点击的应用列表
-     */
-    suspend fun getMostViewedApps(): Result<List<WysAppListItem>> {
-        return getAppsList(AppListType.MOST_VIEWED)
-    }
-    
-    /**
-     * 通过分类搜索应用
-     * @param category 分类名称（如"游戏娱乐"）
-     */
-    suspend fun searchAppsByCategory(category: String): Result<List<WysAppListItem>> {
-        return searchApps(category, SearchType.CATEGORY)
-    }
     
     /**
      * 扩展函数，便于参数构建
