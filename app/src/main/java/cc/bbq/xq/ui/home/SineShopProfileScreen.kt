@@ -48,7 +48,7 @@ import androidx.navigation.NavController
 fun SineShopProfileScreen(
     userInfo: SineShopClient.SineShopUserInfo?,
     modifier: Modifier = Modifier,
-onNavigateToResourcePlaza: (String, String) -> Unit = {},
+onNavigateToResourcePlaza: (String, String) -> Unit,
     onNavigateToUpdate: () -> Unit = {},
     onNavigateToMyComments: () -> Unit = {},
     onNavigateToMyReviews: () -> Unit = {},
