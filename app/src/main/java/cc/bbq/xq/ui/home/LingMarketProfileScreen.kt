@@ -131,6 +131,22 @@ fun LingMarketProfileScreen(
             label = "编辑个人资料",
             onClick = { navController.navigate(AccountProfile.createRoute(AppStore.LING_MARKET)) }
         )
+        // 新增：我的收藏
+        FunctionCard(
+            icon = Icons.Filled.Favorite,
+            label = "我的收藏",
+            onClick = { 
+                // 导航到资源广场，设置"我的收藏"模式
+                navController.navigate(
+                    ResourcePlaza(
+                        isMyResource = false, // 注意：对于灵应用商店，这个参数可能意义不同
+                        userId = null, // 可以是null，因为灵商店有自己的token验证
+                        mode = "my_favourite",
+                        storeName = AppStore.LING_MARKET
+                    ).createRoute()
+                )
+            }
+        )
     }
 }
 
