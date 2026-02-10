@@ -12,11 +12,10 @@ package cc.bbq.xq.ui.community
 import androidx.room.Entity
 import androidx.room.Ignore
 import androidx.room.PrimaryKey
-import java.text.SimpleDateFormat // 修正 import
+import java.text.SimpleDateFormat 
 import java.util.Date
 import java.util.Locale
 
-// 核心修改 #1: 添加 @Entity 和 @PrimaryKey 注解
 @Entity(tableName = "browse_history")
 data class BrowseHistory(
     @PrimaryKey val postId: Long,
@@ -24,7 +23,6 @@ data class BrowseHistory(
     val previewContent: String,
     val timestamp: Long = System.currentTimeMillis()
 ) {
-    // 核心修改 #2: 添加 @Ignore 注解，告诉 ROOM 不要尝试存储这个计算属性
     @Ignore
     private val formatter = SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault())
 

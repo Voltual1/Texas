@@ -39,12 +39,12 @@ import kotlinx.coroutines.launch
 @Composable
 fun AboutScreen(
     modifier: Modifier = Modifier,
-    snackbarHostState: SnackbarHostState // 添加 SnackbarHostState 参数
+    snackbarHostState: SnackbarHostState 
 ) {
     val context = LocalContext.current
     val versionName = BuildConfig.VERSION_NAME
     val versionCode = BuildConfig.VERSION_CODE
-    val scope = rememberCoroutineScope() // 创建 CoroutineScope
+    val scope = rememberCoroutineScope() 
     
         // 动态获取当前年份
     val currentYear = Calendar.getInstance().get(Calendar.YEAR)
@@ -93,7 +93,6 @@ fun AboutScreen(
                     val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://gitee.com/Voltula/bbq/blob/master/LICENSE"))
                     context.startActivity(intent)
                 } catch (e: Exception) {
-                    //Toast.makeText(context, "无法打开浏览器", Toast.LENGTH_SHORT).show()
                     scope.launch {
                         snackbarHostState.showSnackbar(
                             message = context.getString(R.string.unable_to_open_browser),
@@ -110,7 +109,6 @@ fun AboutScreen(
                     val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://gitee.com/Voltula/bbq"))
                     context.startActivity(intent)
                 } catch (e: Exception) {
-                    //Toast.makeText(context, "无法打开浏览器", Toast.LENGTH_SHORT).show()
                     scope.launch {
                         snackbarHostState.showSnackbar(
                             message = context.getString(R.string.unable_to_open_browser),
@@ -124,7 +122,6 @@ fun AboutScreen(
                     val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://gitee.com/Voltula/bbq/releases/"))
                     context.startActivity(intent)
                 } catch (e: Exception) {
-                    //Toast.makeText(context, "无法打开浏览器", Toast.LENGTH_SHORT).show()
                     scope.launch {
                         snackbarHostState.showSnackbar(
                             message = context.getString(R.string.unable_to_open_browser),

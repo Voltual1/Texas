@@ -33,22 +33,13 @@ import cc.bbq.xq.R
 import cc.bbq.xq.KtorClient
 import cc.bbq.xq.ui.theme.BBQDropdownMenu
 import cc.bbq.xq.AuthManager
-// 移除 MD2 的 ExperimentalMaterialApi 和 pullrefresh 导入
-// import androidx.compose.material.ExperimentalMaterialApi
-// import androidx.compose.material.pullrefresh.PullRefreshIndicator
-// import androidx.compose.material.pullrefresh.pullRefresh
-// import androidx.compose.material.pullrefresh.rememberPullRefreshState
 import kotlinx.coroutines.launch
 import androidx.compose.ui.res.stringResource
 import kotlinx.coroutines.flow.first
-// 添加 MD3 pullrefresh 导入
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
-// 导入我们自定义的指示器
 import cc.bbq.xq.ui.theme.BBQPullRefreshIndicator
 
-// 移除 @ExperimentalMaterialApi 注解
-// @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterialApi::class)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun BaseComposeListScreen(
@@ -68,7 +59,6 @@ fun BaseComposeListScreen(
     onNavigate: (String) -> Unit,
     onBackClick: () -> Unit = {},
     snackbarHostState: SnackbarHostState,
-    // isRefreshing: Boolean = false, // 不需要直接使用 isRefreshing
     modifier: Modifier = Modifier
 ) {
     var showJumpDialog by remember { mutableStateOf(false) }

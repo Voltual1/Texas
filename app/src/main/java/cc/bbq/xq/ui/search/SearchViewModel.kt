@@ -13,7 +13,7 @@ package cc.bbq.xq.ui.search
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import cc.bbq.xq.BBQApplication
-import cc.bbq.xq.KtorClient // 导入 KtorClient
+import cc.bbq.xq.KtorClient 
 import kotlinx.coroutines.flow.*
 import org.koin.android.annotation.KoinViewModel
 import cc.bbq.xq.data.SearchHistoryDataStore
@@ -27,7 +27,6 @@ enum class SearchMode {
 }
 
 sealed class SearchResultItem {
-    // 修改为 KtorClient.Post
     data class PostItem(val post: KtorClient.Post) : SearchResultItem()
     data class HistoryItem(val history: cc.bbq.xq.ui.community.BrowseHistory) : SearchResultItem()
     data class LogItem(val log: cc.bbq.xq.data.db.LogEntry) : SearchResultItem()
@@ -36,11 +35,10 @@ sealed class SearchResultItem {
 @KoinViewModel
 class SearchViewModel(
     private val searchHistoryDataStore: SearchHistoryDataStore,
-    private val userFilterDataStore: UserFilterDataStore  // 新增依赖
+    private val userFilterDataStore: UserFilterDataStore 
 ) : ViewModel() {
     private val browseHistoryDao = BBQApplication.instance.database.browseHistoryDao()
     private val logDao = BBQApplication.instance.database.logDao()
-    //private val apiService = RetrofitClient.instance // 移除 RetrofitClient
 
     private val _searchMode = MutableStateFlow(SearchMode.POSTS)
     val searchMode: StateFlow<SearchMode> = _searchMode.asStateFlow()
@@ -57,12 +55,12 @@ class SearchViewModel(
     private val _searchResults = MutableStateFlow<List<SearchResultItem>>(emptyList())
     val searchResults: StateFlow<List<SearchResultItem>> = _searchResults.asStateFlow()
 
-    // 新增分页相关状态
+    // 分页相关状态
     private var currentPage = 1
     private val _totalPages = MutableStateFlow(1)
     val totalPages: StateFlow<Int> = _totalPages.asStateFlow()
     
-    // 新增状态：用户筛选信息（多个用户）
+    // 用户筛选信息（多个用户）
     private val _allUserFilters = MutableStateFlow<Map<Long, String>>(emptyMap())
     val allUserFilters: StateFlow<Map<Long, String>> = _allUserFilters.asStateFlow()
     
@@ -72,7 +70,7 @@ class SearchViewModel(
     private val _activeNickname = MutableStateFlow<String?>(null)
     val activeNickname: StateFlow<String?> = _activeNickname.asStateFlow()
     
-    // 新增：是否处于用户筛选模式
+    // 是否处于用户筛选模式
     private val _isUserFilterMode = MutableStateFlow(false)
     val isUserFilterMode: StateFlow<Boolean> = _isUserFilterMode.asStateFlow()
     
@@ -120,14 +118,14 @@ class SearchViewModel(
         }
     }
     
-    // 新增：设置激活的用户筛选
+    // 设置激活的用户筛选
     fun setActiveUserFilter(userId: Long?) {
         viewModelScope.launch {
             userFilterDataStore.setActiveUserFilter(userId)
         }
     }
     
-    // 新增：移除用户筛选
+    // 移除用户筛选
     fun removeUserFilter(userId: Long) {
         viewModelScope.launch {
             userFilterDataStore.removeUserFilter(userId)
@@ -139,21 +137,21 @@ class SearchViewModel(
         }
     }
     
-    // 修改：清除用户筛选（清除激活状态）
+    // 清除用户筛选（清除激活状态）
     fun clearUserFilter() {
         viewModelScope.launch {
             userFilterDataStore.setActiveUserFilter(null)
         }
     }
     
-    // 新增：清除所有用户筛选
+    // 新清除所有用户筛选
     fun clearAllUserFilters() {
         viewModelScope.launch {
             userFilterDataStore.clearAllUserFilters()
         }
     }
     
-    // 新增：从导航参数初始化用户筛选
+    // 从导航参数初始化用户筛选
     fun initFromNavArgs(userId: Long?, nickname: String?) {
         viewModelScope.launch {
             if (userId != null && nickname != null) {
@@ -185,16 +183,16 @@ class SearchViewModel(
         performSearch()
     }
 
-    // 新增：加载更多数据
+    // 加载更多数据
     fun loadMore() {
-        // 修复：添加更严格的检查条件
+        // 添加更严格的检查条件
         if (!_isLoading.value && _hasMoreData.value && _query.value.isNotBlank() && _searchMode.value == SearchMode.POSTS) {
             currentPage++
             performSearch(loadMore = true)
         }
     }
 
-    // 新增：跳转到指定页面
+    // 跳转到指定页面
     fun jumpToPage(page: Int) {
         if (page in 1.._totalPages.value && !_isLoading.value) {
             currentPage = page
@@ -203,7 +201,7 @@ class SearchViewModel(
         }
     }
 
-    // 新增：重置分页状态
+    // 重置分页状态
     private fun resetPagination() {
         currentPage = 1
         _searchResults.value = emptyList()
@@ -219,7 +217,7 @@ class SearchViewModel(
     }
 
     private fun performSearch(loadMore: Boolean = false) {
-        // 修复：防止重复搜索
+        // 防止重复搜索
         if (_isLoading.value) return
         
         viewModelScope.launch {
@@ -260,7 +258,7 @@ class SearchViewModel(
                 
                 val newPosts = data.list.map { SearchResultItem.PostItem(it) }
                 _searchResults.value = if (loadMore && _searchResults.value.isNotEmpty()) {
-                    // 修复：确保正确合并结果
+                    // 确保正确合并结果
                     _searchResults.value + newPosts
                 } else {
                     newPosts

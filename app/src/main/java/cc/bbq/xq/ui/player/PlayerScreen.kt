@@ -80,7 +80,7 @@ fun PlayerScreen(viewModel: PlayerViewModel = viewModel(), onBack: () -> Unit) {
                 Text(text = "加载失败: ${state.message}", color = Color.White)
             }
             is PlayerUiState.Success -> {
-                PlayerSuccessContent(state = state, viewModel = viewModel, onBack = onBack) // 传递 onBack
+                PlayerSuccessContent(state = state, viewModel = viewModel, onBack = onBack) 
             }
         }
     }
@@ -88,7 +88,7 @@ fun PlayerScreen(viewModel: PlayerViewModel = viewModel(), onBack: () -> Unit) {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun PlayerSuccessContent(state: PlayerUiState.Success, viewModel: PlayerViewModel, onBack: () -> Unit) { // 添加 onBack
+fun PlayerSuccessContent(state: PlayerUiState.Success, viewModel: PlayerViewModel, onBack: () -> Unit) { 
     val context = LocalContext.current
     val settings by viewModel.settings.collectAsState()
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
@@ -324,7 +324,7 @@ fun PlayerSuccessContent(state: PlayerUiState.Success, viewModel: PlayerViewMode
                     danmakuView.seekTo(newPosition)
                     currentPosition = newPosition
                 },
-                onBackClicked = onBack, // 修复：使用 onBack 回调
+                onBackClicked = onBack, 
                 onSettingsClicked = { scope.launch { drawerState.open() } }
             )
         }

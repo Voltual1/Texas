@@ -28,7 +28,7 @@ import androidx.datastore.preferences.core.stringPreferencesKey
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import org.koin.android.annotation.KoinViewModel
-import android.content.Context // 导入 Context
+import android.content.Context 
 
 private val Context.dataStore by preferencesDataStore(name = "payment_requests")
 
@@ -44,7 +44,6 @@ class PaymentViewModel(application: Application) : AndroidViewModel(application)
 
     private val dataStore = application.applicationContext.dataStore
 
-    // 新增状态：是否正在加载余额
     private val _isLoadingBalance = MutableStateFlow(false)
     val isLoadingBalance: StateFlow<Boolean> = _isLoadingBalance.asStateFlow()
 
@@ -333,7 +332,7 @@ class PaymentViewModel(application: Application) : AndroidViewModel(application)
                 _errorMessage.value = "支付错误: ${e.message}"
                 _paymentStatus.value = PaymentStatus.FAILED
             } finally {
-                removePaymentRequestId(requestId) // 移除 paymentRequestId
+                removePaymentRequestId(requestId) 
                 _paymentRequestId.value = null // 清空 paymentRequestId
             }
         }

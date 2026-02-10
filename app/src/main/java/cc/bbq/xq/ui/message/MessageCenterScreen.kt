@@ -19,13 +19,10 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-// 导入我们自定义的指示器
-import cc.bbq.xq.ui.theme.BBQPullRefreshIndicator // <<<--- 新增导入
+import cc.bbq.xq.ui.theme.BBQPullRefreshIndicator
 import cc.bbq.xq.ui.compose.MessageItem
 import cc.bbq.xq.ui.compose.PageJumpDialog
 import cc.bbq.xq.ui.compose.PaginationControls
-
-// 在 MessageCenterScreen.kt 中修复 UI 显示问题
 
 @Composable
 fun MessageCenterScreen(
@@ -56,7 +53,7 @@ fun MessageCenterScreen(
             viewModel.reset()
             // 结束刷新状态的逻辑由 LaunchedEffect 处理
         },
-        state = pullRefreshState, // 显式传递 state
+        state = pullRefreshState,
         // 使用我们自定义的指示器
         indicator = {
             BBQPullRefreshIndicator(
@@ -64,9 +61,6 @@ fun MessageCenterScreen(
                 isRefreshing = isRefreshing,
                 modifier = Modifier.align(Alignment.TopCenter)
                 // 颜色和形状将使用我们在 Components.kt 中定义的默认值（语义颜色）
-                // 你也可以在这里覆盖它们，例如：
-                // backgroundColor = MaterialTheme.colorScheme.inverseOnSurface,
-                // contentColor = MaterialTheme.colorScheme.inversePrimary,
             )
         },
         modifier = modifier.fillMaxSize()
@@ -169,7 +163,7 @@ fun MessageCenterScreen(
                 )
             }
         }
-    } // End of PullToRefreshBox content
+    } 
 
     // 分页跳转对话框
     if (showPageDialog) {
@@ -186,7 +180,7 @@ fun MessageCenterScreen(
     }
 
     // 监听 ViewModel 状态变化以结束刷新状态
-    // 注意：这个 LaunchedEffect 放在 PullToRefreshBox 之外，与 PullToRefreshBox 同级
+    // 这个 LaunchedEffect 放在 PullToRefreshBox 之外，与 PullToRefreshBox 同级
     LaunchedEffect(state.isLoading, state.isInitialized, state.error) {
         // 当加载完成（isLoading 变为 false）且初始化完成（isInitialized 为 true）时，结束刷新
         if (!state.isLoading && state.isInitialized && isRefreshing) {

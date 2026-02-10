@@ -34,13 +34,12 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import cc.bbq.xq.ui.theme.BBQCard
 import coil3.compose.AsyncImage
-import cc.bbq.xq.SineShopClient // 导入 SineShopClient
-import androidx.compose.foundation.clickable // 导入 clickable
+import cc.bbq.xq.SineShopClient 
+import androidx.compose.foundation.clickable
 import coil3.request.crossfade
 import cc.bbq.xq.AppStore
 import cc.bbq.xq.ui.AccountProfile
-import cc.bbq.xq.ui.Update // 导入 Update 导航目标
-import cc.bbq.xq.ui.MyComments // 导入 MyComments 导航目标
+import cc.bbq.xq.ui.*
 import androidx.navigation.NavController
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -118,14 +117,14 @@ onNavigateToResourcePlaza: (String, String) -> Unit,
             onClick = { onNavigateToCreateAppRelease() }
         )
         FunctionCard(
-            icon = Icons.AutoMirrored.Filled.List, // 使用自动镜像版本
+            icon = Icons.AutoMirrored.Filled.List, 
             label = "我的上传",
-            onClick = { onNavigateToResourcePlaza("my_upload",AppStore.SIENE_SHOP.name) } // 修改为导航到资源广场
+            onClick = { onNavigateToResourcePlaza("my_upload",AppStore.SIENE_SHOP.name) }
         )
         FunctionCard(
             icon = Icons.Filled.Favorite,
             label = "我的收藏",
-            onClick = { onNavigateToResourcePlaza("my_favourite",AppStore.SIENE_SHOP.name ) } // 修改为导航到资源广场
+            onClick = { onNavigateToResourcePlaza("my_favourite",AppStore.SIENE_SHOP.name ) } 
         )
         FunctionCard(
             icon = Icons.Filled.Star,
@@ -140,7 +139,7 @@ onNavigateToResourcePlaza: (String, String) -> Unit,
         FunctionCard(
             icon = Icons.Filled.History,
             label = "我的历史足迹",
-            onClick = { onNavigateToResourcePlaza("my_history",AppStore.SIENE_SHOP.name) } // 修改为导航到资源广场
+            onClick = { onNavigateToResourcePlaza("my_history",AppStore.SIENE_SHOP.name) } 
         )
 /*        FunctionCard(
             icon = Icons.Filled.Report,
@@ -150,12 +149,12 @@ onNavigateToResourcePlaza: (String, String) -> Unit,
         FunctionCard(
             icon = Icons.Filled.Update,
             label = "应用更新",
-            onClick = { onNavigateToUpdate() } // 修改为调用更新屏幕导航
+            onClick = { onNavigateToUpdate() } 
         )
         FunctionCard(
             icon = Icons.Filled.Edit,
             label = "编辑账号信息",
-            onClick = { navController.navigate(AccountProfile.createRoute(AppStore.SIENE_SHOP)) } // 修改为导航到弦应用商店修改用户信息屏幕
+            onClick = { navController.navigate(AccountProfile.createRoute(AppStore.SIENE_SHOP)) } 
         )
 /*        FunctionCard(
             icon = Icons.Filled.Security,
@@ -163,7 +162,7 @@ onNavigateToResourcePlaza: (String, String) -> Unit,
             onClick = {  TODO: Implement account security  }
         )
         FunctionCard(
-            icon = Icons.AutoMirrored.Filled.ExitToApp, // 使用自动镜像版本
+            icon = Icons.AutoMirrored.Filled.ExitToApp,
             label = "退出登录",
             onClick = {  TODO: Implement logout  }
         )
@@ -212,7 +211,7 @@ private fun FunctionCard(
                     fontWeight = FontWeight.Medium
                 )
             },
-            modifier = Modifier.clickable(onClick = onClick) // 导入 clickable
+            modifier = Modifier.clickable(onClick = onClick) 
         )
     }
 }

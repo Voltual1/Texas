@@ -28,7 +28,7 @@ import kotlinx.serialization.json.Json
 import io.ktor.client.call.body
 import cc.bbq.xq.ui.compose.UpdateDialog
 import kotlinx.serialization.decodeFromString
-import cc.bbq.xq.util.UpdateChecker//导入公共的更新函数
+import cc.bbq.xq.util.UpdateChecker
 import org.koin.android.annotation.KoinViewModel
 
 @KoinViewModel
@@ -46,9 +46,7 @@ class UpdateSettingsViewModel : ViewModel() {
     
     @Composable
     private fun showUpdateDialog(updateInfo: UpdateInfo) {
-//        val context = LocalContext.current
         UpdateDialog(updateInfo = updateInfo) {
-            //showDialog = false
         }
     }
 }

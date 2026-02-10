@@ -11,11 +11,6 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
-// 移除 MD2 的 ExperimentalMaterialApi 和 pullrefresh 导入
-// import androidx.compose.material.ExperimentalMaterialApi
-// import androidx.compose.material.pullrefresh.PullRefreshIndicator
-// import androidx.compose.material.pullrefresh.pullRefresh
-// import androidx.compose.material.pullrefresh.rememberPullRefreshState
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import cc.bbq.xq.ui.theme.BBQExposedDropdownMenuBox
@@ -27,15 +22,12 @@ import androidx.compose.foundation.background
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import cc.bbq.xq.ui.UserDetail
-// 添加 MD3 pullrefresh 导入
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
-// 导入我们自定义的指示器
+// 导入自定义的指示器
 import cc.bbq.xq.ui.theme.BBQPullRefreshIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 
-// 移除 @ExperimentalMaterialApi 注解
-// @OptIn(ExperimentalMaterialApi::class, ExperimentalMaterial3Api::class)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RankingListScreen(
@@ -44,8 +36,6 @@ fun RankingListScreen(
 ) {
     val state by viewModel.state.collectAsState()
     val listState = rememberLazyListState()
-    // val refreshing = state.isRefreshing // 不需要直接使用 state.isRefreshing
-    // val pullRefreshState = rememberPullRefreshState(refreshing, { viewModel.refreshRankingList() }) // 移除
 
     // 下拉菜单状态
     var expanded by remember { mutableStateOf(false) }
@@ -131,11 +121,6 @@ fun RankingListScreen(
             },
             modifier = Modifier.fillMaxSize()
         ) {
-            // Box( // 移除旧的 Box
-            //     modifier = Modifier
-            //         .fillMaxSize()
-            //         .pullRefresh(pullRefreshState) // 移除旧的 pullRefresh
-            // ) { // 移除旧的 Box
             if (state.isLoading && state.rankingList.isEmpty()) {
                 CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
             } else if (state.error != null) {
@@ -206,15 +191,6 @@ fun RankingListScreen(
                     }
                 }
             }
-            // 移除旧的 PullRefreshIndicator
-            // PullRefreshIndicator(
-            //     refreshing,
-            //     pullRefreshState,
-            //     Modifier.align(Alignment.TopCenter),
-            //     contentColor = MaterialTheme.colorScheme.primary, // 使用主题主色
-            //     backgroundColor = MaterialTheme.colorScheme.surface // 使用主题背景色
-            // )
-            // } // 移除旧的 Box
-        } // End PullToRefreshBox
+        }
     }
 }

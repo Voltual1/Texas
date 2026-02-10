@@ -35,7 +35,7 @@ import io.ktor.http.content.*
 import io.ktor.client.statement.bodyAsText
 import io.ktor.client.statement.HttpResponse
 import androidx.compose.material3.SnackbarHostState
-import kotlinx.coroutines.flow.Flow // 添加导入
+import kotlinx.coroutines.flow.Flow 
 import org.koin.android.annotation.KoinViewModel
 
 @KoinViewModel
@@ -47,18 +47,18 @@ class PostCreateViewModel(application: Application) : AndroidViewModel(applicati
     private val _uiState = MutableStateFlow(PostCreateUiState())
     val uiState: StateFlow<PostCreateUiState> = _uiState.asStateFlow()
 
-    // 新增：偏好设置状态
+    // 偏好设置状态
     private val _preferencesState = MutableStateFlow(DraftPreferencesState())
     val preferencesState: StateFlow<DraftPreferencesState> = _preferencesState.asStateFlow()
 
     private val _postStatus = MutableStateFlow<PostStatus>(PostStatus.Idle)
     val postStatus: StateFlow<PostStatus> = _postStatus.asStateFlow()
 
-    // 新增：对话框状态
+    // 对话框状态
     private val _showRestoreDialog = MutableStateFlow(false)
     val showRestoreDialog: StateFlow<Boolean> = _showRestoreDialog.asStateFlow()
 
-    // 新增：Snackbar 回调
+    // Snackbar 回调
     private var _snackbarHostState: SnackbarHostState? = null
     fun setSnackbarHostState(snackbarHostState: SnackbarHostState) {
         _snackbarHostState = snackbarHostState
@@ -90,8 +90,6 @@ class PostCreateViewModel(application: Application) : AndroidViewModel(applicati
         observeAndAutoSave()
     }
 
-    // 新增：恢复草稿方法
-    // 修改 restoreDraft 方法，因为 imageUriToUrlMap 不再是 DraftDto 的一部分
     private fun restoreDraft(draft: PostDraftRepository.DraftDto) {
         _uiState.update {
             it.copy(
@@ -105,7 +103,7 @@ class PostCreateViewModel(application: Application) : AndroidViewModel(applicati
     }
 
 
-    // 新增：处理对话框操作
+    // 处理对话框操作
     fun onRestoreDialogConfirm() {
         viewModelScope.launch {
             draftRepository.draftFlow.first()?.let { draft ->
@@ -119,7 +117,7 @@ class PostCreateViewModel(application: Application) : AndroidViewModel(applicati
         _showRestoreDialog.value = false
     }
 
-    // 新增：更新偏好设置
+    // 更新偏好设置
     fun setAutoRestoreDraft(enabled: Boolean) {
         viewModelScope.launch {
             draftDataStore.setAutoRestoreDraft(enabled)
@@ -234,10 +232,10 @@ class PostCreateViewModel(application: Application) : AndroidViewModel(applicati
                 )
             }
 
-            // 修复：使用数据类解析响应
+            // 使用数据类解析响应
             val responseBody: KtorClient.UploadResponse = response.body()
             
-            // 修复：使用 downurl 字段，与 AppReleaseViewModel 保持一致
+            // 使用 downurl 字段，与 AppReleaseViewModel 保持一致
             if (responseBody.code == 0 && !responseBody.downurl.isNullOrBlank()) {
                 Result.success(responseBody.downurl)
             } else {
@@ -394,7 +392,7 @@ data class PostCreateUiState(
     val progressMessage: String = ""
 )
 
-// 新增：偏好设置状态
+// 偏好设置状态
 data class DraftPreferencesState(
     val autoRestoreDraft: Boolean = false,
     val noStoreDraft: Boolean = false

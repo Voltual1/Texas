@@ -12,27 +12,24 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import cc.bbq.xq.AuthManager
-//import cc.bbq.xq.RetrofitClient // 移除 RetrofitClient
-import cc.bbq.xq.KtorClient // 导入 KtorClient
+import cc.bbq.xq.KtorClient 
 import cc.bbq.xq.SineShopClient
-import cc.bbq.xq.data.SignInSettingsDataStore // 导入 SignInSettingsDataStore
+import cc.bbq.xq.data.SignInSettingsDataStore
 import cc.bbq.xq.ui.theme.ThemeManager
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import cc.bbq.xq.LingMarketClient
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-
 import java.text.SimpleDateFormat
 import java.util.*
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.ui.res.stringResource
 import cc.bbq.xq.R
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.Flow // 添加导入
+import kotlinx.coroutines.flow.Flow
 import org.koin.android.annotation.KoinViewModel
 
-// 添加数据加载状态
 sealed class DataLoadState {
     object NotLoaded : DataLoadState()
     object Loading : DataLoadState()
@@ -40,7 +37,6 @@ sealed class DataLoadState {
     object Error : DataLoadState()
 }
 
-// 添加签到相关状态
 data class HomeUiState(
     val showLoginPrompt: Boolean = true,
     val isLoading: Boolean = false,
@@ -52,24 +48,18 @@ data class HomeUiState(
     val followersCount: String = "?",
     val fansCount: String = "?",
     val postsCount: String = "?",
-    val signToday: Boolean = false, // 添加今日签到状态
+    val signToday: Boolean = false,
     val likesCount: String = "?",
-    // 签到相关状态
     val seriesDays: Int = 0,
     val signStatusMessage: String? = null,
     val createTime: String = "",
-    val exp: Int = 0, // 添加经验值属性
+    val exp: Int = 0, 
     val lastSignTime: String = "",
     val displayDaysDiff: Int = 0,
-    // 添加数据加载状态
     val dataLoadState: DataLoadState = DataLoadState.NotLoaded,
-    // 新增：弦应用商店用户信息
     val sineShopUserInfo: SineShopClient.SineShopUserInfo? = null,
-    // 新增：弦应用商店登录提示
     val sineShopLoginPrompt: Boolean = true,
-        // 新增：灵应用商店用户信息
     val lingMarketUserInfo: LingMarketClient.LingMarketUser? = null,
-    // 新增：灵应用商店登录提示
     val lingMarketLoginPrompt: Boolean = true
 )
 
@@ -77,8 +67,6 @@ data class HomeUiState(
 class HomeViewModel : ViewModel() {
     var uiState = mutableStateOf(HomeUiState())
         private set
-
-    // 新增：Snackbar HostState
     var snackbarHostState = mutableStateOf<SnackbarHostState?>(null)
         private set
 
@@ -149,8 +137,8 @@ class HomeViewModel : ViewModel() {
                             displayDaysDiff = daysDiff,
                             isLoading = false,
                             exp = userData.exp,
-                            signToday = userData.sign_today, // 更新签到状态
-                    signStatusMessage = signStatusMessage, // 设置签到状态消息
+                            signToday = userData.sign_today,
+                    signStatusMessage = signStatusMessage,
                             dataLoadState = DataLoadState.Loaded
                         )
                         
@@ -172,7 +160,6 @@ class HomeViewModel : ViewModel() {
         }
     }
     
-    // 新增：加载灵应用商店用户信息
     private fun loadLingMarketUserInfo(context: Context) {
     viewModelScope.launch {
         try {
@@ -218,7 +205,7 @@ class HomeViewModel : ViewModel() {
     }
 }
     
-    // 新增：显式检查和更新灵应用商店登录状态的方法
+    //显式检查和更新灵应用商店登录状态的方法
     fun checkAndUpdateLingMarketLoginState(context: Context) {
         viewModelScope.launch {
             try {
@@ -244,7 +231,7 @@ class HomeViewModel : ViewModel() {
         }
     }
     
-    // 新增：检查并执行自动签到
+    // 检查并执行自动签到
     private fun checkAndAutoSignIn(context: Context) {
         viewModelScope.launch {
             // 检查今日是否已签到
@@ -339,7 +326,7 @@ class HomeViewModel : ViewModel() {
         }
     }
        
-    // 新增：加载弦应用商店用户信息
+    // 加载弦应用商店用户信息
     private fun loadSineShopUserInfo(context: Context) {
         viewModelScope.launch {
             try {
@@ -383,7 +370,7 @@ class HomeViewModel : ViewModel() {
         }
     }
 
-    // 新增：更新弦应用商店登录提示状态
+    // 更新弦应用商店登录提示状态
     fun updateSineShopLoginState(isLoggedIn: Boolean) {
         uiState.value = uiState.value.copy(sineShopLoginPrompt = !isLoggedIn)
     }
@@ -434,14 +421,12 @@ class HomeViewModel : ViewModel() {
         }
     }
 
-    // 新增：显示 Snackbar 的方法
     fun showSnackbar(message: String) {
         viewModelScope.launch {
             snackbarHostState.value?.showSnackbar(message)
         }
     }
 
-    // 新增：显式检查和更新弦应用商店登录状态的方法
     fun checkAndUpdateSineShopLoginState(context: Context) {
         viewModelScope.launch {
             try {

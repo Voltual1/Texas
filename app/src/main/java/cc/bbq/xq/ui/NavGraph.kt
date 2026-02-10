@@ -89,12 +89,9 @@ import java.nio.charset.StandardCharsets
 @Composable
 fun AppNavHost(
     navController: NavHostController,
-    snackbarHostState: SnackbarHostState, // 添加 SnackbarHostState 参数
-    modifier: Modifier = Modifier//,
-//    restartAppCallback: (() -> Unit)? = null
+    snackbarHostState: SnackbarHostState, 
+    modifier: Modifier = Modifier
 ) {
-   // val context = LocalContext.current
-//    val density = LocalDensity.current
     val slideDistance = rememberSlideDistance()
 
     // 将 ViewModel 的创建移动到 AppNavHost 函数中
@@ -128,7 +125,7 @@ fun AppNavHost(
         composable(route = Home.route) {
     HomeDestination(
         navController = navController,
-        snackbarHostState = snackbarHostState // 传递 SnackbarHostState
+        snackbarHostState = snackbarHostState
     )
 }
 
@@ -142,12 +139,10 @@ fun AppNavHost(
                         launchSingleTop = true
                     }
                 },
-//                isBotLoginMode = false, 
-                modifier = Modifier.fillMaxSize() // 添加 modifier
+                modifier = Modifier.fillMaxSize() 
             )
         }
 
-        // 在 NavGraph.kt 中更新 AboutScreen 的调用
         composable(route = About.route) {
     AboutScreen(
         modifier = Modifier.fillMaxSize(),
@@ -155,7 +150,6 @@ fun AppNavHost(
     )
 }
 
-// 修改 Search 路由处理
 composable(
     route = Search.route, 
     arguments = Search.arguments
@@ -190,12 +184,11 @@ composable(route = SignInSettings.route ) {
 
         composable(route = ThemeCustomize.route) {
             ThemeCustomizeScreen(
-                modifier = Modifier.fillMaxSize() // 添加 modifier
+                modifier = Modifier.fillMaxSize() 
             )
         }
         
         composable(route = StoreManager.route) {
-             // 在 NavGraph.kt 中更新存储管理屏幕的调用
              StoreManagerScreen()
         }
 
@@ -205,20 +198,18 @@ composable(route = SignInSettings.route ) {
             PostDetailScreen(
                 postId = postId,
                 navController = navController,
-//                onBack = { navController.popBackStack() },
                 onPostDeleted = { navController.popBackStack() },
-                snackbarHostState = snackbarHostState, // 传递 SnackbarHostState
-                modifier = Modifier.fillMaxSize() // 添加 modifier
+                snackbarHostState = snackbarHostState,
+                modifier = Modifier.fillMaxSize() 
             )
         }
 
 composable(route = CreatePost.route) {
     PostCreateScreen(
         viewModel = postCreateViewModel,
-        navController = navController, // 传递 navController
-        snackbarHostState = snackbarHostState, // 传递 SnackbarHostState
+        navController = navController,
+        snackbarHostState = snackbarHostState, 
         onBackClick = { navController.popBackStack() },
-        // 移除 onSubmitClick 参数
         mode = "create",
         refundAppName = "",
         refundAppId = 0L,
@@ -232,10 +223,9 @@ composable(route = CreateRefundPost(0, 0, "", 0).route, arguments = CreateRefund
     val args = backStackEntry.arguments!!
     PostCreateScreen(
         viewModel = postCreateViewModel,
-        navController = navController, // 传递 navController
+        navController = navController,
         onBackClick = { navController.popBackStack() },
-        // 移除 onSubmitClick 参数
-        snackbarHostState = snackbarHostState, // 传递 SnackbarHostState
+        snackbarHostState = snackbarHostState,
         mode = "refund",
         refundAppName = URLDecoder.decode(args.getString(AppDestination.ARG_APP_NAME, ""), StandardCharsets.UTF_8.toString()),
         refundAppId = args.getLong(AppDestination.ARG_APP_ID),
@@ -245,7 +235,6 @@ composable(route = CreateRefundPost(0, 0, "", 0).route, arguments = CreateRefund
     )
 }
 
-        // 在 NavGraph.kt 中更新 BrowseHistoryScreen 的调用
         composable(route = BrowseHistory.route) {
     BrowseHistoryScreen(
         onPostClick = { postId -> navController.navigate(PostDetail(postId).createRoute()) },
@@ -260,18 +249,15 @@ composable(route = CreateRefundPost(0, 0, "", 0).route, arguments = CreateRefund
             } ?: ""
             ImagePreviewScreen(
                 imageUrl = imageUrl,
-                snackbarHostState = snackbarHostState, // 传递 SnackbarHostState
+                snackbarHostState = snackbarHostState,
                 onClose = { navController.popBackStack() }
             )
         }
         
-/*        composable(route = Download.route) {
-    DownloadScreen(modifier = Modifier.fillMaxSize(),snackbarHostState = snackbarHostState )
-}*/
 
 composable(
     route = Download.route,
-    // 关键优化：给该路由设置 0 毫秒的转场动画，避免跳转时的“白屏闪烁”
+    // 优化：给该路由设置 0 毫秒的转场动画，避免跳转时的“白屏闪烁”
     enterTransition = { EnterTransition.None },
     exitTransition = { ExitTransition.None }
 ) {
@@ -349,11 +335,10 @@ composable(route = UserDetail(0).route, arguments = UserDetail.arguments) { back
         }
     }
     
-    // 使用新的 UserDetailScreen 函数，它接收 viewModel 而不是分开的参数
     UserDetailScreen(
         viewModel = viewModel,
         onPostsClick = { 
-            // 修复：传入用户的昵称作为默认值
+            // 传入用户的昵称作为默认值
             val userData = viewModel.userData.value
             val nickname = userData?.displayName ?: "用户"
             navController.navigate(MyPosts(userId, nickname).createRoute()) 
@@ -410,9 +395,7 @@ composable(route = FollowList.route) {
         users = state.users,
         isLoading = state.isLoading,
         errorMessage = state.errorMessage,
-//        isEmpty = state.users.isEmpty() && !state.isLoading && state.errorMessage.isNullOrEmpty(),
         onLoadMore = { viewModel.loadNextPage() },
-//        onRefresh = { viewModel.refresh() },
         onUserClick = { userId -> navController.navigate(UserDetail(userId).createRoute()) },
         modifier = Modifier.fillMaxSize()
     )
@@ -433,9 +416,7 @@ composable(route = FanList.route) {
         users = state.users,
         isLoading = state.isLoading,
         errorMessage = state.errorMessage,
-  //      isEmpty = state.users.isEmpty() && !state.isLoading && state.errorMessage.isNullOrEmpty(),
         onLoadMore = { viewModel.loadNextPage() },
-    //    onRefresh = { viewModel.refresh() },
         onUserClick = { userId -> navController.navigate(UserDetail(userId).createRoute()) },
         modifier = Modifier.fillMaxSize()
     )
@@ -452,8 +433,8 @@ composable(route = AccountProfile.route, arguments = AccountProfileArgs.argument
     AccountProfileScreen(
         modifier = Modifier.fillMaxSize(),
         snackbarHostState = snackbarHostState,
-        viewModel = userProfileViewModel,//新增viewmodel
-        store = store // 传递 store 参数
+        viewModel = userProfileViewModel,
+        store = store
     )
 }
 
@@ -462,12 +443,12 @@ composable(route = ResourcePlaza(false).route, arguments = ResourcePlaza.argumen
             val isMyResource = backStackEntry.arguments?.getBoolean(AppDestination.ARG_IS_MY_RESOURCE) ?: false
             val userId = backStackEntry.arguments?.getLong(AppDestination.ARG_USER_ID) ?: -1L
             val mode = backStackEntry.arguments?.getString("mode") ?: "public"
-            val storeName = backStackEntry.arguments?.getString("store") ?: AppStore.XIAOQU_SPACE.name // 获取 storeName
+            val storeName = backStackEntry.arguments?.getString("store") ?: AppStore.XIAOQU_SPACE.name
 
             ResourcePlazaScreen(
                 isMyResourceMode = isMyResource,
                 mode = mode,
-                storeName = storeName, // 传递 storeName
+                storeName = storeName,
                 navigateToAppDetail = { appId, versionId, store ->
                     navController.navigate(AppDetail(appId, versionId, store).createRoute())
                 },
@@ -491,24 +472,20 @@ composable(route = ResourcePlaza(false).route, arguments = ResourcePlaza.argumen
             )
         }
 
-
-        // 在 NavGraph.kt 中更新 AppReleaseScreen 的调用
         composable(route = CreateAppRelease.route) {
             AppReleaseScreen(
                 viewModel = appReleaseViewModel,
-                navController = navController, // 传递 navController
-                snackbarHostState = snackbarHostState, // 传递 SnackbarHostState
+                navController = navController, 
+                snackbarHostState = snackbarHostState,
                 modifier = Modifier.fillMaxSize()
             )
         }
 
-        // 在 NavGraph.kt 中，更新 UpdateAppRelease 相关的代码
 composable(route = UpdateAppRelease("").route, arguments = UpdateAppRelease.arguments) { backStackEntry ->
     val appDetailJson = backStackEntry.arguments?.getString(AppDestination.ARG_APP_DETAIL_JSON)?.let {
         URLDecoder.decode(it, StandardCharsets.UTF_8.toString())
     }
     if (!appDetailJson.isNullOrBlank()) {
-        // 改为使用 KtorClient 的 JsonConverter
         val appDetailToUpdate = KtorClient.JsonConverter.fromJson(appDetailJson)
         if (appDetailToUpdate != null) {
             appReleaseViewModel.populateFromAppDetail(appDetailToUpdate)
@@ -517,7 +494,7 @@ composable(route = UpdateAppRelease("").route, arguments = UpdateAppRelease.argu
     AppReleaseScreen(
         viewModel = appReleaseViewModel,
         navController = navController,
-        snackbarHostState = snackbarHostState, // 传递 SnackbarHostState
+        snackbarHostState = snackbarHostState,
         modifier = Modifier.fillMaxSize()
     )
 }
@@ -526,9 +503,8 @@ composable(route = UpdateAppRelease("").route, arguments = UpdateAppRelease.argu
             val logViewModel: LogViewModel = org.koin.androidx.compose.koinViewModel()
             LogScreen(
                 viewModel = logViewModel,
-                snackbarHostState = snackbarHostState, // 传递 SnackbarHostState
-//                onBackClick = { navController.popBackStack() },
-                modifier = Modifier.fillMaxSize() // 添加 modifier
+                snackbarHostState = snackbarHostState, 
+                modifier = Modifier.fillMaxSize() 
             )
         }
 
@@ -537,8 +513,7 @@ composable(route = UpdateAppRelease("").route, arguments = UpdateAppRelease.argu
             MessageCenterScreen(
                 viewModel = messageViewModel,
                 onMessageClick = { postId -> navController.navigate(PostDetail(postId).createRoute()) },
-                modifier = Modifier.fillMaxSize()//,
-//                navController = navController // 传递 navController
+                modifier = Modifier.fillMaxSize()
             )
         }
 
@@ -548,7 +523,6 @@ composable(route = UpdateAppRelease("").route, arguments = UpdateAppRelease.argu
             }
             BillingScreen(
                 viewModel = billingViewModel//,
-//                onBackClick = { navController.popBackStack() }
             )
         }
 
@@ -557,7 +531,7 @@ composable(route = UpdateAppRelease("").route, arguments = UpdateAppRelease.argu
             PaymentCenterScreen(
                 viewModel = paymentViewModel,
                 modifier = Modifier.fillMaxSize(),
-                navController = navController // 传递 navController
+                navController = navController 
             )
         }
 
@@ -576,7 +550,7 @@ composable(route = UpdateAppRelease("").route, arguments = UpdateAppRelease.argu
             PaymentCenterScreen(
                 viewModel = paymentViewModel,
                 modifier = Modifier.fillMaxSize(),
-                navController = navController // 传递 navController
+                navController = navController
             )
         }
 
@@ -595,7 +569,7 @@ composable(route = UpdateAppRelease("").route, arguments = UpdateAppRelease.argu
             PaymentCenterScreen(
                 viewModel = paymentViewModel,
                 modifier = Modifier.fillMaxSize(),
-                navController = navController // 传递 navController
+                navController = navController 
             )
         }
        
@@ -631,11 +605,6 @@ composable(FollowingPosts.route) { FollowingPostsScreen(navController, following
     }
 }
 
-
-// 在 NavGraph.kt 中修复社区屏幕的导航逻辑
-// /app/src/main/java/cc/bbq/xq/ui/NavGraph.kt
-// 修复所有列表屏幕中的 onNavigate 回调
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CommunityScreen(navController: NavController, viewModel: CommunityViewModel,snackbarHostState: SnackbarHostState) {
@@ -660,7 +629,7 @@ fun CommunityScreen(navController: NavController, viewModel: CommunityViewModel,
         onRefresh = { viewModel.refresh() },
         onSearchClick = { navController.navigate(Search.route) },
         onCreateClick = { navController.navigate(CreatePost.route) },
-        snackbarHostState = snackbarHostState, // 传递 SnackbarHostState
+        snackbarHostState = snackbarHostState, 
         historyClick = { navController.navigate(BrowseHistory.route) },
         totalPages = totalPages,
         onJumpToPage = { page -> viewModel.jumpToPage(page) },
@@ -672,7 +641,7 @@ fun CommunityScreen(navController: NavController, viewModel: CommunityViewModel,
                 route == "following_posts" -> navController.navigate(FollowingPosts.route)
                 route == "my_likes" -> navController.navigate(MyLikes.route)
                 route.startsWith("my_posts/") -> {
-                    // 修复：正确解析路由参数
+                    // 正确解析路由参数
                     val parts = route.removePrefix("my_posts/").split("/")
                     val userIdStr = parts.firstOrNull()
                     val nickname = if (parts.size > 1) parts[1] else "我" // 提供默认昵称
@@ -718,7 +687,7 @@ fun MyLikesScreen(navController: NavController, viewModel: MyLikesViewModel,snac
         onRefresh = { viewModel.refresh() },
         onSearchClick = { navController.navigate(Search.route) },
         onCreateClick = { navController.navigate(CreatePost.route) },
-        snackbarHostState = snackbarHostState, // 传递 SnackbarHostState
+        snackbarHostState = snackbarHostState, 
         historyClick = { navController.navigate(BrowseHistory.route) },
         totalPages = totalPages,
         onJumpToPage = { page -> viewModel.jumpToPage(page) },
@@ -730,7 +699,7 @@ fun MyLikesScreen(navController: NavController, viewModel: MyLikesViewModel,snac
                 route == "following_posts" -> navController.navigate(FollowingPosts.route)
                 route == "my_likes" -> navController.navigate(MyLikes.route)
                 route.startsWith("my_posts/") -> {
-                    // 修复：正确解析路由参数
+                    // 正确解析路由参数
                     val parts = route.removePrefix("my_posts/").split("/")
                     val userIdStr = parts.firstOrNull()
                     val nickname = if (parts.size > 1) parts[1] else "我" // 提供默认昵称
@@ -776,7 +745,7 @@ fun HotPostsScreen(navController: NavController, viewModel: HotPostsViewModel,sn
         onRefresh = { viewModel.refresh() },
         onSearchClick = { navController.navigate(Search.route) },
         onCreateClick = { navController.navigate(CreatePost.route) },
-        snackbarHostState = snackbarHostState, // 传递 SnackbarHostState
+        snackbarHostState = snackbarHostState,
         historyClick = { navController.navigate(BrowseHistory.route) },
         totalPages = totalPages,
         onJumpToPage = { page -> viewModel.jumpToPage(page) },
@@ -788,7 +757,7 @@ fun HotPostsScreen(navController: NavController, viewModel: HotPostsViewModel,sn
                 route == "following_posts" -> navController.navigate(FollowingPosts.route)
                 route == "my_likes" -> navController.navigate(MyLikes.route)
                 route.startsWith("my_posts/") -> {
-                    // 修复：正确解析路由参数
+                    // 正确解析路由参数
                     val parts = route.removePrefix("my_posts/").split("/")
                     val userIdStr = parts.firstOrNull()
                     val nickname = if (parts.size > 1) parts[1] else "我" // 提供默认昵称
@@ -833,7 +802,7 @@ fun FollowingPostsScreen(navController: NavController, viewModel: FollowingPosts
         onLoadMore = { viewModel.loadNextPage() },
         onRefresh = { viewModel.refresh() },
         onSearchClick = { navController.navigate(Search.route) },
-        snackbarHostState = snackbarHostState, // 传递 SnackbarHostState
+        snackbarHostState = snackbarHostState, 
         onCreateClick = { navController.navigate(CreatePost.route) },
         historyClick = { navController.navigate(BrowseHistory.route) },
         totalPages = totalPages,
@@ -846,7 +815,7 @@ fun FollowingPostsScreen(navController: NavController, viewModel: FollowingPosts
                 route == "following_posts" -> navController.navigate(FollowingPosts.route)
                 route == "my_likes" -> navController.navigate(MyLikes.route)
                 route.startsWith("my_posts/") -> {
-                    // 修复：正确解析路由参数
+                    // 正确解析路由参数
                     val parts = route.removePrefix("my_posts/").split("/")
                     val userIdStr = parts.firstOrNull()
                     val nickname = if (parts.size > 1) parts[1] else "我" // 提供默认昵称

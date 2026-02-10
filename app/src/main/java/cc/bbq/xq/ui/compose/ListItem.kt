@@ -26,7 +26,7 @@ import androidx.compose.ui.unit.dp
 import cc.bbq.xq.KtorClient
 import cc.bbq.xq.ui.theme.messageCommentBg
 import cc.bbq.xq.ui.theme.messageLikeBg
-import cc.bbq.xq.ui.theme.messageDefaultBg // 新增导入
+import cc.bbq.xq.ui.theme.messageDefaultBg
 import cc.bbq.xq.ui.theme.billingIncome
 import cc.bbq.xq.ui.theme.billingExpense
 
@@ -93,7 +93,7 @@ fun ListItem(
 
 @Composable
 fun MessageItem(
-    message: KtorClient.MessageNotification, // 修改为 KtorClient.MessageNotification
+    message: KtorClient.MessageNotification, 
     onClick: () -> Unit
 ) {
     val (icon, bgColor) = when (message.type) {
@@ -113,7 +113,7 @@ fun MessageItem(
 }
 
 @Composable
-fun BillingItem(billing: KtorClient.BillingItem) { // 修改为 KtorClient.BillingItem
+fun BillingItem(billing: KtorClient.BillingItem) { 
     val amountColor = if (billing.transaction_amount.startsWith("+")) 
         MaterialTheme.billingIncome else MaterialTheme.billingExpense
     

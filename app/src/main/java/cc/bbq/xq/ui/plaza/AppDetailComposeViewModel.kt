@@ -68,15 +68,15 @@ class AppDetailComposeViewModel(
     private val _showDownloadDrawer = MutableStateFlow(false)
     val showDownloadDrawer: StateFlow<Boolean> = _showDownloadDrawer.asStateFlow()
 
-    // 新增：Snackbar 事件
+    // Snackbar 事件
     private val _snackbarEvent = MutableSharedFlow<String>()
     val snackbarEvent: SharedFlow<String> = _snackbarEvent.asSharedFlow()
     
-    // 新增：导航事件
+    // 导航事件
     private val _navigateToDownloadEvent = MutableSharedFlow<Boolean>()
     val navigateToDownloadEvent: SharedFlow<Boolean> = _navigateToDownloadEvent.asSharedFlow()
 
-    // 新增：用于发送一次性事件（如打开浏览器）
+    // 用于发送一次性事件（如打开浏览器）
     private val _openUrlEvent = MutableSharedFlow<String>()
     val openUrlEvent: SharedFlow<String> = _openUrlEvent.asSharedFlow()
 
@@ -102,7 +102,7 @@ class AppDetailComposeViewModel(
     private val _navigateToPaymentEvent = MutableSharedFlow<PaymentInfo>()
     val navigateToPaymentEvent: SharedFlow<PaymentInfo> = _navigateToPaymentEvent.asSharedFlow()
     
-    // 新增：下载事件
+    // 下载事件
     data class DownloadEvent(
         val url: String,
         val fileName: String,
@@ -462,8 +462,6 @@ private suspend fun handleLingMarketDownload(detail: UnifiedAppDetail) {
             try {
                 // 获取应用名称用于文件名
                 val appName = "${_appDetail.value?.name ?: "未命名应用"}.apk"
-                                // 发送导航到下载管理界面的事件
-//                _navigateToDownloadEvent.emit(true)
                 
                 // 发送下载事件，包含 URL 和文件名
                 _downloadEvent.emit(DownloadEvent(downloadUrl, appName))                

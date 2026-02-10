@@ -1,4 +1,11 @@
-// /app/src/main/java/cc/bbq/xq/ui/plaza/AppReleaseViewModel.kt
+//Copyright (C) 2025 Voltual
+// 本程序是自由软件：你可以根据自由软件基金会发布的 GNU 通用公共许可证第3版
+//（或任意更新的版本）的条款重新分发和/或修改它。
+//本程序是基于希望它有用而分发的，但没有任何担保；甚至没有适销性或特定用途适用性的隐含担保。
+// 有关更多细节，请参阅 GNU 通用公共许可证。
+//
+// 你应该已经收到了一份 GNU 通用公共许可证的副本
+// 如果没有，请查阅 <http://www.gnu.org/licenses/>.
 package cc.bbq.xq.ui.plaza
 
 import android.app.Application
@@ -118,28 +125,18 @@ class AppReleaseViewModel(application: Application) : AndroidViewModel(applicati
     // --- 弦开放平台特定状态 ---
     // 应用类型
     val appTypeOptions = listOf("手表应用", "手机应用", "大屏应用", "TV应用", "WearOS应用")
-    // val selectedAppTypeIndex = mutableStateOf(1) // 手机应用 (默认)
-    // val appTypeId: Int get() = selectedAppTypeIndex.value + 1
     val appTypeId = mutableStateOf(2) // 手机应用 (默认 ID 为 2)
 
     // 版本类型
     val versionTypeOptions = listOf("官方版", "正式版", "测试版", "公测版", "美化版", "破解版", "修改版", "免费版", "定制版", "手表版")
-    // val selectedVersionTypeIndex = mutableStateOf(1) // 正式版 (默认)
-    // val appVersionTypeId: Int get() = selectedVersionTypeIndex.value + 1
     val appVersionTypeId = mutableStateOf(2) // 正式版 (默认 ID 为 2)
 
     // 应用标签 (从API获取)
     val tagOptions = mutableStateListOf<String>() // 改为可变列表
     val selectedTagIndex = mutableStateOf(0)
     val appTags = mutableStateOf(0) // 默认选中第一个
-    
-    // **移除 init 块**
-    // init {
-    //     loadTagOptions()
-    // }
-    
-    
-    // **新增**：加载标签的函数，由 UI 手动调用
+            
+    // 加载标签的函数，由 UI 手动调用
     fun loadTagOptions() {
         viewModelScope.launch(Dispatchers.IO) {
             try {
@@ -167,7 +164,7 @@ class AppReleaseViewModel(application: Application) : AndroidViewModel(applicati
         }
     }
 
-    // 新增：SDK 版本状态
+    // SDK 版本状态
     val sdkMin = mutableStateOf(21)
     val sdkTarget = mutableStateOf(33)
 
@@ -229,7 +226,7 @@ class AppReleaseViewModel(application: Application) : AndroidViewModel(applicati
     fun parseAndUploadApk(uri: Uri) {
         viewModelScope.launch(Dispatchers.IO) {
             _processFeedback.value = Result.success("正在解析APK...")
-            // **修改**：使用 ApkInfo
+            // 使用 ApkInfo
             val parsedInfo: ApkInfo? = ApkParser.parse(context, uri)
 
             if (parsedInfo == null) {
@@ -252,7 +249,7 @@ class AppReleaseViewModel(application: Application) : AndroidViewModel(applicati
                 // 自动填充字段
                 appExplain.value = "适配性能描述 •\n包名：${parsedInfo.packageName}\n版本：${parsedInfo.versionName}"
                 
-                // **新增**：如果是弦开放平台，自动填充 SDK 信息
+                // 如果是弦开放平台，自动填充 SDK 信息
                 if (_selectedStore.value == AppStore.SINE_OPEN_MARKET) {
                     // 使用解析出的 SDK 信息
                     // 注意：minSdkVersion 和 targetSdkVersion 可能为 0，表示未指定

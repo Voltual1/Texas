@@ -197,7 +197,7 @@ object Search : AppDestination {
     
     val arguments = listOf(
         navArgument("userId") { 
-            type = NavType.StringType // 改为 StringType 以支持可空值
+            type = NavType.StringType 
             nullable = true
             defaultValue = null
         },
@@ -249,12 +249,10 @@ data class ResourcePlaza(
     val isMyResource: Boolean, 
     val userId: Long = -1L, 
     val mode: String = "public",
-    val storeName: String = AppStore.XIAOQU_SPACE.name // 新增 storeName 参数
+    val storeName: String = AppStore.XIAOQU_SPACE.name
 ) : AppDestination {
-    // 更新 route 定义，增加 store 参数
     override val route = "plaza?${AppDestination.ARG_IS_MY_RESOURCE}={${AppDestination.ARG_IS_MY_RESOURCE}}&${AppDestination.ARG_USER_ID}={${AppDestination.ARG_USER_ID}}&mode={mode}&store={store}"
     
-    // 更新 createRoute
     fun createRoute() = "plaza?${AppDestination.ARG_IS_MY_RESOURCE}=$isMyResource&${AppDestination.ARG_USER_ID}=$userId&mode=$mode&store=$storeName"
     
     companion object {

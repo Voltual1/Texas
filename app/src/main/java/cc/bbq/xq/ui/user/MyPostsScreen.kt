@@ -1,4 +1,3 @@
-// /app/src/main/java/cc/bbq/xq/ui/user/MyPostsScreen.kt
 //Copyright (C) 2025 Voltual
 // 本程序是自由软件：你可以根据自由软件基金会发布的 GNU 通用公共许可证第3版
 //（或任意更新的版本）的条款重新分发和/或修改它。
@@ -37,7 +36,7 @@ fun MyPostsScreen(
     viewModel: MyPostsViewModel,
     userId: Long, // 目标用户的ID
     snackbarHostState: SnackbarHostState,
-    nickname: String?, // 新增 nickname 参数
+    nickname: String?, 
     navController: NavController
 ) {
     val posts by viewModel.posts.collectAsState()
@@ -45,7 +44,6 @@ fun MyPostsScreen(
     val errorMessage by viewModel.errorMessage.collectAsState()
     val totalPages by viewModel.totalPages.collectAsState()
     
-    //val context = navController.context // 使用单个 LaunchedEffect，避免重复触发
     LaunchedEffect(userId, nickname) {
         if (nickname != null) {
             viewModel.setUserInfo(userId, nickname)
@@ -57,7 +55,6 @@ fun MyPostsScreen(
     // 简化的标题逻辑 - 不再需要复杂的标题设置
     val title = "用户帖子"
     
-// 修改 onSearchClick 以传递用户信息
 val onSearchClick: () -> Unit = {
     if (nickname != null) {
         // 创建包含用户信息的搜索路由
@@ -78,7 +75,7 @@ val onSearchClick: () -> Unit = {
         },
         onLoadMore = { viewModel.loadNextPage() },
         onRefresh = { viewModel.refresh() },
-        onSearchClick = onSearchClick, // 使用新的搜索点击处理
+        onSearchClick = onSearchClick,
         snackbarHostState = snackbarHostState,
         onCreateClick = { navController.navigate(CreatePost.route) },
         historyClick = { navController.navigate(BrowseHistory.route) },

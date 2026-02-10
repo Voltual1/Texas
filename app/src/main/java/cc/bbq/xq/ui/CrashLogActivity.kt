@@ -11,7 +11,7 @@ package cc.bbq.xq.ui
 
 import android.content.Context
 import android.content.Intent
-import cc.bbq.xq.ui.theme.BBQSnackbarHost // 导入 BBQSnackbarHost
+import cc.bbq.xq.ui.theme.BBQSnackbarHost
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -64,8 +64,8 @@ class CrashLogActivity : ComponentActivity() {
             }
 
             BBQTheme(appDarkTheme = ThemeManager.isAppDarkTheme) {
-                Scaffold( // 使用 Scaffold
-                    snackbarHost = { BBQSnackbarHost(snackbarHostState) }, // 添加 SnackbarHost
+                Scaffold( 
+                    snackbarHost = { BBQSnackbarHost(snackbarHostState) }, 
                     modifier = Modifier.fillMaxSize(),
                     content = { innerPadding ->
                         Surface(
@@ -82,7 +82,6 @@ class CrashLogActivity : ComponentActivity() {
                                         val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
                                         val clip = ClipData.newPlainText("Crash Report", crashReportState.value)
                                         clipboard.setPrimaryClip(clip)
-                                        //Toast.makeText(context, "崩溃报告已复制到剪贴板", Toast.LENGTH_SHORT).show()
                                         scope.launch {
                                             snackbarHostState.showSnackbar(
                                                 message = context.getString(R.string.crash_report_copied),// 使用 stringResource 获取字符串

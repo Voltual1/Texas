@@ -25,7 +25,7 @@ enum class VideoScaleMode { FIT, FILL, ZOOM }
 
 data class PlayerSettings(
     val scaleMode: VideoScaleMode = VideoScaleMode.FIT,
-    val danmakuSize: Float = 1.2f // NEW: 添加弹幕字号属性
+    val danmakuSize: Float = 1.2f
 )
 
 @KoinViewModel
@@ -36,7 +36,6 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
     private val _playerUiState = MutableStateFlow<PlayerUiState>(PlayerUiState.Loading)
     val playerUiState = _playerUiState.asStateFlow()
 
-    // UPDATED: 从 DataStore 初始化设置
     private val _settings = MutableStateFlow(PlayerSettings())
     val settings = _settings.asStateFlow()
 
@@ -56,7 +55,7 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
         }
     }
 
-    // NEW: 更新弹幕字号的方法
+    // 更新弹幕字号的方法
     fun updateDanmakuSize(newSize: Float) {
         viewModelScope.launch {
             val newSettings = _settings.value.copy(danmakuSize = newSize)
@@ -167,7 +166,7 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
     }
 }
 
-// PlayerUiState 密封类 (无变化)
+// PlayerUiState 密封类
 sealed class PlayerUiState {
     object Loading : PlayerUiState()
     data class Success(

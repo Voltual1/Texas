@@ -42,18 +42,18 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import cc.bbq.xq.R
-import cc.bbq.xq.util.cleanUrl // 导入 cleanUrl 函数
+import cc.bbq.xq.util.cleanUrl 
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ImagePreviewScreen(
     imageUrl: String,
-    @Suppress("UNUSED_PARAMETER") snackbarHostState: SnackbarHostState, // 添加类型注解并标记为未使用
+    @Suppress("UNUSED_PARAMETER") snackbarHostState: SnackbarHostState, 
     onClose: () -> Unit
 ) {
     val context = LocalContext.current
     val clipboardManager = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-    val internalSnackbarHostState = remember { SnackbarHostState() } // fixed: rename to internalSnackbarHostState
+    val internalSnackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
     
     // 清理图片 URL

@@ -33,14 +33,14 @@ class LogViewModel(application: Application) : AndroidViewModel(application) {
             initialValue = emptyList()
         )
 
-    // --- 新增：选择模式相关的状态 ---
+    // --- 选择模式相关的状态 ---
     private val _selectedItems = MutableStateFlow<Set<Int>>(emptySet())
     val selectedItems: StateFlow<Set<Int>> = _selectedItems.asStateFlow()
 
     private val _isSelectionMode = MutableStateFlow(false)
     val isSelectionMode: StateFlow<Boolean> = _isSelectionMode.asStateFlow()
 
-    // 核心修正 #1: 让事件携带一个 Pair<String, Int>，分别代表要复制的文本和数量
+    //让事件携带一个 Pair<String, Int>，分别代表要复制的文本和数量
     private val _copyEvent = MutableSharedFlow<Pair<String, Int>>()
     val copyEvent: SharedFlow<Pair<String, Int>> = _copyEvent.asSharedFlow()
 
@@ -52,7 +52,7 @@ class LogViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
-    // --- 新增：选择操作的函数 ---
+    // --- 选择操作的函数 ---
 
     fun toggleSelection(logId: Int) {
         val currentSelected = _selectedItems.value
@@ -72,7 +72,7 @@ class LogViewModel(application: Application) : AndroidViewModel(application) {
         toggleSelection(initialLogId)
     }
 
-    // 新增：无参数的 startSelectionMode 重载函数
+    // 无参数的 startSelectionMode 重载函数
     fun startSelectionMode() {
         _isSelectionMode.value = true
         // 不预先选择任何项目
@@ -119,7 +119,6 @@ class LogViewModel(application: Application) : AndroidViewModel(application) {
                 ${log.responseBody}
                 """.trimIndent()
             }
-            // 核心修正 #2: 发出带有正确数量的事件
             _copyEvent.emit(formattedLogs to logsToCopy.size)
         }
     }

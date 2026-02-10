@@ -1,4 +1,11 @@
-// /app/src/main/java/cc/bbq/xq/ui/plaza/PlazaViewModel.kt
+//Copyright (C) 2025 Voltual
+// 本程序是自由软件：你可以根据自由软件基金会发布的 GNU 通用公共许可证第3版
+//（或任意更新的版本）的条款重新分发和/或修改它。
+//本程序是基于希望它有用而分发的，但没有任何担保；甚至没有适销性或特定用途适用性的隐含担保。
+// 有关更多细节，请参阅 GNU 通用公共许可证。
+//
+// 你应该已经收到了一份 GNU 通用公共许可证的副本
+// 如果没有，请查阅 <http://www.gnu.org/licenses/>.
 package cc.bbq.xq.ui.plaza
 
 import android.app.Application
@@ -61,28 +68,25 @@ class PlazaViewModel(
     private val _autoScrollMode = MutableStateFlow<Boolean>(false)
     val autoScrollMode: StateFlow<Boolean> = _autoScrollMode.asStateFlow()
 
-    // 新增：公开 currentCategoryId
+    // 公开 currentCategoryId
     private val _currentCategoryId = MutableStateFlow<String?>(null)
     val currentCategoryId: StateFlow<String?> = _currentCategoryId.asStateFlow()
 
     // --- 内部状态管理 ---
     private var isSearchMode = false
     private var currentQuery = ""
-    // private var currentCategoryId: String? = null // 移除 private 属性
     private var currentUserId: String? = null
     private var isMyResourceMode: Boolean = false
     private var currentMode: String = "public"
 
-    // 新增：状态跟踪变量（参考旧版本 UserDetailViewModel 模式）
     private var _isInitialized = false
     private var _currentIsMyResourceMode: Boolean = false
     private var _currentUserIdState: String? = null
     private var _currentModeState: String = ""
 
-    // 新增：保存状态 (只保留 currentPage 和 query)
+    // 保存状态 (只保留 currentPage 和 query)
     private var savedCurrentPage: Int = 1
     private var savedCurrentQuery: String = ""
-    // 移除：private var savedCurrentCategoryId: String? = null
 
     private val currentRepository: IAppStoreRepository
         get() = repositories[_appStore.value] ?: throw IllegalStateException("No repository found for the selected app store")
@@ -98,7 +102,7 @@ class PlazaViewModel(
     }
 
     /**
-     * 初始化方法：参考旧版本逻辑，只有参数真正变化时才重置并重新加载
+     * 初始化方法：只有参数真正变化时才重置并重新加载
      */
     fun initialize(isMyResource: Boolean, userId: String?, mode: String = "public", storeName: String = AppStore.XIAOQU_SPACE.name) {
         Log.d("PlazaViewModel", "initialize called: isMyResource=$isMyResource, userId=$userId, mode=$mode, store=$storeName")
@@ -201,7 +205,6 @@ class PlazaViewModel(
         }
     }
 
-    // --- 新增：参考旧版本的 loadDataIfNeeded ---
     private fun loadDataIfNeeded() {
         if (!_isInitialized) {
             resetStateAndLoadCategories() // 或者直接调用 loadPage(1) 如果状态已经准备好
@@ -216,14 +219,6 @@ class PlazaViewModel(
     
     viewModelScope.launch(Dispatchers.IO) {
         try {
-            // 注释掉强制设置商店的逻辑
-            // when (currentMode) {
-            //     "my_upload", "my_favourite", "my_history" -> {
-            //         if (_appStore.value != AppStore.SIENE_SHOP) {
-            //             _appStore.value = AppStore.SIENE_SHOP
-            //         }
-            //     }
-            // }
             
             // 根据当前商店和模式设置分类ID
             when {
@@ -298,7 +293,6 @@ class PlazaViewModel(
     }
 }
 
-    // --- 修改：loadPage ---
     // --- 修改：loadPage ---
     private fun loadPage(page: Int, append: Boolean = false) {
         Log.d("PlazaViewModel", "loadPage called: page=$page, append=$append, _isInitialized=$_isInitialized, currentCategoryId=${_currentCategoryId.value}")

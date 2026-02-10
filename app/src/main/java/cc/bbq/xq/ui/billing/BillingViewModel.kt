@@ -22,7 +22,7 @@ import kotlinx.coroutines.flow.first
 import org.koin.android.annotation.KoinViewModel
 
 data class BillingState(
-    val billings: List<KtorClient.BillingItem> = emptyList(), // 使用 KtorClient.BillingItem
+    val billings: List<KtorClient.BillingItem> = emptyList(),
     val isLoading: Boolean = false,
     val error: String? = null,
     val currentPage: Int = 1,
@@ -59,7 +59,6 @@ class BillingViewModel(application: Application) : AndroidViewModel(application)
                 if (billingResult.isSuccess) {
                     billingResult.getOrNull()?.let { billingResponse ->
                         if (billingResponse.code == 1) {
-                            // 修复：直接访问 data，因为它是非空类型
                             val data = billingResponse.data
                             _state.value = BillingState(
                                 billings = data.list,
@@ -68,14 +67,12 @@ class BillingViewModel(application: Application) : AndroidViewModel(application)
                                 isLoading = false
                             )
                         } else {
-                            // 修复：移除不必要的 Elvis 操作符，因为 billingResponse.msg 是非空字符串
                             _state.value = _state.value.copy(
                                 error = billingResponse.msg,
                                 isLoading = false
                             )
                         }
                     } ?: run {
-                        // 修复：当 billingResult.getOrNull() 为 null 时的处理
                         _state.value = _state.value.copy(
                             error = "加载账单失败: 响应为空",
                             isLoading = false
@@ -119,7 +116,6 @@ class BillingViewModel(application: Application) : AndroidViewModel(application)
                 if (billingResult.isSuccess) {
                     billingResult.getOrNull()?.let { billingResponse ->
                         if (billingResponse.code == 1) {
-                            // 修复：直接访问 data，因为它是非空类型
                             val data = billingResponse.data
                             _state.value = _state.value.copy(
                                 billings = _state.value.billings + data.list,
@@ -128,14 +124,12 @@ class BillingViewModel(application: Application) : AndroidViewModel(application)
                                 isLoading = false
                             )
                         } else {
-                            // 修复：移除不必要的 Elvis 操作符，因为 billingResponse.msg 是非空字符串
                             _state.value = _state.value.copy(
                                 error = billingResponse.msg,
                                 isLoading = false
                             )
                         }
                     } ?: run {
-                        // 修复：当 billingResult.getOrNull() 为 null 时的处理
                         _state.value = _state.value.copy(
                             error = "加载更多失败: 响应为空",
                             isLoading = false

@@ -27,7 +27,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ColorLens
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Save
-import androidx.compose.material.icons.filled.Language // 使用 Language 图标
+import androidx.compose.material.icons.filled.Language
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -46,7 +46,7 @@ import kotlinx.coroutines.withContext
 import kotlin.math.roundToInt
 import cc.bbq.xq.ui.theme.CustomColorSet
 import cc.bbq.xq.ui.theme.ThemeManager
-import cc.bbq.xq.restartMainActivity // 导入重启函数
+import cc.bbq.xq.restartMainActivity 
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -66,7 +66,7 @@ fun ThemeCustomizeScreen(
     var dpi by remember { mutableStateOf(ThemeColorStore.loadDpi(context)) }
     var fontSize by remember { mutableStateOf(ThemeColorStore.loadFontSize(context)) }
 
-    // 新增：是否启用自定义 DPI 的状态
+    // 是否启用自定义 DPI 的状态
     var customDpiEnabled by remember { mutableStateOf(ThemeColorStore.loadCustomDpiEnabled(context)) }
     
     val roundScreenPaddings = remember { ThemeColorStore.loadRoundScreenPaddings(context) }
@@ -220,7 +220,7 @@ var roundBottom by remember { mutableStateOf(roundScreenPaddings.bottom) }
                     Icon(Icons.Filled.Refresh, "恢复默认设置")
                 }
 
-                // 新增：翻译按钮
+                // 翻译按钮
                 IconButton(onClick = { translate = !translate }) {
                     Icon(Icons.Filled.Language, "翻译")
                 }
@@ -332,7 +332,7 @@ item {
                 item { HorizontalDivider(modifier = Modifier.padding(vertical = 16.dp)) }
 
                 item {
-                    // 修复：使用 PrimaryTabRow 替代弃用的 TabRow
+                    // 使用 PrimaryTabRow 替代弃用的 TabRow
                     PrimaryTabRow(
                         selectedTabIndex = selectedTab,
                         modifier = Modifier.padding(horizontal = 16.dp),
@@ -459,11 +459,10 @@ item {
                     dpi = dpi,
                     fontScale = fontSize,
                     customDpiEnabled = customDpiEnabled,
-                    roundScreenEnabled = roundScreenEnabled,  // 新增
-    roundLeft = roundLeft,                   // 新增
-    roundTop = roundTop,                     // 新增
-    roundRight = roundRight,                 // 新增
-    roundBottom = roundBottom                // 新增
+                    roundScreenEnabled = roundScreenEnabled,  
+    roundLeft = roundLeft,                  
+    roundTop = roundTop,                    
+    roundRight = roundRight,                
                 )
                 showSavedMessage = true
             },
@@ -478,7 +477,7 @@ item {
     }
 }
 
-// 新增：全局背景图片编辑器
+// 全局背景图片编辑器
 @Composable
 private fun GlobalBackgroundEditor(
     title: String,
@@ -545,11 +544,11 @@ private fun saveThemeAndRestart(
     dpi: Float,
     fontScale: Float,
     customDpiEnabled: Boolean,
-    roundScreenEnabled: Boolean,  // 新增
-    roundLeft: Float,             // 新增
-    roundTop: Float,              // 新增
-    roundRight: Float,            // 新增
-    roundBottom: Float            // 新增
+    roundScreenEnabled: Boolean,  
+    roundLeft: Float,            
+    roundTop: Float,             
+    roundRight: Float,           
+    roundBottom: Float           
 ) {
     val scope = (context as? androidx.lifecycle.LifecycleOwner)?.lifecycleScope ?: kotlinx.coroutines.MainScope()
     scope.launch {
@@ -587,7 +586,6 @@ private fun saveThemeAndRestart(
     }
 }
 
-// 其他辅助 Composable 函数保持不变...
 @Composable
 private fun DrawerBackgroundEditor(
     title: String,
@@ -608,7 +606,6 @@ private fun DrawerBackgroundEditor(
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp)
         )
-        // ... 其余代码保持不变 ...
         Card(
             modifier = Modifier
                 .fillMaxWidth()
@@ -637,7 +634,7 @@ private fun DrawerBackgroundEditor(
     }
 }
 
-// 新增：图片主题编辑器
+// 图片主题编辑器
 @Composable
 private fun ImageThemeEditor(
     title: String,

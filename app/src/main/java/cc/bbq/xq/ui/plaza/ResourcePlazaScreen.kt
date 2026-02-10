@@ -49,10 +49,10 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 @Composable
 fun ResourcePlazaScreen(
     isMyResourceMode: Boolean,
-    mode: String = "public", // 新增模式参数
+    mode: String = "public", 
     navigateToAppDetail: (String, Long, String) -> Unit,
     userId: String? = null,
-    storeName: String = AppStore.XIAOQU_SPACE.name, // 新增参数
+    storeName: String = AppStore.XIAOQU_SPACE.name,
     modifier: Modifier = Modifier,
     viewModel: PlazaViewModel = koinViewModel()
 ) {
@@ -73,9 +73,9 @@ fun ResourcePlazaContent(
     viewModel: PlazaViewModel,
     isMyResourceMode: Boolean,
     navigateToAppDetail: (String, Long, String) -> Unit,
-    userId: String?, // 新增 userId 参数
-    mode: String, // 新增 mode 参数
-    storeName: String // 新增参数
+    userId: String?, 
+    mode: String, 
+    storeName: String
 ) {
     val selectedAppStore by viewModel.appStore.collectAsStateWithLifecycle()
     val categories by viewModel.categories.collectAsStateWithLifecycle()
@@ -86,7 +86,7 @@ fun ResourcePlazaContent(
     val totalPages by viewModel.totalPages.collectAsStateWithLifecycle()
     val autoScrollMode by viewModel.autoScrollMode.collectAsStateWithLifecycle()
     val errorMessage by viewModel.errorMessage.collectAsStateWithLifecycle()
-    // 新增：从 ViewModel 获取 currentCategoryId
+    // 从 ViewModel 获取 currentCategoryId
     val currentCategoryId by viewModel.currentCategoryId.collectAsStateWithLifecycle()
 
     val isSearchMode by remember(searchState) { derivedStateOf { searchState.isNotEmpty() } }
@@ -137,7 +137,7 @@ fun ResourcePlazaContent(
         }
     }
 
-    // 修改：初始化 ViewModel，传入 storeName
+    // 初始化 ViewModel，传入 storeName
     LaunchedEffect(isMyResourceMode, userId, mode, storeName) {
         viewModel.initialize(isMyResourceMode, userId, mode, storeName)
     }
@@ -148,7 +148,7 @@ fun ResourcePlazaContent(
             .fillMaxSize()
             .padding(horizontal = 8.dp)
     ) {
-        // 修正：仅在非"我的资源"模式且非"查看特定用户"模式下显示商店切换菜单
+        // 仅在非"我的资源"模式且非"查看特定用户"模式下显示商店切换菜单
         // 添加滚动隐藏动画
         AnimatedVisibility(
             visible = showTopAndBottomControls && !isMyResourceMode && !isUserSpecificMode,
@@ -169,7 +169,7 @@ fun ResourcePlazaContent(
 )
         }
 
-        // 修正：仅在非"我的资源"模式且非"查看特定用户"模式下显示搜索框
+        // 仅在非"我的资源"模式且非"查看特定用户"模式下显示搜索框
         if (!isMyResourceMode && !isUserSpecificMode) {
             OutlinedTextField(
                 value = searchQuery,
@@ -205,7 +205,7 @@ fun ResourcePlazaContent(
                 modifier = Modifier.padding(vertical = 8.dp)
             )
         } else {
-            // 修改：只有当 categories 不为空且非"查看特定用户"模式时才显示 CategoryTabs
+            // 只有当 categories 不为空且非"查看特定用户"模式时才显示 CategoryTabs
             if (categories.isNotEmpty() && !isUserSpecificMode) {
                 CategoryTabs(
                     categories = categories,
@@ -297,7 +297,7 @@ fun ResourcePlazaContent(
     }
 }
 
-// 修改：CategoryTabs 接收 selectedCategoryId
+// CategoryTabs 接收 selectedCategoryId
 @Composable
 private fun CategoryTabs(
     categories: List<UnifiedCategory>,

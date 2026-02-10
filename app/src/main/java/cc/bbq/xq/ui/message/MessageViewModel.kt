@@ -21,7 +21,7 @@ import org.koin.android.annotation.KoinViewModel
 import kotlinx.coroutines.Dispatchers
 
 data class MessageState(
-    val messages: List<KtorClient.MessageNotification> = emptyList(), // 使用 KtorClient.MessageNotification
+    val messages: List<KtorClient.MessageNotification> = emptyList(),
     val isLoading: Boolean = false,
     val error: String? = null,
     val currentPage: Int = 1,
@@ -32,14 +32,12 @@ data class MessageState(
 @KoinViewModel
 class MessageViewModel(application: Application) : AndroidViewModel(application) {
     private val _state = MutableStateFlow(MessageState())
-    val state: StateFlow<MessageState> = _state.asStateFlow()
+    val state: StateFlow<MessageState> = _state.asStateFlow()    
     
-    //private val token by lazy { AuthManager.getCredentials(application.applicationContext)?.third }
-    
-    // 修复：使用 ViewModel 的生命周期来管理初始化，而不是 Compose 的重组
+    // 使用 ViewModel 的生命周期来管理初始化，而不是 Compose 的重组
     private var _isInitialized = false
 
-    // 修复：公开的初始化方法，但只在真正需要时加载
+    // 公开的初始化方法，但只在真正需要时加载
     fun initializeIfNeeded(forceRefresh: Boolean = false) {
         if (forceRefresh) {
             _isInitialized = false
@@ -51,7 +49,7 @@ class MessageViewModel(application: Application) : AndroidViewModel(application)
         }
     }
 
-    // 修复：改进的加载逻辑，保持当前页面状态
+    // 改进的加载逻辑，保持当前页面状态
     fun loadPage(page: Int = 1) {
         // 如果已经在加载，则避免重复加载
         if (_state.value.isLoading) {
@@ -79,18 +77,16 @@ class MessageViewModel(application: Application) : AndroidViewModel(application)
                 if (messageNotificationsResult.isSuccess) {
                     messageNotificationsResult.getOrNull()?.let { messageNotificationsResponse ->
                         if (messageNotificationsResponse.code == 1) {
-                            // 修复：移除不必要的安全调用，直接使用 messageNotificationsResponse.data
                             messageNotificationsResponse.data.let { data ->
                                 _state.value = MessageState(
                                     messages = data.list,
                                     currentPage = page,
                                     totalPages = data.pagecount,
                                     isInitialized = true,
-                                    isLoading = false // 修复：加载完成
+                                    isLoading = false 
                                 )
                             }
                         } else {
-                            // 修复：移除不必要的 Elvis 操作符，因为 messageNotificationsResponse.msg 是非空字符串
                             _state.value = _state.value.copy(
                                 error = "加载失败: ${messageNotificationsResponse.msg}",
                                 isLoading = false

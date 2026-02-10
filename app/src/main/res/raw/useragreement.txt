@@ -1,57 +1,104 @@
-### 浊燃 用户协议 19.5(423) —— 请注意自Pyrolysis19.5之后用户协议版本号随用户协议修改时的发行版APK的版本号更新。
+你知道Shared Libraries,被逆向复用的案例吗？有个老傻子平台因为之前smali层api签名参数屡屡被我破解 一气之下迁移到了Native也就是Shared Libraries,哎呀万万没想到开发者这么自信。但是把JNI暴露出来了。甚至函数都没有传上下文都是字符串参数。所以我就直接套进自己的第三方客户端……😂那个开发者还以为我要反汇编cpp🙃你听听他说的“微思CE在3.3版本进行了重大架构调整，因此您必须升级到3.3正式版才能正常使用。
 
-#### 1. 开源协议声明
-**本应用是自由软件**，遵循 **GNU General Public License v3.0 (GPLv3)** 协议发布。这意味着您拥有以下自由：
-- 运行程序的自由，无论出于何种目的
-- 研究程序工作原理并按需修改的自由
-- 重新分发副本的自由
-- 改进程序并向公众发布改进版的自由
+我深知新架构在某些系统上会出问题，但是迫于某些人的压力，我们不得不做出这一艰难决定
 
-完整的GPLv3协议文本可在应用内"关于"页面查看，或访问：http://www.gnu.org/licenses/gpl-3.0.html
+致某些人：微思应用商店永久免费。同时，我们将持续严厉打击抓包/反编译等行为，请好自为之，及时停止此类行为并删除微思应用商店相关代码，否则我们将持续采取严肃措施。为了保障用户体验，CE版不会加入360加固，也希望某些人不要将此作为反编译的把柄！
 
-#### 2. 多平台服务整合
-浊燃 作为第三方客户端，整合了以下平台服务：
-- **小趣空间** (app.xiaoqu.online)
-- **弦-应用商店** (sineshop.xin)
-- **灵应用商店** (ziling.xin)
-- ~~**微思应用商店** (apk.wysteam.cn)~~
+同时在此严正警告：抓包、反编译等行为违反了«反不正当竞争法»（参考最近的BAC律师函事件）我们始终保留起诉的权利。
 
-—— **[重要通知]：由于微思应用商店近期技术升级变更，出于对用户下载体验的负责，本项目自Pyrolysis19.5起，微思应用商店相关功能不再提供支持。
+最后，请从官方渠道下载微思应用商店：apk.wysteam.cn 機型：Qx's Device｜”我之前看smali直接重写逻辑成kt到自己项目里，QX肯定以为我之后看原代码逻辑然后重写😂，smali是因为确实过于简单了。Shared Libraries不拿来用纯sb。我原生开发码龄可比他大呢。他咋知道违反不正当竞争？哥们我不是这个法律的对象。我不是经营者，我只是一个gplv3项目的owner和唯一贡献者。我一看他肯定是急了。所以没有更新破解方案。然后我就直接不再支持，他还得寸进尺以为自己真牛大了。我直接先私有化确保无观察者再把小号变成仓库成员，让小号fork。最后删库。把大小号都设置成私密账号。让他真以为自己牛大了并以为我只会静态分析。他敢在正式的发行版这么做并发布公告说是重大架构足以说明他对这套方案非常自信。你知道CE版什么意思吗？
+CE是指Compose🙄，Compose这东西我去年就开始用了“这是一款全新的微思应用商店！
+厌倦了界面粗糙、性能低下的微思应用商店手表版？是时候让我们推出全新的 微思应用商店-Compose版了！
+在此版本中，我们为您带来了：
+全新布局： 严格遵循 Google Wear OS 官方规范设计。
+视觉升级： 原生支持 Material 3 Expressive 语言，美观灵动。
+完美适配： 针对圆屏像素级优化，完美支持数码表冠/表圈交互。
+丝滑性能： 数百个应用流畅加载不掉帧，动画优雅自然。
+极致轻量： 仅 2MB 安装包，低占用、高速度。
+独家支持： 首发支持 Shizuku 安装器，完美支持 Huawei Watch 3/4。
+请放下心中的成见，和我们共同享受这一场美学与效率的盛宴。”看吧，大惊小怪。shizuku这种东西能说是独家支持，足以说明这个人没有开源精神，但实际上无数的商业软件都建立在开源世界的基础上，他甚至用这种称呼Compose“@跳跳  我已经放弃易了????转向CMP后发现之前用的都是上个世纪的东西，再也回不去了”我之前说他们平台api魔法数字。他还说“@跳跳  微思内部其实有发函的想法，本身也具有发函的条件
+第一就是他抓包逆向证据确凿（甚至版本都是CE）第二就是他自己承认过逆向客户端的事（我们认为不只有下载链接获取使用反编译）第三就是他经常给其他商店扣上莫须有的罪名（例如魔法数字，微思内部有明确的API文档，轮不到他瞎评论）
+但是我们不想为这点小事情折腾那么久
+于是最好的办法是风控旧版本，新版本使用新架构（Native层），并且发帖声明，也算是给他台阶下了吧”6666666666。还具备发函的条件。他们有备案并且是“鱼台微思网络科技工作室（个体工商户）”但你知道他们做了什么吗？我发现他们应用分类的应用列表公然标注一些应用是破解版，甚至有的破解版（国内大厂如mt管理器，西窗烛，作业帮）就是他们自己上传的。根据洁手原则，他们反而是……要我说既自信也傲慢。我就问一个GET https://api.wysteam.cn/market/search/?type=1&key=%E6%B8%B8%E6%88%8F%E5%A8%B1%E4%B9%90这种api不是魔法数字还是什么？实际服务器复用一个端点并根据type的值判断是应用分类还是搜索😂。你跟我说纯计算函数so在系统会有问题？那安卓干脆不存在好了。安卓底层依赖了大量的JNI好吧。就是让用户都去指责我好吧。🙄.class public final Lcom/qx/wysappmarket/presentation/NativeLib;
+.super Ljava/lang/Object;
+.source "r8-map-id-e8cd6f837c4b9ac96fb2466b0f7347e7b3b2bdae16f8b60eac9409f1e2885724"
 
-使用本应用即表示您同意遵守各平台的用户协议和服务条款。我们建议您在使用前阅读各平台的原始用户协议。
 
-#### 3. 数据存储与安全
+# static fields
+.field public static final $stable:I
 
-* ** AES-256-GCM 高强度防护**：您的所有敏感数据（如登录凭证）均通过谷歌出品的 **Tink 加密库** 进行加固存储。
-* **拒绝明文风险**：与某些官方客户端直接在 `SharedPreferences` 存储明文 Token，或在 `data` 目录下以 `pass/user` 等明文文件存储敏感信息的行为不同，浊燃 采用了 Android 推荐的安全存储最佳实践。
-* **主动防御机制**：当网络连接出现异常或检测到环境不安全时，应用会主动触发本地敏感数据清除机制。这并非 Bug，而是为了防止因凭证泄露或过时信息导致的账户风险。
+.field public static final INSTANCE:Lcom/qx/wysappmarket/presentation/NativeLib;
 
-**数据同步**
-- 浏览历史、搜索记录等个人数据仅存储在设备本地
-- 我们不会将您的个人数据同步到第三方服务器
 
-#### 4. 权限说明
-应用申请的必要权限包括：
-- **网络访问**：用于与各平台API通信
-- **存储权限**：用于应用下载、图片缓存等功能的正常工作
-- **请求安装**：用于调用系统软件包程序安装下载下来的应用
+# direct methods
+.method static constructor <clinit>()V
+    .registers 1
 
-#### 4. 碎碎念
+    .line 1
+    new-instance v0, Lcom/qx/wysappmarket/presentation/NativeLib;
 
-**且用且珍惜，开发者不是你的客服**
-您应当清楚，使用第三方客户端本质上是一种**“极客行为”**。官方平台的封杀是常态。
+    .line 3
+    invoke-direct {v0}, Lcom/qx/wysappmarket/presentation/NativeLib;-><init>()V
 
-* **非商业声明**：浊燃 是一个非盈利、非商业的 GPLv3 项目。请不要用评价商业产品的傲慢态度来审视开发者的义务劳动。
-* **质疑 Bug 的艺术**：编写代码是一项极高强度的脑力劳动，开发者总在追求极致的逻辑闭环。当你认为发现 Bug 时，请优先自省。除非你能提供**回归测试用例**或**源代码补丁**，否则请避免动辄使用“XX 功能坏了”这种标题党言论。
-* **沟通的礼仪**：即使你确信代码有误，提问时请保持谦逊。将问题描述得像是“你可能漏掉了某种环境配置”，远比直接质疑开发者的能力更有效。如果真是 Bug，维护者的致歉会比你吵赢一架更有尊严。
+    .line 6
+    sput-object v0, Lcom/qx/wysappmarket/presentation/NativeLib;->INSTANCE:Lcom/qx/wysappmarket/presentation/NativeLib;
 
-**收起低声下气，带上你的大脑**
+    .line 8
+    const-string v0, "wysappmarket"
 
-* **拒绝原始灵长类的把戏**：别用“我只是个失败的小白，求大佬...”这种话术来掩盖你没做功课的懒惰。这种自卑式的表达并不能加快解决问题的速度，反而会让开发者反感。
-* **高效沟通模板**：请清晰、冷静、客观地描述背景条件、操作步骤、预期结果与实际表现。尊重开发者的逻辑思维，是获得帮助最快的途径。
+    .line 10
+    invoke-static {v0}, Ljava/lang/System;->loadLibrary(Ljava/lang/String;)V
 
-#### 5. 免责声明与风险告知
+    .line 13
+    return-void
+.end method
 
-* **非官方性**：浊燃 与文中提及的所有官方平台均无雇佣、隶属或合作关系。
-* **版权归属**：各平台分发的资源版权归原作者所有。浊燃 仅作为流量聚合工具，不承担内容审查及安全担保责任。
-* **服务中断**：因官方平台技术对抗导致的特定功能失效属于不可抗力。
+.method private constructor <init>()V
+    .registers 1
+
+    .line 1
+    invoke-direct {p0}, Ljava/lang/Object;-><init>()V
+
+    .line 4
+    return-void
+.end method
+
+
+# virtual methods
+.method public final native decodeSecureNative(Ljava/lang/String;)Ljava/lang/String;
+.end method
+
+.method public final native decryptTokenNative(Ljava/lang/String;)Ljava/lang/String;
+.end method
+
+.method public final native encryptTokenNative(Ljava/lang/String;)Ljava/lang/String;
+.end method
+
+.method public final native getAppDownloadUrlNative(Ljava/lang/String;ILjava/lang/String;Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;
+.end method
+
+.method public final native getLoginUrlNative(Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;
+.end method
+
+.method public final native getLogoutUrlNative(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;
+.end method
+
+.method public final native getStartupUrlNative(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;
+.end method
+
+.method public final native hashsha256Native(Ljava/lang/String;)Ljava/lang/String;
+.end method
+你知道我几岁吗？我2011年3月25日。我的技术都比琴弦这个年龄比我大的人高超🙃我打算过几周去相关权利人如mt，西窗烛举报（我已经录制从桌面进入商店并在应用分类中找到那几个破解版应用最后到关于页面转一圈证明上传者和开发团队“同名”的一镜到底视频）琴弦只是负责客户端开发。但我敢说从api来看微思是半吊子团队。琴弦的ui越是精美，视频越是不可能恶意剪辑。并且微思很聪明给应用截图都打上了水印。你不就是喜欢拿法律说事吗？你觉得要举报吗？其实让他们被mt搞掉很讽刺因为他们封杀逆向者但被逆向者的工具方搞没了。666虽然mt2.cn官网没写。但mt管理器内里面有些“Bin出品:921558445@qq.com”因为反正是微思自己做死，有备案号还敢公然分发破解版应用。并且mt破解版的下载量已达6700，已经是可观的数据虽然这个2.14.5破解版流传很广，但你觉得Bin会允许一个在国内法律上有明确实体的平台公然分发他的应用的破解版吗？微思你既然要严肃我看你分发不太严肃啊，那你就不要嬉皮笑脸了。但我在想直接发给Bin的QQ邮箱这对吗？不过我想Bin在应用内部写这个邮箱想必早就预料到了一些事情，并且这不是明写着就是公开的邮箱嘛。微思之前让我在24小时删除项目中有关于他们的代码，我们没有保留其他应用商店的代码，我直接删库这叫一视同仁，满足了他们的条件是事实和解。现在洁净之手在我这边。并且他们的违法行为是自找的。我甚至不需要发应用截图因为微思有分享链接功能“为你推荐一个好应用：MT管理器Vip
+下载地址：https://apk.wysteam.cn/app/?id=280
+复制到微思应用商店-Compose版，可直接打开”😄这可比截图什么的有效多了。因为除了不能下载应用会引导用户去下载微思CE，信息都齐全了。就算bin点了下载那么也是顺路的事情。
+这是我之前通过微思官网提供的链接查到的信息:“网站主域名：wysteam.cn
+从域名：无
+主体类型：企业单位
+网站类别：非交互式
+网站所有者基本情况
+开办者名称：鱼台微思网络科技工作室（个体工商户）
+公安备案号：鲁公网安备37082702000251号
+备案地公安机关：鱼台县公安局网安大队
+联网备案时间：2025-09-01”但是我不想发视频，因为视频有100mb大🙃可能发截图也行。我发现他们还有论坛
+https://bbs.wysteam.cn/
+并且有社区。因为这论坛明明是个二级域名对得上备案所以他们不是非交互式

@@ -35,14 +35,11 @@ import kotlinx.coroutines.launch
 import androidx.compose.ui.res.stringResource
 import cc.bbq.xq.R
 
-// 移除错误的导入，因为 BrowseHistory 已经在同一个包中
-// import cc.bbq.xq.data.db.BrowseHistory // 这行是错误的，应该删除
-
 @Composable
 fun BrowseHistoryScreen(
     viewModel: BrowseHistoryViewModel = viewModel(),
     onPostClick: (Long) -> Unit,
-    @Suppress("UNUSED_PARAMETER") snackbarHostState: SnackbarHostState, // fixed: mark as unused
+    @Suppress("UNUSED_PARAMETER") snackbarHostState: SnackbarHostState, 
     modifier: Modifier = Modifier
 ) {
     val history by viewModel.historyList.collectAsState()
@@ -58,10 +55,6 @@ fun BrowseHistoryScreen(
             val clip = ClipData.newPlainText("BBQ History Links", textToCopy)
             clipboard.setPrimaryClip(clip)
             scope.launch {
-                // snackbarHostState.showSnackbar( // fixed: snackbarHostState is used here
-                //     message = context.getString(R.string.copied_links_count, count),
-                //     duration = SnackbarDuration.Short
-                // )
             }
         }
     }
@@ -84,7 +77,6 @@ fun BrowseHistoryScreen(
                     HistoryListItem(
                         history = item,
                         isSelected = isSelected,
-                        // snackbarHostState = snackbarHostState, //fixed: remove unused parameter
                         isSelectionMode = isSelectionMode,
                         onToggleSelection = { viewModel.toggleSelection(item.postId) },
                         onStartSelection = { viewModel.startSelectionMode(item.postId) },
@@ -99,7 +91,6 @@ fun BrowseHistoryScreen(
             SelectionActionFABs(
                 onDelete = { viewModel.deleteSelected() },
                 onCopy = { viewModel.copyShareLinks() },
-                // snackbarHostState = snackbarHostState, //fixed: remove unused parameter
                 modifier = Modifier
                     .align(Alignment.BottomEnd)
                     .padding(16.dp)
@@ -109,7 +100,6 @@ fun BrowseHistoryScreen(
 
     // 选择模式下的顶部应用栏状态管理
     LaunchedEffect(isSelectionMode, selectedCount) {
-        // 这里可以添加逻辑来更新 MainActivity 的标题状态
     }
 }
 
@@ -117,7 +107,6 @@ fun BrowseHistoryScreen(
 private fun SelectionActionFABs(
     onDelete: () -> Unit,
     onCopy: () -> Unit,
-    // snackbarHostState: SnackbarHostState, //fixed: remove unused parameter
     modifier: Modifier = Modifier
 ) {
     Column(
@@ -143,13 +132,12 @@ private fun SelectionActionFABs(
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 private fun HistoryListItem(
-    history: BrowseHistory, // 现在使用同一包中的 BrowseHistory
+    history: BrowseHistory,
     isSelected: Boolean,
     isSelectionMode: Boolean,
     onToggleSelection: () -> Unit,
     onStartSelection: () -> Unit,
-    onPostClick: (Long) -> Unit,
-    // snackbarHostState: SnackbarHostState, //fixed: remove unused parameter
+    onPostClick: (Long) -> Unit   
 ) {
     val backgroundColor = if (isSelected) {
         MaterialTheme.colorScheme.primary.copy(alpha = 0.2f)

@@ -26,20 +26,17 @@ import kotlinx.coroutines.launch
 
 @Composable
 fun <T> BaseListScreen(
-//    title: String,
     items: List<T>,
     isLoading: Boolean,
     error: String?,
     currentPage: Int,
     totalPages: Int,
-  //  onBackClick: () -> Unit,
     onRetry: () -> Unit,
     onLoadMore: () -> Unit,
     emptyMessage: String,
-    // 移除 actions 参数，因为不再有 TopAppBar
     itemContent: @Composable (T) -> Unit,
     autoLoadMode: Boolean = false,
-    modifier: Modifier = Modifier // 新增：接收外部 modifier
+    modifier: Modifier = Modifier
 ) {
     val snackbarHostState = remember { SnackbarHostState() }
     val coroutineScope = rememberCoroutineScope()
@@ -61,7 +58,6 @@ fun <T> BaseListScreen(
         }
     }
     
-    // 移除 Scaffold 包装，直接使用 Box
     Box(
         modifier = modifier
             .fillMaxSize()
@@ -102,7 +98,6 @@ fun <T> BaseListScreen(
     }
 }
 
-// 其他内部 Composable 函数保持不变...
 @Composable
 private fun LoadingIndicator() {
     Box(

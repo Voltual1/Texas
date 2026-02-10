@@ -65,7 +65,6 @@ fun LogScreen(
             val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
             val clip = ClipData.newPlainText("QUBOT Logs", textToCopy)
             clipboard.setPrimaryClip(clip)
-            //Toast.makeText(context, "已复制 $count 条日志", Toast.LENGTH_SHORT).show()
             coroutineScope.launch {
                 snackbarHostState.showSnackbar(
                     message = context.getString(R.string.copied_logs, count),
@@ -75,7 +74,6 @@ fun LogScreen(
         }
     }
 
-    // 移除 Scaffold 包装，直接使用 Box
     Box(
         modifier = modifier.fillMaxSize()
     ) {
@@ -198,7 +196,6 @@ fun LogScreen(
     }
 }
 
-// 将 SelectionTopBar 移到文件级别，移除 private 修饰符
 @Composable
 fun SelectionTopBar(
     selectedCount: Int,
@@ -257,7 +254,6 @@ fun SelectionTopBar(
     }
 }
 
-// 将 LogListItem 移到文件级别，移除 private 修饰符
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun LogListItem(

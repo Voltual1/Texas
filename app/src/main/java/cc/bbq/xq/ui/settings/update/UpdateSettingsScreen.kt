@@ -17,14 +17,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import cc.bbq.xq.ui.theme.SwitchWithText // 添加正确的导入路径
+import cc.bbq.xq.ui.theme.SwitchWithText 
 import kotlinx.coroutines.launch
 import cc.bbq.xq.data.UpdateInfo
 import cc.bbq.xq.ui.compose.UpdateDialog
 import cc.bbq.xq.util.UpdateCheckResult
 import cc.bbq.xq.R
 import androidx.compose.ui.res.stringResource
-import cc.bbq.xq.util.UpdateChecker // 导入 UpdateChecker
+import cc.bbq.xq.util.UpdateChecker
 
 @Composable
 fun UpdateSettingsScreen(

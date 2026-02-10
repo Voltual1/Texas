@@ -14,11 +14,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
-// 移除 MD2 的 ExperimentalMaterialApi 和 pullrefresh 导入
-// import androidx.compose.material.ExperimentalMaterialApi
-// import androidx.compose.material.pullrefresh.PullRefreshIndicator
-// import androidx.compose.material.pullrefresh.pullRefresh
-// import androidx.compose.material.pullrefresh.rememberPullRefreshState
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -36,14 +31,11 @@ import cc.bbq.xq.ui.user.UserListViewModel
 import coil3.compose.AsyncImage
 import coil3.request.ImageRequest
 import androidx.lifecycle.viewmodel.compose.viewModel
-// 添加 MD3 pullrefresh 导入
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
-// 导入我们自定义的指示器
+// 导入自定义的指示器
 import cc.bbq.xq.ui.theme.BBQPullRefreshIndicator
 
-// 移除 @ExperimentalMaterialApi 注解
-// @OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun UserListScreen(
     users: List<KtorClient.UserItem>,
@@ -85,7 +77,7 @@ fun UserListScreen(
                 state = pullRefreshState,
                 isRefreshing = isRefreshing,
                 modifier = Modifier.align(Alignment.TopCenter)
-                // 颜色和形状将使用我们在 Components.kt 中定义的默认值（语义颜色）
+                // 颜色和形状将使用在 Components.kt 中定义的默认值（语义颜色）
             )
         },
         modifier = modifier.fillMaxSize()
@@ -122,7 +114,7 @@ fun UserListScreen(
                 }
             }
         }
-    } // End PullToRefreshBox
+    } 
 }
 
 @Composable
@@ -164,7 +156,6 @@ private fun SafeLazyColumn(
             items = users,
             key = { index, user -> user.id }
         ) { index, user ->
-            // fixed: remove unnecessary elvis operator
             StableUserListItem(user = user, onClick = { onUserClick(user.id) })
 
             if (index < users.size - 1) {

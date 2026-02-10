@@ -81,7 +81,6 @@ class FollowingPostsViewModel(private val context: Context) : ViewModel() {
                 if (followingPostsResult.isSuccess) {
                     followingPostsResult.getOrNull()?.let { followingPostsResponse ->
                         if (followingPostsResponse.code == 1) {
-                            // 修复：直接访问 data，因为它是非空类型
                             val data = followingPostsResponse.data
                             _totalPages.value = data.pagecount
                             val newPosts = if (currentPage == 1) {
@@ -96,7 +95,6 @@ class FollowingPostsViewModel(private val context: Context) : ViewModel() {
                             _posts.value = distinctPosts
                             _errorMessage.value = ""
                         } else {
-                            // 修复：正确处理非空字符串
                             _errorMessage.value = "加载失败: ${if (followingPostsResponse.msg.isNotEmpty()) followingPostsResponse.msg else "未知错误"}"
                         }
                     } ?: run {

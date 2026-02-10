@@ -1,4 +1,3 @@
-// File: /app/src/main/java/cc/bbq/xq/ui/auth/LoginViewModel.kt
 //Copyright (C) 2025 Voltual
 // 本程序是自由软件：你可以根据自由软件基金会发布的 GNU 通用公共许可证第3版
 //（或任意更新的版本）的条款重新分发和/或修改它。
@@ -22,7 +21,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.Flow
 import org.koin.android.annotation.KoinViewModel
-import cc.bbq.xq.LingMarketClient // 确保导入
+import cc.bbq.xq.LingMarketClient 
 
 @KoinViewModel
 class LoginViewModel(
@@ -85,7 +84,7 @@ class LoginViewModel(
                 AppStore.XIAOQU_SPACE -> loginXiaoqu()
                 AppStore.SIENE_SHOP -> loginSineShop()
                 AppStore.SINE_OPEN_MARKET -> loginSineOpenMarket()
-                AppStore.LING_MARKET -> loginLingMarket() // 新增灵应用商店
+                AppStore.LING_MARKET -> loginLingMarket() 
                 else -> {
                     _errorMessage.value = "不支持登录"
                 }
@@ -150,10 +149,8 @@ private suspend fun loginLingMarket() {
         
         if (loginResult.isSuccess) {
             val response = loginResult.getOrNull()
-            // 根据抓包：成功时 code 为 null 或 200/201
             if (response != null && response.isSuccess && response.token != null) {
                 val context: Application = getApplication()
-                // 调用之前在 AuthManager 中新增的保存方法
                 AuthManager.saveLingMarketToken(context, response.token)
                 _loginSuccess.value = true
             } else {

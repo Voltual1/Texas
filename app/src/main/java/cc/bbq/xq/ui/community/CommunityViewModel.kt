@@ -74,7 +74,6 @@ class CommunityViewModel : ViewModel() {
                 if (postsResult.isSuccess) {
                     postsResult.getOrNull()?.let { postsResponse ->
                         if (postsResponse.code == 1) {
-                            // 修复：直接访问 data，因为它是非空类型
                             val data = postsResponse.data
                             _totalPages.value = data.pagecount
                             val newPosts = if (currentPage == 1) {
@@ -89,7 +88,6 @@ class CommunityViewModel : ViewModel() {
                             _posts.value = distinctPosts
                             _errorMessage.value = ""
                         } else {
-                            // 修复：正确处理非空字符串
                             _errorMessage.value = "加载失败: ${if (postsResponse.msg.isNotEmpty()) postsResponse.msg else "未知错误"}"
                         }
                     } ?: run {

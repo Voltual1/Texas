@@ -1,4 +1,3 @@
-// /app/src/main/java/cc/bbq/xq/ui/user/UserDetailViewModel.kt
 //Copyright (C) 2025 Voltual
 // 本程序是自由软件：你可以根据自由软件基金会发布的 GNU 通用公共许可证第3版
 //（或任意更新的版本）的条款重新分发和/或修改它。
@@ -20,7 +19,7 @@ import cc.bbq.xq.AuthManager
 import cc.bbq.xq.KtorClient
 import cc.bbq.xq.SineShopClient
 import cc.bbq.xq.BBQApplication
-import cc.bbq.xq.data.unified.UnifiedUserDetail  // 新增：统一用户详情模型
+import cc.bbq.xq.data.unified.UnifiedUserDetail 
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.flow.*
 import org.koin.android.annotation.KoinViewModel
@@ -79,7 +78,7 @@ class UserDetailViewModel(application: Application) : AndroidViewModel(applicati
     }
 }
         
-    // 新增：关注用户
+    // 关注用户
     fun followUser(targetUserId: Long) {
         viewModelScope.launch {
             _isLoading.value = true

@@ -79,14 +79,14 @@ val REFUND_REASONS = listOf(
 @Composable
 fun PostCreateScreen(
     viewModel: PostCreateViewModel,
-    navController: NavController, // 添加 NavController 参数
+    navController: NavController, 
     onBackClick: () -> Unit,
     mode: String,
     refundAppName: String,
     refundAppId: Long,
     refundVersionId: Long,
     refundPayMoney: Int,
-    snackbarHostState: SnackbarHostState, // 添加 SnackbarHostState 参数
+    snackbarHostState: SnackbarHostState,
     modifier: Modifier = Modifier
 ) {
     val isRefundMode = mode == MODE_REFUND
@@ -162,12 +162,11 @@ fun PostCreateScreen(
     val imagePickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.StartActivityForResult()
     ) { result ->
-        if (result.resultCode == Activity.RESULT_OK) { // 修正
-            result.data?.data?.let { uri -> // 修正
+        if (result.resultCode == Activity.RESULT_OK) { 
+            result.data?.data?.let { uri ->
                 if (uiState.imageUriToUrlMap.size < 2) {
                     viewModel.uploadImage(uri)
                 } else {
-                   // android.widget.Toast.makeText(context, "最多只能上传两张图片", android.widget.Toast.LENGTH_SHORT).show()
                 }
             }
         }
@@ -380,12 +379,8 @@ fun PostCreateScreen(
         Button(
             onClick = {
                 if (uiState.title.isBlank()) {
-                    //android.widget.Toast.makeText(context, "请填写标题", android.widget.Toast.LENGTH_SHORT).show()
                 } else if (uiState.content.isBlank()) {
-            //        val message = if (isRefundMode) "请详细描述问题" else "请填写内容"
-                   // android.widget.Toast.makeText(context, message, android.widget.Toast.LENGTH_SHORT).show()
                 } else if (isRefundMode && uiState.content.length < 12) {
-                    //android.widget.Toast.makeText(context, "问题描述不能少于12个字", android.widget.Toast.LENGTH_SHORT).show()
                 } else {
                     // 合并图片URL
                     val uploadedUrlsList = uiState.imageUrls.split(",").filter { it.isNotBlank() }

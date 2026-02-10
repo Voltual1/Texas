@@ -20,19 +20,16 @@ import cc.bbq.xq.ui.compose.BillingItem
 @Composable
 fun BillingScreen(
     viewModel: BillingViewModel,
- //   onBackClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val state by viewModel.state.collectAsState()
     
     BaseListScreen(
-   //     title = "我的账单", // 这个参数现在在 BaseListScreen 中不再用于 TopAppBar，但保留以备其他用途
         items = state.billings,
         isLoading = state.isLoading,
         error = state.error,
         currentPage = state.currentPage,
         totalPages = state.totalPages,
- //       onBackClick = onBackClick, // 这个回调现在需要由父级处理
         onRetry = { viewModel.loadBilling() },
         onLoadMore = { viewModel.loadNextPage() },
         emptyMessage = "暂无账单记录",
@@ -40,6 +37,6 @@ fun BillingScreen(
             BillingItem(billing = billing)
         },
         autoLoadMode = true,
-        modifier = modifier // 传递 modifier
+        modifier = modifier 
     )
 }

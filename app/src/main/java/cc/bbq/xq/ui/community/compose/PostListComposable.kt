@@ -31,8 +31,7 @@ fun PostListComposable(
     onItemClick: (KtorClient.Post) -> Unit,
     onLoadMore: () -> Unit,
     modifier: Modifier = Modifier,
-    // 新增 isRefreshing 参数
-    isRefreshing: Boolean = false // <<<--- 新增参数，默认值为 false 以保持向后兼容
+    isRefreshing: Boolean = false 
 ) {
     val listState = rememberLazyListState()
     val shouldLoadMore = remember {
@@ -66,7 +65,7 @@ fun PostListComposable(
         }
         // 在列表底部显示加载更多指示器
         // 修改条件：只有在非刷新状态下且正在加载时才显示
-        if (isLoading && posts.isNotEmpty() && !isRefreshing) { // <<<--- 修改条件，添加 && !isRefreshing
+        if (isLoading && posts.isNotEmpty() && !isRefreshing) {
             CircularProgressIndicator(
                 modifier = Modifier
                     .align(Alignment.BottomCenter)

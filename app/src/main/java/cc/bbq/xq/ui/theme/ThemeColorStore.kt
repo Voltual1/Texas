@@ -324,10 +324,10 @@ object ThemeColorStore {
         return context.themeSettingsDataStore.data.map { it[IMAGE_THEME_DARK_URI_KEY] }
     }
 
-    // 新增：是否启用自定义 DPI 的 DataStore 键
+    // 是否启用自定义 DPI 的 DataStore 键
     private val CUSTOM_DPI_ENABLED_KEY = booleanPreferencesKey("custom_dpi_enabled")
 
-    // 新增：圆屏相关 DataStore 键
+    // 圆屏相关 DataStore 键
     private val ROUND_SCREEN_ENABLED_KEY = booleanPreferencesKey("round_screen_enabled")
     private val ROUND_SCREEN_LEFT_PADDING_KEY = floatPreferencesKey("round_screen_left_padding")
     private val ROUND_SCREEN_TOP_PADDING_KEY = floatPreferencesKey("round_screen_top_padding")
@@ -399,17 +399,17 @@ object ThemeColorStore {
     }
 
 
-    // 新增：保存是否启用自定义 DPI 的偏好
+    // 保存是否启用自定义 DPI 的偏好
     suspend fun saveCustomDpiEnabled(context: Context, enabled: Boolean) {
         context.themeSettingsDataStore.edit { it[CUSTOM_DPI_ENABLED_KEY] = enabled }
     }
 
-    // 新增：获取是否启用自定义 DPI 的 Flow
+    // 获取是否启用自定义 DPI 的 Flow
     fun getCustomDpiEnabledFlow(context: Context): Flow<Boolean> {
         return context.themeSettingsDataStore.data.map { it[CUSTOM_DPI_ENABLED_KEY] ?: false }
     }
 
-    // 新增：同步加载是否启用自定义 DPI 的偏好
+    // 同步加载是否启用自定义 DPI 的偏好
     fun loadCustomDpiEnabled(context: Context): Boolean {
         return runBlocking { context.themeSettingsDataStore.data.first()[CUSTOM_DPI_ENABLED_KEY] ?: false }
     }

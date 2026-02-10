@@ -1,13 +1,21 @@
+//Copyright (C) 2025 Voltual
+// 本程序是自由软件：你可以根据自由软件基金会发布的 GNU 通用公共许可证第3版
+//（或任意更新的版本）的条款重新分发和/或修改它。
+//本程序是基于希望它有用而分发的，但没有任何担保；甚至没有适销性或特定用途适用性的隐含担保。
+// 有关更多细节，请参阅 GNU 通用公共许可证。
+//
+// 你应该已经收到了一份 GNU 通用公共许可证的副本
+// 如果没有，请查阅 <http://www.gnu.org/licenses/>.
 package cc.bbq.xq.ui.home
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
-import androidx.compose.foundation.layout.fillMaxSize // 新增：导入 fillMaxSize 扩展函数
+import androidx.compose.foundation.layout.fillMaxSize 
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.Modifier // 新增导入
+import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import cc.bbq.xq.AppStore
@@ -22,8 +30,6 @@ import cc.bbq.xq.R
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import cc.bbq.xq.SineShopClient
-import cc.bbq.xq.ui.Update // 导入 Update 导航目标
-import cc.bbq.xq.ui.MyComments // 导入 MyComments 导航目标
 
 @Composable
 fun HomeDestination(
@@ -108,11 +114,10 @@ fun HomeDestination(
             ),
             sineShopUserInfo = uiState.sineShopUserInfo,
             sineShopLoginPrompt = uiState.sineShopLoginPrompt,
-                        // 新增：灵应用商店用户信息和登录提示
             lingMarketUserInfo = uiState.lingMarketUserInfo,
             lingMarketLoginPrompt = uiState.lingMarketLoginPrompt,
             onSineShopLoginClick = onSineShopLoginClick,
-                        onLingMarketLoginClick = onLingMarketLoginClick, // 新增：灵应用商店登录点击
+                        onLingMarketLoginClick = onLingMarketLoginClick,
             onPaymentCenterClick = { navController.navigate(PaymentCenterAdvanced.route) },
             onAvatarClick = onAvatarClick,
             onAvatarLongClick = onAvatarLongClick,
@@ -153,8 +158,8 @@ onPostsClick = {
             onAboutClick = { navController.navigate(About.route) },
             onAccountProfileClick = { navController.navigate(AccountProfile.createRoute(AppStore.XIAOQU_SPACE)) },
             onRecalculateDays = { viewModel.recalculateDaysDiff() },
-            onNavigateToUpdate = { navController.navigate(Update.route) }, // 传递导航回调
-            onNavigateToMyReviews = { navController.navigate(MyReviews.route) }, // 新增：传递导航回调
+            onNavigateToUpdate = { navController.navigate(Update.route) },
+            onNavigateToMyReviews = { navController.navigate(MyReviews.route) }, 
             onNavigateToMyComments = {navController.navigate(MyComments.route)},
             onNavigateToCreateAppRelease = {navController.navigate(CreateAppRelease.route)},
             modifier = Modifier.fillMaxSize(), 

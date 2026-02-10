@@ -58,13 +58,13 @@ fun SearchScreen(
     val totalPages by viewModel.totalPages.collectAsState()
     val hasMoreData by viewModel.hasMoreData.collectAsState()
     
-    // 新增：用户筛选相关状态（多个用户）
+    // 用户筛选相关状态（多个用户）
     val allUserFilters by viewModel.allUserFilters.collectAsState()
     val activeNickname by viewModel.activeNickname.collectAsState()
     val activeUserId by viewModel.activeUserId.collectAsState()
     val isUserFilterMode by viewModel.isUserFilterMode.collectAsState()
 
-    // 新增：跳页对话框状态
+    // 跳页对话框状态
     var showJumpDialog by remember { mutableStateOf(false) }
     var inputPage by remember { mutableStateOf("") }
 
@@ -154,14 +154,14 @@ fun SearchScreen(
         onJumpClick = { showJumpDialog = true
             inputPage = "" },
         focusRequester = focusRequester,
-        allUserFilters = allUserFilters, // 新增参数：所有用户
-        activeUserId = activeUserId, // 新增参数：当前激活用户ID
-        activeNickname = activeNickname, // 新增参数：当前激活用户昵称
-        isUserFilterMode = isUserFilterMode, // 新增参数
-        onSetActiveFilter = viewModel::setActiveUserFilter, // 新增回调：设置激活用户
-        onRemoveFilter = viewModel::removeUserFilter, // 新增回调：移除用户
-        onClearAllFilters = viewModel::clearAllUserFilters, // 新增回调：清除所有用户
-        onClearFilter = viewModel::clearUserFilter, // 新增回调：清除激活状态
+        allUserFilters = allUserFilters, // 所有用户
+        activeUserId = activeUserId, // 当前激活用户ID
+        activeNickname = activeNickname, // 当前激活用户昵称
+        isUserFilterMode = isUserFilterMode, 
+        onSetActiveFilter = viewModel::setActiveUserFilter, // 回调：设置激活用户
+        onRemoveFilter = viewModel::removeUserFilter, // 回调：移除用户
+        onClearAllFilters = viewModel::clearAllUserFilters, // 回调：清除所有用户
+        onClearFilter = viewModel::clearUserFilter, // 回调：清除激活状态
         modifier = Modifier
             .fillMaxWidth()
             .padding(16.dp)
@@ -250,18 +250,18 @@ private fun SearchHeader(
     onModeChange: (SearchMode) -> Unit,
     onJumpClick: () -> Unit,
     focusRequester: FocusRequester,
-    allUserFilters: Map<Long, String>,  // 新增参数：所有用户筛选信息
-    activeUserId: Long?,  // 新增参数：当前激活用户ID
-    activeNickname: String?,  // 新增参数：当前激活用户昵称
-    isUserFilterMode: Boolean,  // 新增参数
-    onSetActiveFilter: (Long?) -> Unit,  // 新增回调：设置激活用户
-    onRemoveFilter: (Long) -> Unit,  // 新增回调：移除用户
-    onClearAllFilters: () -> Unit,  // 新增回调：清除所有用户
-    onClearFilter: () -> Unit,  // 新增回调：清除激活状态
+    allUserFilters: Map<Long, String>,  // 所有用户筛选信息
+    activeUserId: Long?,  // 当前激活用户ID
+    activeNickname: String?,  // 当前激活用户昵称
+    isUserFilterMode: Boolean,  
+    onSetActiveFilter: (Long?) -> Unit,  // 设置激活用户
+    onRemoveFilter: (Long) -> Unit,  // 移除用户
+    onClearAllFilters: () -> Unit,  // 清除所有用户
+    onClearFilter: () -> Unit,  // 清除激活状态
     modifier: Modifier = Modifier
 ) {
     var showModeMenu by remember { mutableStateOf(false) }
-    var showFilterMenu by remember { mutableStateOf(false) }  // 新增：筛选菜单状态
+    var showFilterMenu by remember { mutableStateOf(false) }  // 筛选菜单状态
     
     Column(modifier = modifier) {
         // 第一行：模式选择和用户筛选指示器

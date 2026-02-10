@@ -46,7 +46,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope // 添加导入
+import androidx.compose.runtime.rememberCoroutineScope 
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -74,20 +74,16 @@ import androidx.navigation.NavController
 import androidx.compose.foundation.pager.rememberPagerState
 import kotlinx.coroutines.launch
 import cc.bbq.xq.SineShopClient
-import cc.bbq.xq.ui.Update // 导入 Update 导航目标
-import cc.bbq.xq.ui.MyComments // 导入 MyComments 导航目标
 
-// 修改 HomeScreen.kt 中 HomeScreen 函数的参数列表
 @Composable
 fun HomeScreen(
     state: HomeState,
     sineShopUserInfo: SineShopClient.SineShopUserInfo?,
     sineShopLoginPrompt: Boolean,
-    // 新增：灵应用商店参数
     lingMarketUserInfo: LingMarketClient.LingMarketUser?,
-    lingMarketLoginPrompt: Boolean, // 新增：灵应用商店登录提示状态
+    lingMarketLoginPrompt: Boolean, 
     onSineShopLoginClick: () -> Unit,
-    onLingMarketLoginClick: () -> Unit, // 新增：灵应用商店登录点击
+    onLingMarketLoginClick: () -> Unit,
     onAvatarClick: () -> Unit,
     onAvatarLongClick: () -> Unit,
     onMessageCenterClick: () -> Unit,
@@ -187,7 +183,6 @@ onNavigateToResourcePlaza = { mode, targetStoreName -> //  这里接收两个参
                 }
             }
             2 -> {
-                // 新增：灵应用商店个人主页
                 if (lingMarketLoginPrompt) {
                     LingMarketLoginPrompt(onLingMarketLoginClick = onLingMarketLoginClick)
                 } else {
@@ -202,7 +197,6 @@ onNavigateToResourcePlaza = { mode, targetStoreName -> //  这里接收两个参
     }
 }
 
-// 新增：灵应用商店登录提示
 @Composable
 fun LingMarketLoginPrompt(onLingMarketLoginClick: () -> Unit) {
     Column(
@@ -246,9 +240,9 @@ fun XiaoquSpaceHomePage(
     onPaymentCenterClick: () -> Unit,
     onSignClick: () -> Unit,
     onRecalculateDays: () -> Unit,
-    onAboutClick: () -> Unit, // 添加onAboutClick参数
-    onAccountProfileClick: () -> Unit, // 新增“账号资料”点击事件
-    onSineShopLoginClick: () -> Unit, // 新增参数
+    onAboutClick: () -> Unit, 
+    onAccountProfileClick: () -> Unit, 
+    onSineShopLoginClick: () -> Unit, 
     modifier: Modifier = Modifier,
     viewModel: HomeViewModel,
     snackbarHostState: SnackbarHostState
@@ -286,8 +280,8 @@ fun XiaoquSpaceHomePage(
                     onSettingsClick = onSettingsClick,
                     onMyResourcesClick = onMyResourcesClick,
                     onBillingClick = onBillingClick,
-                    onAboutClick = onAboutClick, // 传递新参数
-                    onAccountProfileClick = onAccountProfileClick, // 传递“账号资料”点击事件
+                    onAboutClick = onAboutClick, 
+                    onAccountProfileClick = onAccountProfileClick,
                     state = state,
                     onSignClick = onSignClick,
                     onRecalculateDays = onRecalculateDays,
@@ -559,8 +553,8 @@ private fun FunctionCardSection(
     onSettingsClick: () -> Unit,
     onBillingClick: () -> Unit,
     onPaymentCenterClick: () -> Unit,
-    onAboutClick: () -> Unit, // 添加onAboutClick参数
-    onAccountProfileClick: () -> Unit, // 新增“账号资料”点击事件
+    onAboutClick: () -> Unit, 
+    onAccountProfileClick: () -> Unit, 
     state: HomeState,
     onSignClick: () -> Unit,
     onRecalculateDays: () -> Unit,
@@ -667,7 +661,6 @@ private fun FunctionCardSection(
 
             Divider()
 
-            // 新增“账号资料”选项
             FunctionItem(
                 icon = Icons.Filled.Person, // 使用 Material 图标
                 label = "账号资料",
@@ -770,9 +763,8 @@ data class HomeState(
     val fansCount: String = "0",
     val postsCount: String = "0",
     val likesCount: String = "0",
-    // 添加签到相关状态
     val seriesDays: Int = 0,
-    val signToday: Boolean = false, // 添加今日签到状态
+    val signToday: Boolean = false,
     val signStatusMessage: String? = null,
     val exp: Int = 0,
     val displayDaysDiff: Int = 0

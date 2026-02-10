@@ -39,11 +39,6 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import coil3.compose.AsyncImage
 import kotlinx.coroutines.launch
-// 移除 MD2 的 ExperimentalMaterialApi 和 pullrefresh 导入
-// import androidx.compose.material.ExperimentalMaterialApi
-// import androidx.compose.material.pullrefresh.PullRefreshIndicator
-// import androidx.compose.material.pullrefresh.pullRefresh
-// import androidx.compose.material.pullrefresh.rememberPullRefreshState
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
@@ -57,20 +52,16 @@ import cc.bbq.xq.ui.theme.AppShapes
 import cc.bbq.xq.ui.theme.BBQButton
 import cc.bbq.xq.ui.theme.BBQCard
 import cc.bbq.xq.ui.theme.BBQOutlinedButton
-import cc.bbq.xq.ui.theme.BBQSnackbarHost // 添加导入
+import cc.bbq.xq.ui.theme.BBQSnackbarHost
 import kotlinx.coroutines.flow.first
-import cc.bbq.xq.data.unified.UnifiedUserDetail  // 导入 UnifiedUserDetail
-import cc.bbq.xq.data.unified.FollowStatus // 添加导入
+import cc.bbq.xq.data.unified.UnifiedUserDetail  
+import cc.bbq.xq.data.unified.FollowStatus 
 import cc.bbq.xq.AppStore
-// 添加 MD3 pullrefresh 导入
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
-// 导入我们自定义的指示器
 import cc.bbq.xq.ui.theme.BBQPullRefreshIndicator
 import androidx.compose.ui.ExperimentalComposeUiApi
 
-// 移除 @ExperimentalMaterialApi 注解
-// @OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun UserDetailScreen(
     viewModel: UserDetailViewModel,
@@ -114,7 +105,7 @@ fun UserDetailScreen(
                 state = pullRefreshState,
                 isRefreshing = isRefreshing,
                 modifier = Modifier.align(Alignment.TopCenter)
-                // 颜色和形状将使用我们在 Components.kt 中定义的默认值（语义颜色）
+                // 颜色和形状将使用在 Components.kt 中定义的默认值（语义颜色）
             )
         },
         modifier = modifier.fillMaxSize()
@@ -122,9 +113,9 @@ fun UserDetailScreen(
         ScreenContent(
             modifier = Modifier.fillMaxSize(),
             userData = userData,
-            // 关键修改：将 isLoading 和 isRefreshing 传入 ScreenContent
+            //将 isLoading 和 isRefreshing 传入 ScreenContent
             isLoading = isLoading,
-            isRefreshing = isRefreshing, // <<<--- 新增参数
+            isRefreshing = isRefreshing,
             errorMessage = errorMessage,
             onPostsClick = onPostsClick,
             onResourcesClick = onResourcesClick,
@@ -133,16 +124,16 @@ fun UserDetailScreen(
             navController = navController,
             viewModel = viewModel
         )
-    } // End PullToRefreshBox
+    } 
 }
 
 @Composable
 private fun ScreenContent(
     modifier: Modifier = Modifier,
     userData: UnifiedUserDetail?,
-    // 关键修改：接收 isLoading 和 isRefreshing
-    isLoading: Boolean,       // <<<--- 新增参数
-    isRefreshing: Boolean,     // <<<--- 新增参数
+    // 接收 isLoading 和 isRefreshing
+    isLoading: Boolean,     
+    isRefreshing: Boolean,  
     errorMessage: String?,
     onPostsClick: () -> Unit,
     onResourcesClick: (Long, AppStore) -> Unit,
@@ -436,8 +427,7 @@ private fun ActionButtonsRow(
     onResourcesClick: (Long) -> Unit,
     snackbarHostState: SnackbarHostState,
     viewModel: UserDetailViewModel,
-    // 添加 isRefreshing 参数
-    isRefreshing: Boolean // <<<--- 新增参数
+    isRefreshing: Boolean 
 ) {
     val coroutineScope = rememberCoroutineScope()
 
@@ -470,7 +460,7 @@ private fun ActionButtonsRow(
                         },
                         modifier = Modifier.weight(1f),
                         text = {
-                            // 修改条件：只有在非刷新状态下且关注操作正在进行时才显示加载指示器
+                            // 条件：只有在非刷新状态下且关注操作正在进行时才显示加载指示器
                             if (!isRefreshing && isProcessingFollowAction) { // <<<--- 修改条件
                                 CircularProgressIndicator(
                                     modifier = Modifier.size(16.dp),
@@ -480,8 +470,8 @@ private fun ActionButtonsRow(
                                 Text("关注")
                             }
                         },
-                        // 修改 enabled 状态：在刷新时也禁用按钮，避免混淆
-                        enabled = !isRefreshing && !isProcessingFollowAction // <<<--- 修改 enabled
+                        // 在刷新时也禁用按钮，避免混淆
+                        enabled = !isRefreshing && !isProcessingFollowAction 
                     )
                 }
 
@@ -501,8 +491,8 @@ private fun ActionButtonsRow(
                         },
                         modifier = Modifier.weight(1f),
                         text = {
-                            // 修改条件：只有在非刷新状态下且取消关注操作正在进行时才显示加载指示器
-                            if (!isRefreshing && isProcessingFollowAction) { // <<<--- 修改条件
+                            // 条件：只有在非刷新状态下且取消关注操作正在进行时才显示加载指示器
+                            if (!isRefreshing && isProcessingFollowAction) { 
                                 CircularProgressIndicator(
                                     modifier = Modifier.size(16.dp),
                                     strokeWidth = 2.dp
@@ -511,8 +501,8 @@ private fun ActionButtonsRow(
                                 Text("已关注")
                             }
                         },
-                        // 修改 enabled 状态：在刷新时也禁用按钮，避免混淆
-                        enabled = !isRefreshing && !isProcessingFollowAction // <<<--- 修改 enabled
+                        // 在刷新时也禁用按钮，避免混淆
+                        enabled = !isRefreshing && !isProcessingFollowAction 
                     )
                 }
 
@@ -532,8 +522,8 @@ private fun ActionButtonsRow(
                         },
                         modifier = Modifier.weight(1f),
                         text = {
-                            // 修改条件：只有在非刷新状态下且回关操作正在进行时才显示加载指示器
-                            if (!isRefreshing && isProcessingFollowAction) { // <<<--- 修改条件
+                            // 条件：只有在非刷新状态下且回关操作正在进行时才显示加载指示器
+                            if (!isRefreshing && isProcessingFollowAction) { 
                                 CircularProgressIndicator(
                                     modifier = Modifier.size(16.dp),
                                     strokeWidth = 2.dp
@@ -542,8 +532,8 @@ private fun ActionButtonsRow(
                                 Text("回关")
                             }
                         },
-                        // 修改 enabled 状态：在刷新时也禁用按钮，避免混淆
-                        enabled = !isRefreshing && !isProcessingFollowAction // <<<--- 修改 enabled
+                        // enabled 状态：在刷新时也禁用按钮，避免混淆
+                        enabled = !isRefreshing && !isProcessingFollowAction
                     )
                 }
 
@@ -564,8 +554,8 @@ private fun ActionButtonsRow(
                         },
                         modifier = Modifier.weight(1f),
                         text = {
-                            // 修改条件：只有在非刷新状态下且取消互关操作正在进行时才显示加载指示器
-                            if (!isRefreshing && isProcessingFollowAction) { // <<<--- 修改条件
+                            // 条件：只有在非刷新状态下且取消互关操作正在进行时才显示加载指示器
+                            if (!isRefreshing && isProcessingFollowAction) { 
                                 CircularProgressIndicator(
                                     modifier = Modifier.size(16.dp),
                                     strokeWidth = 2.dp
@@ -574,8 +564,8 @@ private fun ActionButtonsRow(
                                 Text("互相关注")
                             }
                         },
-                        // 修改 enabled 状态：在刷新时也禁用按钮，避免混淆
-                        enabled = !isRefreshing && !isProcessingFollowAction // <<<--- 修改 enabled
+                        // enabled 状态：在刷新时也禁用按钮，避免混淆
+                        enabled = !isRefreshing && !isProcessingFollowAction
                     )
                 }
             }

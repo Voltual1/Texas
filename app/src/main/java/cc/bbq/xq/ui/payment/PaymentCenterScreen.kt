@@ -37,7 +37,7 @@ import cc.bbq.xq.ui.theme.*
 import cc.bbq.xq.util.DownloadManager
 import coil3.compose.AsyncImage
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.flow.collectLatest // 必须导入这个才能使用 collectLatest
+import kotlinx.coroutines.flow.collectLatest 
 import kotlinx.coroutines.launch
 
 @Composable

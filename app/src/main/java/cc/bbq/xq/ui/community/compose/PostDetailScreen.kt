@@ -364,7 +364,7 @@ fun PostDetailScreen(
                     onDelete = { viewModel.deleteComment(comment.id) },
                     clipboardManager = clipboardManager,
                     context = context,
-                    snackbarHostState = internalSnackbarHostState //fixed: use internalSnackbarHostState
+                    snackbarHostState = internalSnackbarHostState 
                 )
             }
 
@@ -417,7 +417,7 @@ fun PostDetailScreen(
                         val clipData = ClipData.newPlainText("分享链接", shareText)
                         clipboardManager.setPrimaryClip(clipData)
                          coroutineScope.launch {
-                                internalSnackbarHostState.showSnackbar( //fixed: use internalSnackbarHostState
+                                internalSnackbarHostState.showSnackbar( 
                                     message = context.getString(R.string.copied_link),
                                     duration = SnackbarDuration.Short
                                 )
@@ -458,7 +458,7 @@ fun PostDetailScreen(
     // Snackbar 宿主
     Box(modifier = Modifier.fillMaxSize()) {
         BBQSnackbarHost(
-            hostState = internalSnackbarHostState, //fixed: use internalSnackbarHostState
+            hostState = internalSnackbarHostState,
             modifier = Modifier.align(Alignment.BottomCenter)
         )
     }
@@ -476,7 +476,6 @@ fun CommentDialog(
     var imageUrl by remember { mutableStateOf<String?>(null) }
     var selectedImageUri by remember { mutableStateOf<Uri?>(null) }
     var showProgressDialog by remember { mutableStateOf(false) }
-    // 新增：发送状态
     var isSubmitting by remember { mutableStateOf(false) }
     var progressMessage by remember { mutableStateOf("") }
     val focusRequester = remember { FocusRequester() }
@@ -510,22 +509,16 @@ fun CommentDialog(
                 showProgressDialog = false
                 if (response.status.isSuccess()) {
                     val responseBody: KtorClient.UploadResponse = response.body()
-                    // 修复：移除不必要的 null 检查，因为 response.body() 返回非空类型
                     if ((responseBody.code == 1 || responseBody.code == 0) && !responseBody.downurl.isNullOrBlank()) {
                         onSuccess(responseBody.downurl)
-                       // Toast.makeText(context, "图片上传成功", Toast.LENGTH_SHORT).show()
                     } else {
-                        // 修复：直接访问 msg，因为它是非空类型
-                       // Toast.makeText(context, "上传失败: ${responseBody.msg}", Toast.LENGTH_SHORT).show()
                     }
                 } else {
-                   // Toast.makeText(context, "上传失败: 网络错误 ${response.status}", Toast.LENGTH_SHORT).show()
                 }
             }
         } catch (e: Exception) {
             withContext(Dispatchers.Main) {
                 showProgressDialog = false
-                //Toast.makeText(context, "上传错误: ${e.message}", Toast.LENGTH_SHORT).show()
             }
         }
     }
@@ -710,7 +703,7 @@ fun CommentItem(
     onDelete: () -> Unit,
     clipboardManager: ClipboardManager,
     context: Context,
-    snackbarHostState: SnackbarHostState // 添加 snackbarHostState 参数
+    snackbarHostState: SnackbarHostState 
 ) {
     val scope = rememberCoroutineScope()
     var showDeleteDialog by remember { mutableStateOf(false) }
@@ -752,7 +745,7 @@ fun CommentItem(
                         val clipData = ClipData.newPlainText("评论内容", comment.content)
                         clipboardManager.setPrimaryClip(clipData)
                         scope.launch {
-                            snackbarHostState.showSnackbar( // fixed: snackbarHostState is used here
+                            snackbarHostState.showSnackbar(
                                 message = context.getString(R.string.comment_copied),
                                 duration = SnackbarDuration.Short
                             )

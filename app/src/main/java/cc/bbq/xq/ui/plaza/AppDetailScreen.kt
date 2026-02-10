@@ -73,8 +73,6 @@ import cc.bbq.xq.ui.theme.*
 import cc.bbq.xq.util.DownloadManager
 import cc.bbq.xq.util.formatTimestamp
 
-// 移除 @ExperimentalMaterialApi 注解
-// @OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun AppDetailScreen(
     appId: String,
@@ -103,8 +101,6 @@ fun AppDetailScreen(
     var showDeleteCommentDialog by remember { mutableStateOf(false) }
     var commentToDeleteId by remember { mutableStateOf<String?>(null) }
     var showMoreMenu by remember { mutableStateOf(false) }
-    
-    // 在 AppDetailScreen 内部
 
 LaunchedEffect(Unit) {
     viewModel.downloadEvent.collectLatest { downloadEvent ->
@@ -295,7 +291,7 @@ val shareUrl = "https://apk.wysteam.cn/app/?id=${detail.id}"
                 state = pullRefreshState,
                 isRefreshing = isRefreshing,
                 modifier = Modifier.align(Alignment.TopCenter)
-                // 颜色和形状将使用我们在 Components.kt 中定义的默认值（语义颜色）
+                // 颜色和形状将使用在 Components.kt 中定义的默认值（语义颜色）
             )
         },
         modifier = modifier.fillMaxSize()
@@ -310,11 +306,10 @@ val shareUrl = "https://apk.wysteam.cn/app/?id=${detail.id}"
         }
         val pagerState = rememberPagerState(pageCount = { pageCount })
 
-        // 关键点：使用 Column 或 Box 包裹 Pager，确保布局正确
+        // 使用 Column 或 Box 包裹 Pager，确保布局正确
         Column(modifier = Modifier.fillMaxSize()) {
             HorizontalPager(
                 state = pagerState,
-                // 注意：weight(1f) 后面不要跟 ()
                 modifier = Modifier.weight(1f) 
             ) { page ->
                 when (page) {

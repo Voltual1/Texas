@@ -90,8 +90,6 @@ class PostDetailViewModel(application: Application) : AndroidViewModel(applicati
                     if (response.code == 1) {
                         val post = response.data
                         _postDetail.value = post
-
-                        // 修复：直接访问 post，因为它是非空类型
                         post.let {
                             browseHistoryRepository.addHistory(
                                 BrowseHistory(
@@ -106,7 +104,6 @@ class PostDetailViewModel(application: Application) : AndroidViewModel(applicati
                             _commentCount.value = it.comment.toIntOrNull() ?: 0
                         }
                     } else {
-                        // 修复：直接访问 msg，因为它是非空类型
                         _errorMessage.value = "加载失败: ${response.msg}"
                     }
                 } else {
@@ -136,7 +133,6 @@ class PostDetailViewModel(application: Application) : AndroidViewModel(applicati
                 if (result.isSuccess) {
                     val response = result.getOrThrow()
                     if (response.code == 1) {
-                        // 修复：直接访问 data.list 和 data.pagecount，因为它们是非空类型
                         val newComments = response.data.list
                         val totalPages = response.data.pagecount
 

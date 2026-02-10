@@ -19,10 +19,10 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import cc.bbq.xq.ui.theme.BBQCard
 import cc.bbq.xq.ui.theme.BBQOutlinedButton
-import coil3.SingletonImageLoader  // 替换 coil3.Coil
+import coil3.SingletonImageLoader  
 import kotlinx.coroutines.launch
 import coil3.annotation.ExperimentalCoilApi
-import coil3.compose.LocalPlatformContext  // 新增导入
+import coil3.compose.LocalPlatformContext  
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalCoilApi::class)
 @Composable

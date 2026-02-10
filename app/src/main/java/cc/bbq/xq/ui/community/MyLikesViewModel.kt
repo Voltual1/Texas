@@ -82,7 +82,6 @@ class MyLikesViewModel(private val context: Context) : ViewModel() {
                 if (likesRecordsResult.isSuccess) {
                     likesRecordsResult.getOrNull()?.let { likesRecordsResponse ->
                         if (likesRecordsResponse.code == 1) {
-                            // 修复：直接访问 data，因为它是非空类型
                             val data = likesRecordsResponse.data
                             _totalPages.value = data.pagecount
                             val newPosts = if (currentPage == 1) {
@@ -97,7 +96,6 @@ class MyLikesViewModel(private val context: Context) : ViewModel() {
                             _posts.value = distinctPosts
                             _errorMessage.value = ""
                         } else {
-                            // 修复：正确处理非空字符串
                             _errorMessage.value = "操作失败: ${if (likesRecordsResponse.msg.isNotEmpty()) likesRecordsResponse.msg else "服务器错误"}"
                         }
                     } ?: run {

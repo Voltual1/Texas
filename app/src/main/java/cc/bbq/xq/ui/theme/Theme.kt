@@ -229,7 +229,7 @@ fun BBQTheme(
     )
 }
 
-// 修复：添加两个独立的转换函数
+// 两个独立的转换函数
 private fun ColorSet.toLightColorScheme() = lightColorScheme(
     primary = primary,
     onPrimary = onPrimary,
@@ -250,7 +250,7 @@ private fun ColorSet.toLightColorScheme() = lightColorScheme(
     onBackground = onBackground
 )
 
-// 新增：暗色主题转换函数
+// 暗色主题转换函数
 private fun ColorSet.toDarkColorScheme() = darkColorScheme(
     primary = primary,
     onPrimary = onPrimary,

@@ -30,7 +30,6 @@ class BrowseHistoryViewModel(application: Application) : AndroidViewModel(applic
     private val _isSelectionMode = MutableStateFlow(false)
     val isSelectionMode: StateFlow<Boolean> = _isSelectionMode.asStateFlow()
 
-    // 核心修正 #1: 将事件类型从 String 改为 Pair<String, Int>
     private val _copyEvent = MutableSharedFlow<Pair<String, Int>>()
     val copyEvent: SharedFlow<Pair<String, Int>> = _copyEvent.asSharedFlow()
 

@@ -18,8 +18,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Comment
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Notifications
-import androidx.compose.material.icons.filled.CheckCircle // 导入 CheckCircle
-import androidx.compose.material.icons.filled.Error // 导入 Error
+import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.Error 
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -42,7 +42,7 @@ import cc.bbq.xq.util.cleanUrl
 
 @Composable
 fun SharedPostItem(
-    post: KtorClient.Post, // 修改为 KtorClient.Post
+    post: KtorClient.Post, 
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -73,7 +73,7 @@ fun SharedPostItem(
             Spacer(modifier = Modifier.height(8.dp))
             Text(post.content, style = MaterialTheme.typography.bodyMedium, maxLines = 3, overflow = TextOverflow.Ellipsis)
             
-            // 修复语法错误：使用正确的 lambda 表达式语法
+            
             post.img_url?.takeIf { it.isNotEmpty() }?.firstOrNull()?.let { imageUrl ->
                 Spacer(modifier = Modifier.height(12.dp))
                 Image(
@@ -109,8 +109,7 @@ fun SharedLogListItem(log: cc.bbq.xq.data.db.LogEntry, modifier: Modifier = Modi
     } else {
         if (isDarkTheme) billing_expense_dark else billing_expense
     }
-    
-    // 使用 ImageVector 类型
+   
     val statusIcon: ImageVector = if (log.status == "SUCCESS") Icons.Default.CheckCircle else Icons.Default.Error
 
     ListItem(
