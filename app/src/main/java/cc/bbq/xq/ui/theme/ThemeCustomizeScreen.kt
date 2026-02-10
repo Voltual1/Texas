@@ -462,7 +462,8 @@ item {
                     roundScreenEnabled = roundScreenEnabled,  
     roundLeft = roundLeft,                  
     roundTop = roundTop,                    
-    roundRight = roundRight,                
+    roundRight = roundRight,
+    roundBottom = roundBottom                             
                 )
                 showSavedMessage = true
             },
