@@ -53,8 +53,6 @@ fun UserAgreementDialog(
             AgreementItem("《小趣空间用户协议》", R.raw.xiaoquuseragreement),
             AgreementItem("《弦-应用商店用户协议》", R.raw.sineuseragreement),
             AgreementItem("《弦-应用商店隐私政策》", R.raw.sineprivacypolicy),
-            AgreementItem("《微思应用商店用户协议》", R.raw.wysappmarketuseragreement),
-            AgreementItem("《微思应用商店隐私协议》", R.raw.wysappmarketprivacypolicy),
             AgreementItem("《灵应用商店用户协议》", R.raw.linguseragreement) // 新增
         )
     }
@@ -197,8 +195,6 @@ private suspend fun saveAgreement(ds: UserAgreementDataStore, index: Int) {
         1 -> ds.acceptXiaoquAgreement()
         2 -> ds.acceptSineAgreement()
         3 -> ds.acceptSinePrivacy()
-        4 -> ds.acceptWysMarketAgreement()
-        5 -> ds.acceptWysMarketPrivacy()
-        6 -> ds.acceptLingAgreement() // 新增索引 6 的保存逻辑
+        4 -> ds.acceptLingAgreement() // 新增索引 6 的保存逻辑
     }
 }

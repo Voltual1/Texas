@@ -16,7 +16,6 @@ import cc.bbq.xq.data.repository.SineOpenMarketRepository
 import cc.bbq.xq.ui.auth.LoginViewModel
 import cc.bbq.xq.ui.billing.BillingViewModel
 import org.koin.android.ext.koin.androidContext
-import cc.bbq.xq.data.repository.WysAppMarketRepository
 import cc.bbq.xq.ui.community.CommunityViewModel
 import cc.bbq.xq.ui.plaza.VersionListViewModel
 import cc.bbq.xq.ui.community.FollowingPostsViewModel
@@ -107,7 +106,6 @@ val appModule = module {
     single { XiaoQuRepository(KtorClient.ApiServiceImpl) }
     single { SineShopRepository() }
     single { SineOpenMarketRepository() } 
-    single { WysAppMarketRepository(get()) }    
     single { LingMarketRepository() }    
     single<Map<AppStore, IAppStoreRepository>> {
     val map = mutableMapOf<AppStore, IAppStoreRepository>()
@@ -115,7 +113,6 @@ val appModule = module {
     map[AppStore.SIENE_SHOP] = get<SineShopRepository>()
     map[AppStore.SINE_OPEN_MARKET] = get<SineOpenMarketRepository>()
     map[AppStore.LING_MARKET] = get<LingMarketRepository>()
-    map[AppStore.WYSAPPMARKET] = get<WysAppMarketRepository>()
     map
 }
 }

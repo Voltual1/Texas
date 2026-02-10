@@ -266,55 +266,6 @@ fun LingMarketAppInfo(appDetail: UnifiedAppDetail) {
     }
 }
 
-@Composable
-fun WysAppMarketInfo(appDetail: UnifiedAppDetail) {
-    // 直接使用 UnifiedAppDetail 中转换好的字段
-    InfoRow(
-        label = "包名",
-        value = appDetail.packageName
-    )
-    InfoRow(
-        label = "版本类型",
-        value = appDetail.versionTypeDisplay
-    )
-    InfoRow(
-        label = "最低版本",
-        value = appDetail.minsdkDisplay
-    )
-    InfoRow(
-        label = "目标版本",
-        value = appDetail.targetsdkDisplay
-    )
-    InfoRow(
-        label = "CPU架构",
-        value = appDetail.cpuArchDisplay
-    )
-    InfoRow(
-        label = "系统兼容",
-        value = appDetail.osCompatibilityDisplay
-    )
-    InfoRow(
-        label = "屏幕兼容",
-        value = appDetail.displayCompatibilityDisplay
-    )
-    InfoRow(
-        label = "浏览次数",
-        value = "${appDetail.watchCount ?: 0}"
-    )
-    InfoRow(
-        label = "下载次数",
-        value = "${appDetail.downloadCount}"
-    )
-    InfoRow(
-        label = "上传时间",
-        value = if (appDetail.uploadTime > 0) formatTimestamp(appDetail.uploadTime) else "未知"
-    )
-    InfoRow(
-        label = "上传留言",
-        value = appDetail.upnote ?: "无"
-    )
-}
-
 // --- 通用 UI 组件 ---
 
 // 新增：信息行组件
@@ -812,35 +763,7 @@ fun AppAuthorSection(
                         Spacer(Modifier.width(16.dp))
                         Text(appDetail.user.displayName, style = MaterialTheme.typography.titleMedium)
                     }
-                }
-
-                AppStore.WYSAPPMARKET -> {
-                    // 微思应用商店显示上传者信息
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(16.dp)
-                            .clickable {
-                                val userId = appDetail.user.id.toLongOrNull()
-                                if (userId != null) {
-                                    navController.navigate(UserDetail(userId, appDetail.store).createRoute())
-                                }
-                            },
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Column {
-                            Text(
-                                appDetail.user.displayName,
-                                style = MaterialTheme.typography.titleMedium
-                            )
-                            Text(
-                                "上传者",
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                        }
-                    }
-                }
+                }                
 
                 else -> {
                     Text(

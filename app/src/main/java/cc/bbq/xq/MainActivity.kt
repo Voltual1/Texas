@@ -90,8 +90,6 @@ private val agreementDataStore: UserAgreementDataStore by inject()
             val xiaoquAccepted by agreementDataStore.isXiaoquAccepted.collectAsState(initial = true)
             val sineAgreementAccepted by agreementDataStore.isSineAgreementAccepted.collectAsState(initial = true)
             val sinePrivacyAccepted by agreementDataStore.isSinePrivacyAccepted.collectAsState(initial = true)
-            val wysMarketAgreementAccepted by agreementDataStore.isWysMarketAgreementAccepted.collectAsState(initial = true)
-            val wysMarketPrivacyAccepted by agreementDataStore.isWysMarketPrivacyAccepted.collectAsState(initial = true)
             val lingAccepted by agreementDataStore.isLingAgreementAccepted.collectAsState(initial = true) // 新增
 
             var isAgreementDataLoaded by remember { mutableStateOf(false) }
@@ -106,9 +104,7 @@ private val agreementDataStore: UserAgreementDataStore by inject()
                 xiaoquAccepted && 
                 sineAgreementAccepted && 
                 sinePrivacyAccepted && 
-                wysMarketAgreementAccepted && 
-                wysMarketPrivacyAccepted &&
-                lingAccepted // 新增判断
+                lingAccepted 
             )
 
     BBQTheme(appDarkTheme = ThemeManager.isAppDarkTheme) {

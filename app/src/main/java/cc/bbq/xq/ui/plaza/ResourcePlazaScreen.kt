@@ -162,8 +162,7 @@ fun ResourcePlazaContent(
     appStores = remember { 
         AppStore.entries.filter { 
             it != AppStore.LOCAL && 
-            it != AppStore.SINE_OPEN_MARKET &&
-            it != AppStore.WYSAPPMARKET 
+            it != AppStore.SINE_OPEN_MARKET 
         } 
     }
 )

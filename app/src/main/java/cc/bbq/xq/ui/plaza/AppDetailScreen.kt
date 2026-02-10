@@ -249,14 +249,6 @@ LaunchedEffect(Unit) {
                         snackbarHostState.showSnackbar("已复制分享链接: $shareUrl")
                     }
                 }
-                AppStore.WYSAPPMARKET -> {
-val shareUrl = "https://apk.wysteam.cn/app/?id=${detail.id}"
-                    val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-                    val clip = ClipData.newPlainText("应用链接", shareUrl)
-                    clipboard.setPrimaryClip(clip)
-                    coroutineScope.launch {
-                        snackbarHostState.showSnackbar("已复制分享链接: $shareUrl")
-                    }                                    }
                                     
                 else -> {
                     // 暂不支持分享
@@ -301,7 +293,7 @@ val shareUrl = "https://apk.wysteam.cn/app/?id=${detail.id}"
     } else if (appDetail != null) {
         val detail = appDetail!! // 建议在这里先解包，避免后面到处用 !!
         val pageCount = when (detail.store) {
-            AppStore.SIENE_SHOP, AppStore.WYSAPPMARKET -> 2
+            AppStore.SIENE_SHOP -> 2
             else -> 1
         }
         val pagerState = rememberPagerState(pageCount = { pageCount })
@@ -571,10 +563,6 @@ if (!updateLog.isNullOrEmpty()) { // 这里检查的是上面 when 表达式的�
 
                         AppStore.LING_MARKET -> {
                             LingMarketAppInfo(appDetail = appDetail)
-                        }
-
-                        AppStore.WYSAPPMARKET -> {
-                            WysAppMarketInfo(appDetail = appDetail)
                         }
 
                         else -> {

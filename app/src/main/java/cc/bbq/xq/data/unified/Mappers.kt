@@ -24,7 +24,6 @@ import cc.bbq.xq.SineShopClient.AppTag
 import cc.bbq.xq.SineShopClient.SineShopDownloadSource
 import cc.bbq.xq.SineShopClient.SineShopUserInfo
 import cc.bbq.xq.LingMarketClient
-import cc.bbq.xq.WysAppMarketClient
 import cc.bbq.xq.AbiFlag
 import cc.bbq.xq.FavouriteState
 import cc.bbq.xq.AppVersionType
@@ -394,121 +393,5 @@ fun LingMarketClient.LingMarketUser.toUnifiedUserDetail(): UnifiedUserDetail {
         description = this.bio,
         store = AppStore.LING_MARKET,
         raw = this
-    )
-}
-
-// --- WysAppMarketClient (微思应用商店) Mappers ---
-
-private fun buildWysAppMarketIconUrl(logo: String): String {
-    // 专门为微思应用商店构建图标URL
-    val baseUrl = WysAppMarketClient.WYSAPPMARKET_ICON_BASE_URL.removeSuffix("/")
-    val cleanIconKey = logo.removePrefix("/")
-    return "$baseUrl/$cleanIconKey"
-}
-
-/**
- * 微思应用商店应用列表项转统一应用项
- */
-fun WysAppMarketClient.WysAppListItem.toUnifiedAppItem(): UnifiedAppItem {
-    return UnifiedAppItem(
-        uniqueId = "${AppStore.WYSAPPMARKET}-${this.id}-${this.verid}",
-        navigationId = this.id.toString(),
-        navigationVersionId = this.verid.toLong(),
-        store = AppStore.WYSAPPMARKET,
-        name = this.name,
-        iconUrl = buildWysAppMarketIconUrl(this.logo),
-        versionName = this.version,
-        info = this.info
-    )
-}
-
-/**
- * 微思应用商店应用详情转统一应用详情
- * 将魔法数字转换为枚举的显示名称并存储在统一模型中
- */
-fun WysAppMarketClient.WysAppDetail.toUnifiedAppDetail(): UnifiedAppDetail {
-    // 格式化文件大小
-    val formattedSize = if (this.size > 0) {
-        when {
-            this.size >= 1024 * 1024 * 1024 -> String.format("%.2f GB", this.size / (1024.0 * 1024.0 * 1024.0))
-            this.size >= 1024 * 1024 -> String.format("%.2f MB", this.size / (1024.0 * 1024.0))
-            this.size >= 1024 -> String.format("%.2f KB", this.size / 1024.0)
-            else -> "${this.size} B"
-        }
-    } else {
-        "未知大小"
-    }
-
-    // 转换更新时间戳
-    val uploadTime = try {
-        // 尝试解析时间字符串，如果失败则使用当前时间
-        this.uptime.toLongOrNull() ?: 0L
-    } catch (e: Exception) {
-        0L
-    }
-
-    // 构建应用标签/分类
-    val tags = mutableListOf<String>()
-    if (this.family.isNotEmpty()) tags.add(this.family)
-    this.keywords.split(",").forEach { keyword ->
-        if (keyword.isNotEmpty()) tags.add(keyword.trim())
-    }
-
-    // 构建预览图URL列表
-    val previewsList = this.image?.map { buildWysAppMarketIconUrl(it) }
-
-    // 使用枚举转换魔法数字
-    val versionType = AppVersionType.fromValue(this.type)
-    val cpuArch = CpuArch.fromValue(this.cpuArch)
-    val osCompatibility = OsCompatibility.fromValue(this.osCompatibility)
-    val displayCompatibility = DisplayCompatibility.fromValue(this.displayCompatibility)
-    val minSdkVersion = AndroidSdkVersion.fromApiLevel(this.minSdk)
-    val targetSdkVersion = AndroidSdkVersion.fromApiLevel(this.targetSdk)
-    val appFamily = AppFamily.fromDisplayName(this.family)
-
-    return UnifiedAppDetail(
-        id = this.id.toString(),
-        store = AppStore.WYSAPPMARKET,
-        packageName = this.pack,
-        name = this.name,
-        versionCode = this.verid.toLong(),
-        versionName = this.version,
-        iconUrl = buildWysAppMarketIconUrl(this.logo),
-        type = appFamily.displayName, // 使用转换后的分类显示名称
-        previews = previewsList,
-        description = this.content,
-        updateLog = this.uplog,
-        developer = this.developer,
-        size = formattedSize,
-        uploadTime = uploadTime,
-        user = UnifiedUser(
-            id = this.userId.toString(),
-            displayName = this.username ?: "未知用户",
-            avatarUrl = null
-        ),
-        tags = tags,
-        downloadCount = this.downloadCount,
-        isFavorite = false,
-        favoriteCount = 0,
-        reviewCount = 0,
-        downloadUrl = this.link,
-        raw = this,
-        // 微思应用商店专用字段
-        minsdkDisplay = minSdkVersion.displayName,
-        targetsdkDisplay = targetSdkVersion.displayName,
-        cpuArchDisplay = cpuArch.displayName,
-        osCompatibilityDisplay = osCompatibility.displayName,
-        displayCompatibilityDisplay = displayCompatibility.displayName,
-        watchCount = this.watch,
-        upnote = this.upnote,
-        versionTypeDisplay = versionType.displayName
-    )
-}
-
-fun WysAppMarketClient.DownloadSource.toUnifiedDownloadSource(): UnifiedDownloadSource {
-    return UnifiedDownloadSource(
-        name = this.name,
-        url = this.url,
-        isOfficial = this.type == 0
     )
 }

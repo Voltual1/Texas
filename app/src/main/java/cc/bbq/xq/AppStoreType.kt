@@ -13,6 +13,6 @@ enum class AppStore(val displayName: String) {
     SIENE_SHOP("弦应用商店"),
     SINE_OPEN_MARKET("弦-开放平台"), 
     LING_MARKET("灵应用商店"), 
-    WYSAPPMARKET("微思应用商店"), //新增微思应用商店
+//    WYSAPPMARKET("微思应用商店"), 微思应用商店死定了>_<
     LOCAL("本地应用")
 }

@@ -36,7 +36,7 @@ class VersionListViewModel(
     private var currentPackageName: String = ""
     private var currentStore: AppStore = AppStore.XIAOQU_SPACE
     
-    // 记录当前页码，方便后续扩展“加载更多”功能
+    // 记录当前页码
     private var currentPage = 1
 
     fun loadVersions(packageName: String, store: AppStore, page: Int = 1) {
@@ -57,18 +57,14 @@ class VersionListViewModel(
                 val repository = repositories[store]
                     ?: throw IllegalArgumentException("Unsupported store: $store")
 
-                // 核心逻辑：根据商店类型决定调用哪个重载
-                val result: Result<List<UnifiedAppItem>> = if (store == AppStore.WYSAPPMARKET) {
-                    // 微思：不带 page 的重载
-                    repository.getAppVersionsByPackageName(packageName)
-                } else {
-                    // 弦应用商店及其他：使用带 page 的重载，并只取 List 部分
-                    repository.getAppVersionsByPackageName(packageName, page).map { it.first }
-                }
+                // 统一逻辑：使用带 page 的重载，并提取 List 部分
+                val result: Result<List<UnifiedAppItem>> = repository
+                    .getAppVersionsByPackageName(packageName, page)
+                    .map { it.first }
 
                 if (result.isSuccess) {
                     val newItems = result.getOrThrow()
-                    // 如果是第一页则覆盖，如果是后续页则累加（目前 UI 暂未实现 LoadMore，先覆盖）
+                    // 目前 UI 逻辑：直接覆盖当前列表
                     _versions.value = newItems
                 } else {
                     _errorMessage.value = result.exceptionOrNull()?.message ?: "Failed to load versions"
