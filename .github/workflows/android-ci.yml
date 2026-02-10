@@ -50,7 +50,7 @@ jobs:
       - name: Build with Gradle
         run: ./gradlew assembleRelease --stacktrace
         env:
-          KEYSTORE_PATH: tag_keystore.p12  # 注意路径要对应 build.gradle.kts
+          KEYSTORE_PATH: app/tag_keystore.p12  # 注意路径要对应 build.gradle.kts
           KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
           KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
           KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}          

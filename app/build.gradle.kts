@@ -45,6 +45,16 @@ if (keystorePropertiesFile.exists()) {
             isUniversalApk = false
         }
     }
+    
+    applicationVariants.all {
+        val variant = this
+        variant.outputs.all {
+            val output = this as com.android.build.gradle.internal.api.ApkVariantOutputImpl
+            val abi = output.getFilter(com.android.build.OutputFile.ABI) ?: "universal"
+            val name = "Pyrolysis${variant.versionName}-$abi-${variant.buildType.name}.apk"
+            output.outputFileName = name
+        }
+    }
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
