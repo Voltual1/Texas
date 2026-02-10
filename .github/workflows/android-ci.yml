@@ -39,10 +39,21 @@ jobs:
             ${{ github.workspace }}/.gradle
           key: ${{ runner.os }}-gradle-${{ hashFiles('**/build.gradle.kts', '**/settings.gradle.kts') }}
           restore-keys: |
-            ${{ runner.os }}-gradle-  
+            ${{ runner.os }}-gradle-
+            
+      - name: Decode Keystore
+        env:
+          ENCODED_STRING: ${{ secrets.SIGNING_KEY }}
+        run: |
+          echo $ENCODED_STRING | base64 -d > tag_keystore.p12
 
       - name: Build with Gradle
         run: ./gradlew assembleRelease --stacktrace
+        env:
+          KEYSTORE_PATH: app/tag_keystore.p12  # 注意路径要对应 build.gradle.kts
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}          
 
       - name: Get version info
         id: version

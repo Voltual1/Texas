@@ -4,6 +4,10 @@
 *.ap_
 *.aab
 *.zip
+*.jks
+*.p12
+*.keystore
+keystore.properties
 
 # Files for the ART/Dalvik VM
 *.dex
