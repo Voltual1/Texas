@@ -26,12 +26,6 @@ import cc.bbq.xq.SineShopClient.SineShopUserInfo
 import cc.bbq.xq.LingMarketClient
 import cc.bbq.xq.AbiFlag
 import cc.bbq.xq.FavouriteState
-import cc.bbq.xq.AppVersionType
-import cc.bbq.xq.CpuArch
-import cc.bbq.xq.OsCompatibility
-import cc.bbq.xq.DisplayCompatibility
-import cc.bbq.xq.AndroidSdkVersion
-import cc.bbq.xq.AppFamily
 
 // --- KtorClient (小趣空间) Mappers ---
 
