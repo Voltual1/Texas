@@ -30,17 +30,17 @@ interface LogDao {
      * 获取所有的日志记录，并按时间戳降序排列（最新的在最前面）。
      * 返回一个 Flow，当数据库内容变化时，它会自动发射新的列表。
      */
-    @Query("SELECT * FROM bot_logs ORDER BY timestamp DESC")
+    @Query("SELECT * FROM logs ORDER BY timestamp DESC")
     fun getAllLogs(): Flow<List<LogEntry>>
 
     /**
      * 清空所有的日志记录。
      */
      // 新增：按 ID 列表删除日志
-    @Query("DELETE FROM bot_logs WHERE id IN (:logIds)")
+    @Query("DELETE FROM logs WHERE id IN (:logIds)")
     suspend fun deleteLogsByIds(logIds: List<Int>)
-    @Query("DELETE FROM bot_logs")
+    @Query("DELETE FROM logs")
     suspend fun clearAll()
-    @Query("SELECT * FROM bot_logs WHERE requestBody LIKE :query OR responseBody LIKE :query ORDER BY timestamp DESC")
+    @Query("SELECT * FROM logs WHERE requestBody LIKE :query OR responseBody LIKE :query ORDER BY timestamp DESC")
     fun searchLogs(query: String): Flow<List<LogEntry>>
 }

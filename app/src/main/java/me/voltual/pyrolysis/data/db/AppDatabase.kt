@@ -96,7 +96,7 @@ abstract class AppDatabase : RoomDatabase() {
                 val instance = Room.databaseBuilder(
                     context.applicationContext,
                     AppDatabase::class.java,
-                    "qubot_database"
+                    "pyrolysis_database"
                 )
                     .addMigrations(
                         MIGRATION_1_2, 
