@@ -14,11 +14,11 @@ val keystoreProperties = Properties()
 if (keystorePropertiesFile.exists()) {
     keystoreProperties.load(keystorePropertiesFile.inputStream())
 }
-    namespace = "cc.bbq.xq"
+    namespace = "me.voltual.pyrolysis"
     compileSdk = 35
 
     defaultConfig {
-        applicationId = "cc.bbq.xq"
+        applicationId = "me.voltual.pyrolysis"
         minSdk = 21
         targetSdk = 35
         versionCode = 423

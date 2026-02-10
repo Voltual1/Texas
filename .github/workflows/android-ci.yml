@@ -45,12 +45,12 @@ jobs:
         env:
           ENCODED_STRING: ${{ secrets.SIGNING_KEY }}
         run: |
-          echo $ENCODED_STRING | base64 -d > tag_keystore.p12
+          echo $ENCODED_STRING | base64 -d > app/tag_keystore.p12
 
       - name: Build with Gradle
         run: ./gradlew assembleRelease --stacktrace
         env:
-          KEYSTORE_PATH: app/tag_keystore.p12  # 注意路径要对应 build.gradle.kts
+          KEYSTORE_PATH: tag_keystore.p12  # 注意路径要对应 build.gradle.kts
           KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
           KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
           KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}          
