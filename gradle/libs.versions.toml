@@ -93,8 +93,6 @@ protoc-artifact = { module = "com.google.protobuf:protoc", version.ref = "protob
 kotlinx-datetime = { module = "org.jetbrains.kotlinx:kotlinx-datetime", version.ref = "kotlinx-datetime" }
 kotlinx-collections-immutable = { module = "org.jetbrains.kotlinx:kotlinx-collections-immutable", version.ref = "kotlinx-collections" }
 compose-html-converter = { module = "be.digitalia.compose.htmlconverter:htmlconverter", version.ref = "html-converter" }
-vico-compose = { group = "com.patrykandpatrick.vico", name = "compose", version.ref = "vico" }
-vico-compose-m3 = { group = "com.patrykandpatrick.vico", name = "compose-m3", version.ref = "vico" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "pyrolysis-agp" }
