@@ -1,4 +1,4 @@
-package me.voltual.pyrolysis.data.database.entity
+package me.voltual.pyrolysis.data.db.entity
 
 import androidx.room.ColumnInfo
 import androidx.room.DatabaseView
