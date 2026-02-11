@@ -154,6 +154,7 @@ dependencies {
     implementation(libs.ktor.io)
     implementation(libs.ktor.client.logging)
     implementation(libs.kotlinx.serialization.json)
+    implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.6.1") // 建议使用最新版本
 
     // 安全与数据
     implementation(libs.tink.android)
