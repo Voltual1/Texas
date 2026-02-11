@@ -4,7 +4,7 @@ import android.content.res.Resources
 import androidx.core.os.ConfigurationCompat.getLocales
 import androidx.core.os.LocaleListCompat
 import me.voltual.pyrolysis.data.db.entity.IndexProduct
-import me.voltual.pyrolysis.data.dab.entity.Release
+import me.voltual.pyrolysis.data.db.entity.Release
 import me.voltual.pyrolysis.data.entity.Author
 import me.voltual.pyrolysis.data.entity.Donate
 import me.voltual.pyrolysis.data.index.v0.IndexV0Parser
