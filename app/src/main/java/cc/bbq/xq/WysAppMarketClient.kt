@@ -49,7 +49,7 @@ object WysAppMarketClient {
 
 
 //    private const val DEFAULT_DEVICE_MODEL = "浊燃"
-    private const val DEFAULT_BUILD_NUMBER = "3301"
+    private const val DEFAULT_BUILD_NUMBER = "3400"
     private const val USER_AGENT_VALUE = "WysAppMarket/3.0 (Android; WearOS)"
     
     // Ktor HttpClient 实例
