@@ -1,6 +1,5 @@
 [versions]
-# 项目基础
-pyrolysis-agp = "9.0.0"
+pyrolysis-agp = "8.13.0"
 pyrolysis-kotlin = "2.2.21"
 pyrolysis-compose-bom = "2025.11.01"
 pyrolysis-activity = "1.12.2"
@@ -24,6 +23,7 @@ pyrolysis-ktor = "3.3.2"
 pyrolysis-serialization = "1.9.0"
 tink = "1.20.0"
 protobuf = "4.32.1"
+# 插件版本
 protobuf-plugin = "0.9.5"
 markdown = "0.7.3"
 
@@ -43,6 +43,8 @@ photoview = { module = "com.github.chrisbanes:PhotoView", version.ref = "photovi
 # Compose
 compose-bom = { group = "androidx.compose", name = "compose-bom", version.ref = "pyrolysis-compose-bom" }
 androidx-ui = { group = "androidx.compose.ui", name = "ui" }
+androidx-ui-graphics = { group = "androidx.compose.ui", name = "ui-graphics" }
+androidx-ui-tooling-preview = { group = "androidx.compose.ui", name = "ui-tooling-preview" }
 androidx-material3 = { group = "androidx.compose.material3", name = "material3" }
 androidx-activity-compose = { module = "androidx.activity:activity-compose", version.ref = "pyrolysis-activity" }
 androidx-icons-extended = { group = "androidx.compose.material", name = "material-icons-extended" }
@@ -97,6 +99,7 @@ vico-compose-m3 = { group = "com.patrykandpatrick.vico", name = "compose-m3", ve
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "pyrolysis-agp" }
+android-library = { id = "com.android.library", version.ref = "pyrolysis-agp" }
 kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "pyrolysis-kotlin" }
 kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "pyrolysis-kotlin" }
 ksp = { id = "com.google.devtools.ksp", version.ref = "pyrolysis-kotlin" }
