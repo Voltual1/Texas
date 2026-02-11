@@ -1,7 +1,7 @@
 package me.voltual.pyrolysis.data.db
 
 import androidx.room.TypeConverter
-import me.voltual.pyrolysis.data.database.entity.Release
+import me.voltual.pyrolysis.data.db.entity.Release
 import me.voltual.pyrolysis.data.entity.Author
 import me.voltual.pyrolysis.data.entity.Donate
 //import com.machiav3lli.fdroid.data.entity.DownloadState

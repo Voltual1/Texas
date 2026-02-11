@@ -70,7 +70,7 @@ object Cache {
         return File(ensureCacheDir(context, "index"), "index-v2-${repoId}.json")
     }
 
-    fun cleanup(context: Context) {
+/*    fun cleanup(context: Context) {
         thread {
             cleanup(
                 context,
@@ -90,7 +90,7 @@ object Cache {
                 Pair("releases", Preferences[Preferences.Key.ReleasesCacheRetention] * 24),
             )
         }
-    }
+    }*/
 
     private fun cleanupDir(dir: File, hours: Int, fileExtension: String? = null) {
         val olderThan = System.currentTimeMillis() / 1000L - hours * 60 * 60
