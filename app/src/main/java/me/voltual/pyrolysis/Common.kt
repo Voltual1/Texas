@@ -1,6 +1,6 @@
 package me.voltual.pyrolysis
 
-import com.machiav3lli.fdroid.data.entity.PermissionGroup
+//import com.machiav3lli.fdroid.data.entity.PermissionGroup
 
 const val NOTIFICATION_CHANNEL_SYNCING = "syncing"
 const val NOTIFICATION_CHANNEL_UPDATES = "updates"
@@ -504,7 +504,7 @@ val NON_FREE_COUNTRIES_TRACKERS = listOf(
 )
 
 // PermissionGroup groups
-
+/*
 val PHYSICAL_DATA_PERMISSIONS = listOf(
     PermissionGroup.Location,
     PermissionGroup.Camera,
@@ -519,7 +519,7 @@ val IDENTIFICATION_DATA_PERMISSIONS = listOf(
     PermissionGroup.SMS,
     PermissionGroup.Storage,
     PermissionGroup.Internet,
-)
+)*/
 
 interface RepoManager {
     fun onDeleteConfirm(repoId: Long)

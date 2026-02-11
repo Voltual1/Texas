@@ -1,12 +1,12 @@
-package com.machiav3lli.fdroid.data.index
+package me.voltual.pyrolysis.data.index
 
 import android.content.ContentValues
 import android.database.sqlite.SQLiteDatabase
-import com.machiav3lli.fdroid.data.database.Converters
-import com.machiav3lli.fdroid.data.database.entity.IndexProduct
-import com.machiav3lli.fdroid.data.database.entity.Release
-import com.machiav3lli.fdroid.utils.extension.android.asSequence
-import com.machiav3lli.fdroid.utils.extension.android.execWithResult
+import me.voltual.pyrolysis.data.db.Converters
+import me.voltual.pyrolysis.data.db.entity.IndexProduct
+import me.voltual.pyrolysis.data.db.entity.Release
+import me.voltual.pyrolysis.utils.extension.android.asSequence
+import me.voltual.pyrolysis.utils.extension.android.execWithResult
 import java.io.ByteArrayOutputStream
 import java.io.Closeable
 import java.io.File

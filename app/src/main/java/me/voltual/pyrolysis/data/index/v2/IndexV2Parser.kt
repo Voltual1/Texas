@@ -3,10 +3,10 @@ package me.voltual.pyrolysis.data.index.v2
 import android.R.attr.version
 import android.content.Context
 import android.util.Log
-import com.machiav3lli.fdroid.data.content.Cache
-import com.machiav3lli.fdroid.data.database.entity.IndexProduct
-import com.machiav3lli.fdroid.data.database.entity.Release
-import com.machiav3lli.fdroid.utils.getLocaleDateString
+import me.voltual.pyrolysis.data.content.Cache
+import me.voltual.pyrolysis.data.db.entity.IndexProduct
+import me.voltual.pyrolysis.data.db.entity.Release
+import me.voltual.pyrolysis.utils.getLocaleDateString
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.decodeFromStream

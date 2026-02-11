@@ -1,15 +1,15 @@
-package com.machiav3lli.fdroid.data.index.v2
+package me.voltual.pyrolysis.data.index.v2
 
 import android.content.res.Resources
 import androidx.core.os.ConfigurationCompat.getLocales
 import androidx.core.os.LocaleListCompat
-import com.machiav3lli.fdroid.data.database.entity.IndexProduct
-import com.machiav3lli.fdroid.data.database.entity.Release
-import com.machiav3lli.fdroid.data.entity.Author
-import com.machiav3lli.fdroid.data.entity.Donate
-import com.machiav3lli.fdroid.data.index.v0.IndexV0Parser
-import com.machiav3lli.fdroid.data.index.v2.IndexV2.File
-import com.machiav3lli.fdroid.utils.extension.android.Android
+import me.voltual.pyrolysis.data.db.entity.IndexProduct
+import me.voltual.pyrolysis.data.dab.entity.Release
+import me.voltual.pyrolysis.data.entity.Author
+import me.voltual.pyrolysis.data.entity.Donate
+import me.voltual.pyrolysis.data.index.v0.IndexV0Parser
+import me.voltual.pyrolysis.data.index.v2.IndexV2.File
+import me.voltual.pyrolysis.utils.extension.android.Android
 import java.util.Locale
 
 internal fun IndexV2.Package.toProduct(repositoryId: Long, packageName: String) = IndexProduct(
