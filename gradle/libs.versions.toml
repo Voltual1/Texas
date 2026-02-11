@@ -102,6 +102,6 @@ android-application = { id = "com.android.application", version.ref = "pyrolysis
 android-library = { id = "com.android.library", version.ref = "pyrolysis-agp" }
 kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "pyrolysis-kotlin" }
 kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "pyrolysis-kotlin" }
-ksp = { id = "com.google.devtools.ksp", version.ref = "pyrolysis-kotlin" }
+ksp = { id = "com.google.devtools.ksp", version = "2.2.21-2.0.5" }
 kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "pyrolysis-kotlin" }
 protobuf = { id = "com.google.protobuf", version.ref = "protobuf-plugin" }
