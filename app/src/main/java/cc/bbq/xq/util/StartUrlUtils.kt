@@ -1,36 +1,54 @@
-package cc.bbq.xq.util // 你自己的包名
+package cc.bbq.xq.util
 
 import android.os.Build
 import com.qx.wysappmarket.presentation.NativeLib
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
+
+@Serializable
+data class DeviceInfo(
+    val Model: String,
+    val Board: String,
+    val Android: String
+)
 
 object StartupTool {
 
     private const val BASE_URL = "https://api.wysteam.cn/market/start/"
-    private const val CHANNEL_ID = "3301"
+    private const val BUILD_ID = "3400" // 对应 Smali 中的 "3400"
 
     /**
-     * 复刻 Smali 逻辑生成启动 URL
+     * 完全复刻 Smali 逻辑
      */
-    fun generateUrl(): String {
-        // 1. 获取时间戳并除以 1000 得到秒
-        val timestampLong = System.currentTimeMillis() / 1000
+    fun generateUrl(customModel: String? = null): String {
+        // 1. 时间戳转换 (秒)
+        val timestampSec = (System.currentTimeMillis() / 1000).toString()
         
-        // 2. 对应 wa2.lill(10, timestamp)
-        // 逻辑通常是强制补足10位，如果时间戳已经是10位则不变
-        val timestampStr = timestampLong.toString().padStart(10, '0')
+        // 模拟 sa2.liIi(10, timestamp) - 确保长度
+        val finalTimestamp = timestampSec.take(10).padStart(10, '0')
 
-        // 3. 获取设备型号 (Smali 里的 Build.MODEL)
-        val deviceModel = Build.MODEL 
-
-        // 4. 调用搬运过来的 Native 方法
-        // 注意：原 Smali 中 v2 是从 SecureConfig 拿的 BaseURL
-        val result = NativeLib.getStartupUrlNative(
-            BASE_URL,
-            CHANNEL_ID,
-            deviceModel,
-            timestampStr
+        // 2. 构造设备 JSON (严格对应 Smali 中的字段名)
+        val deviceInfo = DeviceInfo(
+            Model = customModel ?: Build.MODEL,
+            Board = Build.BOARD,
+            Android = Build.VERSION.SDK_INT.toString()
         )
+        
+        val deviceJson = Json.encodeToString(deviceInfo)
 
-        return result ?: ""
+        // 3. 调用 Native 库
+        // 记得确保 NativeLib 已经加载了 libwysappmarket.so
+        return try {
+            NativeLib.INSTANCE.getStartupUrlNative(
+                BASE_URL,
+                BUILD_ID,
+                deviceJson,
+                finalTimestamp
+            ) ?: ""
+        } catch (e: Exception) {
+            e.printStackTrace()
+            ""
+        }
     }
 }
