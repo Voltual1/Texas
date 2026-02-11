@@ -162,9 +162,9 @@ dependencies {
     // --- Neo Store 移植依赖 ---
     implementation(libs.kotlinx.datetime)
     implementation(libs.kotlinx.collections.immutable)
-    implementation(libs.compose.html-converter)
+    implementation(libs.compose.html.converter)
     implementation(libs.vico.compose)
-    implementation(libs.vico.compose-m3)
+    implementation(libs.vico.compose.m3)
 }
 
 protobuf {
