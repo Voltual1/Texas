@@ -21,7 +21,7 @@ import android.provider.Settings
 import android.text.format.DateUtils
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
-import androidx.biometric.BiometricManager
+//import androidx.biometric.BiometricManager
 import androidx.core.app.ActivityCompat
 import androidx.core.net.toUri
 import androidx.fragment.app.FragmentManager
