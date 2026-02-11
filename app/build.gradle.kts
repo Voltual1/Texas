@@ -1,42 +1,25 @@
-import java.util.Properties
-
 plugins {
-    alias(libs.plugins.android.application)
-    alias(libs.plugins.kotlin.android)
-    alias(libs.plugins.kotlin.compose)
-    alias(libs.plugins.ksp)
-    alias(libs.plugins.kotlin.serialization)
-    alias(libs.plugins.protobuf)
+    id("com.android.application")
+    id("kotlin-android")
+    id("com.google.devtools.ksp") version "2.2.21-2.0.4"
+    kotlin("plugin.serialization") version "2.2.21"
+    id("com.google.protobuf") version "0.9.5"
+    id("org.jetbrains.kotlin.plugin.compose") version "2.2.21"
 }
 
 android {
-    val keystorePropertiesFile = rootProject.file("keystore.properties")
-    val keystoreProperties = Properties()
-    if (keystorePropertiesFile.exists()) {
-        keystoreProperties.load(keystorePropertiesFile.inputStream())
-    }
-
-    namespace = "me.voltual.pyrolysis"
+    namespace = "cc.bbq.xq"
     compileSdk = 35
 
     defaultConfig {
-        applicationId = "me.voltual.pyrolysis"
+        applicationId = "cc.bbq.xq"
         minSdk = 21
         targetSdk = 35
-        versionCode = 423
-        versionName = "19.5"
+        versionCode = 422
+        versionName = "19.4"
         multiDexEnabled = true
         buildConfigField("String", "LICENSE", "\"GPLv3\"")
         resourceConfigurations += listOf("zh")
-    }
-
-    signingConfigs {
-        create("release") {
-            storeFile = file(System.getenv("KEYSTORE_PATH") ?: keystoreProperties.getProperty("storeFile") ?: "debug.keystore")
-            storePassword = System.getenv("KEYSTORE_PASSWORD") ?: keystoreProperties.getProperty("storePassword")
-            keyAlias = System.getenv("KEY_ALIAS") ?: keystoreProperties.getProperty("keyAlias")
-            keyPassword = System.getenv("KEY_PASSWORD") ?: keystoreProperties.getProperty("keyPassword")
-        }
     }
 
     splits {
@@ -45,17 +28,6 @@ android {
             reset()
             include("armeabi-v7a", "arm64-v8a")
             isUniversalApk = false
-        }
-    }
-
-    // 注意：在 AGP 8.0+ 中建议使用更现代的方式处理输出文件名
-    // 但保留你的逻辑并修正类型转换
-    applicationVariants.all {
-        val variant = this
-        variant.outputs.all {
-            val output = this as com.android.build.gradle.internal.api.ApkVariantOutputImpl
-            val abi = output.getFilter(com.android.build.OutputFile.ABI) ?: "universal"
-            output.outputFileName = "Pyrolysis${variant.versionName}-$abi-${variant.buildType.name}.apk"
         }
     }
 
@@ -69,13 +41,11 @@ android {
         release {
             isMinifyEnabled = true
             isShrinkResources = true
-            signingConfig = signingConfigs.getByName("release")
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
         }
         debug {
             isDebuggable = true
             isMinifyEnabled = false
-            signingConfig = signingConfigs.getByName("release")
         }
     }
 
@@ -86,96 +56,118 @@ android {
 
     packaging {
         resources {
+            // 排除重复的协议文件
             excludes.add("/META-INF/{AL2.0,LGPL2.1}")
             excludes.add("/META-INF/INDEX.LIST")
             excludes.add("/META-INF/DEPENDENCIES")
+            
+            // 排除protobuf相关目录
             excludes.add("/google/protobuf/**")
             excludes.add("/src/google/protobuf/**")
-            excludes.add("/java/core/java_features_proto-descriptor-set.proto.bin")
+            excludes.add("/java/core/java_features_proto-descriptor-set.proto.bin")            
+            
+            // 排除重复的LICENSE文件
             excludes.add("/META-INF/LICENSE*")
             excludes.add("/META-INF/*.txt")
-            excludes.add("/DebugProbesKt.bin")
+            
+            // 合并重复资源（可选）
             merges.add("/META-INF/services/**")
+            
+            excludes.add("/DebugProbesKt.bin")            
         }
     }
-
+    
     kotlin {
         jvmToolchain(17)
     }
 }
 
 dependencies {
-    // 基础
-    coreLibraryDesugaring(libs.android.desugar)
-    implementation(libs.google.material)
-    implementation(libs.okhttp)
-    implementation(libs.photoview)
+    // ===== 基础依赖 =====
+    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.0.3")   
+    implementation("com.google.android.material:material:1.9.0")
+    implementation("com.squareup.okhttp3:okhttp:5.3.2")
+    implementation("com.github.chrisbanes:PhotoView:2.3.0")
 
-    // Compose
-    implementation(platform(libs.compose.bom))
-    implementation(libs.androidx.ui)
-    implementation(libs.androidx.material3)
-    implementation(libs.androidx.activity.compose)
-    implementation(libs.androidx.icons.extended)
-    implementation(libs.androidx.lifecycle.runtime.compose)
-    implementation(libs.androidx.lifecycle.viewmodel.compose)
-    implementation(libs.androidx.navigation.compose)
+    // ===== Compose 全家桶 =====
+    implementation(platform("androidx.compose:compose-bom:2025.11.01"))
+    implementation("androidx.compose.ui:ui")
+    implementation("androidx.compose.material3:material3")
+    implementation("androidx.activity:activity-compose")
+    implementation("androidx.compose.material:material-icons-extended")
+    implementation("androidx.lifecycle:lifecycle-runtime-compose")
+    implementation("androidx.lifecycle:lifecycle-viewmodel-compose")
+    implementation("androidx.navigation:navigation-compose:2.9.6")
+//    implementation("androidx.compose.material:material")
 
-    // 图片与异步
-    implementation(libs.coil.compose)
-    implementation(libs.coil.network.ktor)
-    implementation(libs.kotlinx.coroutines.android)
-    implementation(libs.imagepicker)
+    // ===== 图片加载方案 =====
+    implementation("io.coil-kt.coil3:coil-compose:3.3.0")
+    implementation("io.coil-kt.coil3:coil-network-ktor3:3.3.0")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.10.2")
+    implementation("com.github.dhaval2404:imagepicker:2.1")
 
-    // 播放器与 UI
-    implementation(libs.ijkplayer)
+    // ===== 播放器依赖 =====
+    implementation("com.sdtv.haikan:ijkplayer:0.0.2")
     implementation(project(":DanmakuFlameMaster"))
-    implementation(libs.androidx.palette)
-    implementation(libs.markdown)
 
-    // 存储
-    implementation(libs.room.runtime)
-    implementation(libs.room.ktx)
-    ksp(libs.room.compiler)
-    implementation(libs.datastore.preferences)
-    implementation(libs.datastore.core)
+    // 用于颜色提取
+    implementation("androidx.palette:palette-ktx:1.0.0")
 
-    // Koin 注入
-    implementation(libs.koin.android.compose)
-    implementation(libs.koin.core)
-    implementation(libs.koin.annotations)
-    ksp(libs.koin.ksp.compiler)
+    // ===== ROOM 数据库依赖 =====
+    val room_version = "2.7.2"
+    implementation("androidx.room:room-runtime:$room_version")
+    implementation("androidx.room:room-ktx:$room_version")
+    ksp("androidx.room:room-compiler:$room_version")
+    
+    //  ===== datastore =====
+    val datastore_version = "1.1.7"
+    implementation("androidx.datastore:datastore-preferences:$datastore_version")
+    implementation("androidx.datastore:datastore:$datastore_version")
+    
+// 添加 Koin Annotations 相关的依赖：
+val koin_version = "4.1.1"
+implementation("io.insert-koin:koin-androidx-compose:$koin_version")
+implementation("io.insert-koin:koin-core:$koin_version")
+val koin_annotations_version = "2.3.1"
+implementation("io.insert-koin:koin-annotations:$koin_annotations_version") // 添加注解库
+ksp("io.insert-koin:koin-ksp-compiler:$koin_annotations_version") // 添加 KSP 处理器
 
-    // Ktor 与 序列化
-    implementation(libs.ktor.client.core)
-    implementation(libs.ktor.client.okhttp)
-    implementation(libs.ktor.client.content.negotiation)
-    implementation(libs.ktor.serialization.json)
-    implementation(libs.ktor.io)
-    implementation(libs.ktor.client.logging)
-    implementation(libs.kotlinx.serialization.json)
-    implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.6.1") // 建议使用最新版本
+    // ===== Ktor 客户端依赖 =====
+    val ktor_version = "3.3.2"
+    implementation("io.ktor:ktor-client-core:$ktor_version")
+    implementation("io.ktor:ktor-client-okhttp:$ktor_version")
+    implementation("io.ktor:ktor-client-content-negotiation:$ktor_version")
+    implementation("io.ktor:ktor-serialization-kotlinx-json:$ktor_version")
+//    implementation("io.ktor:ktor-utils:$ktor_version")
+    implementation("io.ktor:ktor-io:$ktor_version")
+    implementation("io.ktor:ktor-client-logging:$ktor_version")
 
-    // 安全与数据
-    implementation(libs.tink.android)
-    implementation(libs.protobuf.kotlin)
+    // ===== kotlinx.serialization =====
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.9.0")
+    //从androidx.security:security-crypto改成直接用Tink加密了
+    implementation("com.google.crypto.tink:tink-android:1.20.0")    
 
-    // --- Neo Store 移植依赖 ---
-    implementation(libs.kotlinx.datetime)
-    implementation(libs.kotlinx.collections.immutable)
-    implementation(libs.compose.html.converter)
+    // ===== protobuf 依赖 =====
+    implementation("com.google.protobuf:protobuf-kotlin:4.32.1")//永远不要用lite!
+//    implementation("androidx.security:security-crypto:1.1.0") // 加密库，已经被弃用了！
+    
+    // ===== MarkDown 依赖 =====
+    implementation("org.jetbrains:markdown:0.7.3")
 }
 
 protobuf {
     protoc {
-        artifact = libs.protoc.artifact.get().toString()
+        artifact = "com.google.protobuf:protoc:4.32.1"
     }
     generateProtoTasks {
         all().forEach { task ->
             task.builtins {
-                create("java")
-                create("kotlin")
-                //孩子们，不要说我没有警告你，本项目owner实战经验发现用lite版本会被r8混淆导致发行版ggԾ‸ Ծ 
+                create("java") {
+                    //去TM的lite，lite版本使用反射会被R8混淆
+                }
+                create("kotlin") {
+                    // 移除 option("lite")
+                }
             }
         }
     }
@@ -184,5 +176,6 @@ protobuf {
 tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach {
     compilerOptions {
         jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17)
+//        freeCompilerArgs.add("-XXLanguage:+UnitConversionsOnArbitraryExpressions")
     }
 }
