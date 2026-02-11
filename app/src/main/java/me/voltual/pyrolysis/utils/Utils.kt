@@ -38,14 +38,7 @@ object Utils {
         return MessageDigest.getInstance("SHA-256").digest(signature.toByteArray())
             .hex()
     }
-    
-    fun Context.getLocaleDateString(time: Long): String {
-    val date = Date(time)
-    val format = if (DateUtils.isToday(date.time)) DateUtils.FORMAT_SHOW_TIME else
-        DateUtils.FORMAT_SHOW_TIME or DateUtils.FORMAT_SHOW_DATE
-    return DateUtils.formatDateTime(this, date.time, format)
-}
-
+       
     fun calculateSHA256(hexadecString: String): String {
         return MessageDigest.getInstance("SHA-256")
             .digest(
@@ -63,4 +56,10 @@ object Utils {
     }
 
     
+}
+fun Context.getLocaleDateString(time: Long): String {
+    val date = Date(time)
+    val format = if (DateUtils.isToday(date.time)) DateUtils.FORMAT_SHOW_TIME else
+        DateUtils.FORMAT_SHOW_TIME or DateUtils.FORMAT_SHOW_DATE
+    return DateUtils.formatDateTime(this, date.time, format)
 }
