@@ -40,7 +40,7 @@ object StartupTool {
         // 3. 调用 Native 库
         // 记得确保 NativeLib 已经加载了 libwysappmarket.so
         return try {
-            NativeLib.INSTANCE.getStartupUrlNative(
+            NativeLib.getStartupUrlNative(
                 BASE_URL,
                 BUILD_ID,
                 deviceJson,
