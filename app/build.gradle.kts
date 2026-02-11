@@ -144,12 +144,12 @@ dependencies {
     implementation(libs.koin.android.compose)
     implementation(libs.koin.core)
     implementation(libs.koin.annotations)
-    ksp(libs.koin.ksp-compiler)
+    ksp(libs.koin.ksp.compiler)
 
     // Ktor 与 序列化
     implementation(libs.ktor.client.core)
     implementation(libs.ktor.client.okhttp)
-    implementation(libs.ktor.client.content-negotiation)
+    implementation(libs.ktor.client.content.negotiation)
     implementation(libs.ktor.serialization.json)
     implementation(libs.ktor.io)
     implementation(libs.ktor.client.logging)
