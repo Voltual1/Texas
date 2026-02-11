@@ -2,7 +2,6 @@
 pyrolysis-agp = "8.13.0"
 pyrolysis-kotlin = "2.2.21"
 pyrolysis-compose-bom = "2025.11.01"
-pyrolysis-activity = "1.12.2"
 pyrolysis-navigation = "2.9.6"
 
 # 功能库
@@ -46,7 +45,7 @@ androidx-ui = { group = "androidx.compose.ui", name = "ui" }
 androidx-ui-graphics = { group = "androidx.compose.ui", name = "ui-graphics" }
 androidx-ui-tooling-preview = { group = "androidx.compose.ui", name = "ui-tooling-preview" }
 androidx-material3 = { group = "androidx.compose.material3", name = "material3" }
-androidx-activity-compose = { module = "androidx.activity:activity-compose", version.ref = "pyrolysis-activity" }
+androidx-activity-compose = { group = "androidx.activity", name = "activity-compose" }
 androidx-icons-extended = { group = "androidx.compose.material", name = "material-icons-extended" }
 androidx-lifecycle-runtime-compose = { group = "androidx.lifecycle", name = "lifecycle-runtime-compose" }
 androidx-lifecycle-viewmodel-compose = { group = "androidx.lifecycle", name = "lifecycle-viewmodel-compose" }

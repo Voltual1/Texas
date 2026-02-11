@@ -17,7 +17,7 @@ android {
     }
 
     namespace = "me.voltual.pyrolysis"
-    compileSdk = 36
+    compileSdk = 35
 
     defaultConfig {
         applicationId = "me.voltual.pyrolysis"
