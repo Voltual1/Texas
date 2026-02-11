@@ -1,27 +1,21 @@
 // settings.gradle.kts
-
 pluginManagement {
-  repositories {
-    gradlePluginPortal()
-    google()
-    mavenCentral()
-    maven { url = uri("https://maven.aliyun.com/repository/gradle-plugin") }
-  }
+    repositories {
+        google()
+        mavenCentral()
+        gradlePluginPortal()
+    }
 }
 
 dependencyResolutionManagement {
-  repositoriesMode.set(RepositoriesMode.PREFER_SETTINGS)
-  
-  repositories {
-    maven { url = uri("https://maven.aliyun.com/repository/public") }
-    maven { url = uri("https://maven.aliyun.com/repository/google") }
+    repositoriesMode.set(RepositoriesMode.PREFER_SETTINGS)
     
-    // 标准仓库
-    google()
-    mavenCentral()    
-    maven { url = uri("https://jitpack.io") }    
-    maven { url = uri("$rootDir/ijkplayer-main") }
-  }
+    repositories {
+        google()
+        mavenCentral()
+        maven { url = uri("https://jitpack.io") }       
+        maven { url = uri("$rootDir/ijkplayer-main") }
+    }
 }
 
 rootProject.name = "Pyrolysis"
