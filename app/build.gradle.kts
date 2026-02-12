@@ -153,6 +153,7 @@ ksp("io.insert-koin:koin-ksp-compiler:$koin_annotations_version") // 添加 KSP 
     
     // ===== MarkDown 依赖 =====
     implementation("org.jetbrains:markdown:0.7.3")
+    implementation("org.lsposed.hiddenapibypass:hiddenapibypass:4.3")
 }
 
 protobuf {
