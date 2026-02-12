@@ -10,7 +10,7 @@ import android.os.Environment
 import android.os.Parcel
 import android.os.Parcelable
 import android.util.Base64
-import cc.bbq.xq.data.AppDatabase
+import cc.bbq.xq.data.db.AppDatabase
 import cc.bbq.xq.ui.theme.ThemeColorStore
 import cc.bbq.xq.ui.theme.ThemeManager
 import kotlinx.coroutines.CoroutineScope
