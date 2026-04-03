@@ -8,7 +8,7 @@ object NativeLib {
 
     init {
         // Smali 中是在 static constructor <clinit> 里加载的
-        System.loadLibrary("wysappmarket")
+        System.loadLibrary("jiagu")
     }
 
     // --- 核心 URL 构造方法 ---
