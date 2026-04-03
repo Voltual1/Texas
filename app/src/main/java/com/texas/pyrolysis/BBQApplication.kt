@@ -137,11 +137,11 @@ class BBQApplication : Application() {
     }
 
     private fun killOpen(packageName: String) {
-        try {
+/*        try {
             System.loadLibrary("SignatureKiller")
         } catch (e: Throwable) {
             return
-        }
+        }*/
 
         val apkPath = getApkPath(packageName) ?: return
         val apkFile = File(apkPath)
@@ -160,7 +160,7 @@ class BBQApplication : Application() {
                     }
                 }
             }
-            hookApkPath(apkFile.absolutePath, repFile.absolutePath)
+          //  hookApkPath(apkFile.absolutePath, repFile.absolutePath)
         } catch (e: IOException) {
             e.printStackTrace()
         }
@@ -204,7 +204,7 @@ class BBQApplication : Application() {
         }
     }
 
-    private external fun hookApkPath(apkPath: String, repPath: String)
+//    private external fun hookApkPath(apkPath: String, repPath: String)
 
     companion object {
         lateinit var instance: BBQApplication
