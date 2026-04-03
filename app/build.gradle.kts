@@ -8,15 +8,15 @@ plugins {
 }
 
 android {
-    namespace = "cc.bbq.xq"
+    namespace = "com.texas.pyrolysis"
     compileSdk = 35
 
     defaultConfig {
-        applicationId = "cc.bbq.xq"
+        applicationId = "com.texas.pyrolysis"
         minSdk = 21
         targetSdk = 35
-        versionCode = 422
-        versionName = "19.4"
+        versionCode = 1
+        versionName = "1.0"
         multiDexEnabled = true
         buildConfigField("String", "LICENSE", "\"GPLv3\"")
         resourceConfigurations += listOf("zh")

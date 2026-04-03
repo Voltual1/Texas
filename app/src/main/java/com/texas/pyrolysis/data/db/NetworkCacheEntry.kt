@@ -6,20 +6,16 @@
 //
 // 你应该已经收到了一份 GNU 通用公共许可证的副本
 // 如果没有，请查阅 <http://www.gnu.org/licenses/>.
-syntax = "proto3";
 
-package com.texas.pyrolysis.data.proto;
 
-option java_package = "com.texas.pyrolysis.data.proto";
-option java_multiple_files = true;
+package com.texas.pyrolysis.data.db
 
-message UserCredentials {
-  string username = 1;
-  string password = 2;
-  string token = 3; //小趣空间Token
-  int64 userId = 4; //小趣空间用户id
-  string deviceId = 5; //小趣空间设备id
-  string sine_market_token = 6; //弦应用商店Token
-  string sine_open_market_token = 7; //弦开放平台Token
-  string ling_market_token = 8; //新增的灵应用商店Token
-}
+import androidx.room.Entity
+import androidx.room.PrimaryKey
+
+@Entity(tableName = "network_cache")
+data class NetworkCacheEntry(
+    @PrimaryKey val requestKey: String, // 由 URL 和请求参数生成的唯一哈希值
+    val responseJson: String,
+    val timestamp: Long = System.currentTimeMillis()
+)
