@@ -1,4 +1,4 @@
-package com.texas.pyrolysis.util
+package cc.bbq.xq.util
 
 import android.os.Build
 import com.qx.wysappmarket.presentation.NativeLib
@@ -40,7 +40,7 @@ object StartupTool {
         // 3. 调用 Native 库
         // 记得确保 NativeLib 已经加载了 libwysappmarket.so
         return try {
-            NativeLib.getStartupUrlNative(
+            NativeLib.INSTANCE.getStartupUrlNative(
                 BASE_URL,
                 BUILD_ID,
                 deviceJson,

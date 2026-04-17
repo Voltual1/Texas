@@ -18,12 +18,21 @@ class WysAppMarketRepository(
         const val PAGE_SIZE = 20
     }
     
-    // 2. 提取一个私有辅助方法，用于获取当前机型名
+    // 提取一个私有辅助方法，用于获取当前机型名
     private suspend fun getCurrentDeviceModel(): String {
-    // 依靠 DataStore 的默认值 "Android Device" 或 "默认机型"
-    // 但使用 ifBlank 确保不会把空字符串发给 API
-    return deviceDataStore.currentConfigFlow.first().model.takeIf { it.isNotBlank() } ?: "Android"
-}
+        // 获取当前的设备列表
+        val deviceList = deviceDataStore.deviceListFlow.first()
+        
+        // 逻辑：
+        // 1. 如果列表不为空，随机抽取一个
+        // 2. 抽取后，检查其 model 是否有效
+        // 3. 如果列表为空或 model 无效，则返回默认值 "Android"
+        return deviceList.shuffled()
+            .firstOrNull()
+            ?.model
+            ?.takeIf { it.isNotBlank() } 
+            ?: "Android"
+    }
 
     // ==========================================================
     // 核心功能：微思商店是一个只读源，仅保留查询逻辑
