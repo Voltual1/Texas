@@ -5,6 +5,8 @@ import com.texas.pyrolysis.WysAppMarketClient
 import com.texas.pyrolysis.data.db.CrawledAppDao
 import com.texas.pyrolysis.data.db.CrawledAppEntity
 import kotlinx.coroutines.*
+import kotlinx.coroutines.sync.Semaphore
+import kotlinx.coroutines.sync.withPermit
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import java.io.File
@@ -16,12 +18,15 @@ class WysAppCrawlerRepository(
     private val crawledAppDao: CrawledAppDao,
     private val context: Context
 ) {
-    private val json = Json { prettyPrint = true; ignoreUnknownKeys = true }
+    private val json = Json { 
+        prettyPrint = true
+        ignoreUnknownKeys = true 
+    }
 
     /**
      * 使用二分法探测最大可用 App ID
      */
-    suspend fun findMaxAppId(low: Int = 1, high: Int = 2000): Int {
+    suspend fun findMaxAppId(low: Int = 1, high: Int = 2000): Int = withContext(Dispatchers.IO) {
         var l = low
         var r = high
         var maxId = low
@@ -31,20 +36,17 @@ class WysAppCrawlerRepository(
             val result = WysAppMarketClient.getAppInfo(mid)
             if (result.isSuccess) {
                 maxId = mid
-                l = mid + 1 // 继续往右找更大的
+                l = mid + 1
             } else {
-                r = mid - 1 // 往左找
+                r = mid - 1
             }
-            delay(200) // 避免请求过快
+            delay(200) // 礼貌爬取，避免被封
         }
-        return maxId
+        maxId
     }
 
     /**
      * 开始批量爬取
-     * @param startId 起始ID，如果为null则从数据库最大值+1开始
-     * @param endId 结束ID
-     * @param concurrency 并发数，建议不要太高，3-5即可
      */
     suspend fun startCrawling(
         startId: Int? = null,
@@ -53,26 +55,31 @@ class WysAppCrawlerRepository(
         onProgress: (current: Int, total: Int) -> Unit
     ) = withContext(Dispatchers.IO) {
         val actualStart = startId ?: ((crawledAppDao.getMaxCrawledId() ?: 0) + 1)
+        if (actualStart > endId) return@withContext
+        
         val totalToCrawl = endId - actualStart + 1
         var completed = 0
-
-        val semaphore = kotlinx.coroutines.sync.Semaphore(concurrency)
+        val semaphore = Semaphore(concurrency)
         
-        val jobs = (actualStart..endId).map { id ->
-            async {
-                semaphore.withPermit {
-                    try {
-                        crawlSingleApp(id)
-                    } catch (e: Exception) {
-                        println("CAN: 爬取 ID $id 失败: ${e.message}")
-                    } finally {
-                        completed++
-                        onProgress(completed, totalToCrawl)
+        // 使用 supervisorScope 确保单个任务失败不会导致整个爬取停止
+        supervisorScope {
+            for (id in actualStart..endId) {
+                launch {
+                    semaphore.withPermit {
+                        try {
+                            crawlSingleApp(id)
+                        } catch (e: Exception) {
+                            println("CAN: 爬取 ID $id 失败: ${e.message}")
+                        } finally {
+                            synchronized(this@WysAppCrawlerRepository) {
+                                completed++
+                                onProgress(completed, totalToCrawl)
+                            }
+                        }
                     }
                 }
             }
         }
-        jobs.awaitAll()
     }
 
     private suspend fun crawlSingleApp(appId: Int) {
@@ -80,8 +87,7 @@ class WysAppCrawlerRepository(
         val detailResult = WysAppMarketClient.getAppInfo(appId)
         val detail = detailResult.getOrNull() ?: return
 
-        // 2. 获取下载源
-        // 注意：这里会触发 WysAppMarketRepository 里的机型黑名单重试逻辑
+        // 2. 获取下载源 (使用 repository 以复用黑名单自动切换逻辑)
         val sourcesResult = marketRepository.getAppDownloadSources(appId.toString(), 0)
         val sources = sourcesResult.getOrNull() ?: emptyList()
 
@@ -104,7 +110,8 @@ class WysAppCrawlerRepository(
             val allData = crawledAppDao.getAllApps()
             val jsonString = json.encodeToString(allData)
             
-            val file = File(context.getExternalFilesDir(null), "wys_market_dump_${System.currentTimeMillis()}.json")
+            val fileName = "wys_market_dump_${System.currentTimeMillis()}.json"
+            val file = File(context.getExternalFilesDir(null), fileName)
             file.writeText(jsonString)
             Result.success(file)
         } catch (e: Exception) {
