@@ -11,6 +11,7 @@ package com.texas.pyrolysis
 import com.texas.pyrolysis.data.db.AppDatabase
 import com.texas.pyrolysis.data.repository.IAppStoreRepository
 import com.texas.pyrolysis.data.repository.SineShopRepository
+import com.texas.pyrolysis.data.repository.WysAppCrawlerRepository
 import com.texas.pyrolysis.data.repository.XiaoQuRepository
 import com.texas.pyrolysis.data.repository.SineOpenMarketRepository // 添加这个导入
 //import com.texas.pyrolysis.data.db.DownloadTaskRepository
@@ -34,6 +35,7 @@ import com.texas.pyrolysis.ui.plaza.AppDetailComposeViewModel
 import com.texas.pyrolysis.ui.community.PostCreateViewModel
 import com.texas.pyrolysis.ui.plaza.AppReleaseViewModel
 import com.texas.pyrolysis.ui.plaza.PlazaViewModel
+import com.texas.pyrolysis.ui.plaza.CrawlerViewModel
 import com.texas.pyrolysis.ui.player.PlayerViewModel
 import com.texas.pyrolysis.ui.settings.signin.SignInSettingsViewModel
 import com.texas.pyrolysis.ui.search.SearchViewModel
@@ -90,6 +92,7 @@ val appModule = module {
     viewModel { BrowseHistoryViewModel(androidApplication()) }
     viewModel { PostDetailViewModel(androidApplication()) }
     viewModel { RankingListViewModel() }
+    viewModel { CrawlerViewModel(get()) }
     viewModel { UpdateSettingsViewModel() }
     viewModel { SignInSettingsViewModel() }
     viewModel { HomeViewModel() }
@@ -111,6 +114,8 @@ single { UserAgreementDataStore(androidContext()) }
     single { get<AppDatabase>().browseHistoryDao() }  // 如果需要的话
     single { get<AppDatabase>().networkCacheDao() }  // 如果需要的话
     single { get<AppDatabase>().postDraftDao() }  
+    single { get<AppDatabase>().crawledAppDao() }
+single { WysAppCrawlerRepository(get(), get(), androidContext()) }
 //    single { get<AppDatabase>().downloadTaskDao() }  // 关键：添加 DownloadTaskDao 的定义
     
     single { SearchHistoryDataStore(androidApplication()) }
