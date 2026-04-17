@@ -106,6 +106,24 @@ abstract class AppDatabase : RoomDatabase() {
                 db.execSQL("DROP TABLE IF EXISTS `download_tasks`")
             }
         }
+        
+        private val MIGRATION_7_8 = object : Migration(7, 8) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL(
+                    """
+                    CREATE TABLE IF NOT EXISTS `crawled_apps` (
+                        `appId` INTEGER NOT NULL, 
+                        `name` TEXT NOT NULL, 
+                        `packageName` TEXT NOT NULL, 
+                        `version` TEXT NOT NULL, 
+                        `downloadUrlsJson` TEXT NOT NULL, 
+                        `timestamp` INTEGER NOT NULL, 
+                        PRIMARY KEY(`appId`)
+                    )
+                    """.trimIndent()
+                )
+            }
+        }
 
         fun getDatabase(context: Context): AppDatabase {
             return INSTANCE ?: synchronized(this) {
@@ -123,7 +141,8 @@ abstract class AppDatabase : RoomDatabase() {
                         MIGRATION_5_6,
                         MIGRATION_6_7,
                         MIGRATION_4_7,
-                        MIGRATION_5_7
+                        MIGRATION_5_7,
+                        MIGRATION_7_8
                     )
 //                    .fallbackToDestructiveMigration() // 如果迁移失败，重建数据库（数据会丢失，但避免崩溃）
                     .build()

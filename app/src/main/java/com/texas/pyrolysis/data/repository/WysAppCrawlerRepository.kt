@@ -83,11 +83,16 @@ class WysAppCrawlerRepository(
     }
 
     private suspend fun crawlSingleApp(appId: Int) {
+    try {
         // 1. 获取详情
         val detailResult = WysAppMarketClient.getAppInfo(appId)
-        val detail = detailResult.getOrNull() ?: return
+        val detail = detailResult.getOrNull()
+        if (detail == null) {
+            println("CAN: ID $appId 不存在或请求失败: ${detailResult.exceptionOrNull()?.message}")
+            return
+        }
 
-        // 2. 获取下载源 (使用 repository 以复用黑名单自动切换逻辑)
+        // 2. 获取下载源
         val sourcesResult = marketRepository.getAppDownloadSources(appId.toString(), 0)
         val sources = sourcesResult.getOrNull() ?: emptyList()
 
@@ -99,23 +104,40 @@ class WysAppCrawlerRepository(
             version = detail.version,
             downloadUrlsJson = json.encodeToString(sources)
         )
+        
         crawledAppDao.insertApp(entity)
+        println("CAN: 成功保存 ID $appId - ${detail.name}")
+        
+    } catch (e: Exception) {
+        // 如果这里报错，通常是数据库表不存在
+        println("CAN: 写入数据库失败 ID $appId: ${e.message}")
+        e.printStackTrace()
+        throw e // 抛出异常让外层的 try-catch 捕获
     }
+}
 
     /**
      * 导出数据库为 JSON 文件
      */
     suspend fun exportToJson(): Result<File> = withContext(Dispatchers.IO) {
-        try {
-            val allData = crawledAppDao.getAllApps()
-            val jsonString = json.encodeToString(allData)
-            
-            val fileName = "wys_market_dump_${System.currentTimeMillis()}.json"
-            val file = File(context.getExternalFilesDir(null), fileName)
-            file.writeText(jsonString)
-            Result.success(file)
-        } catch (e: Exception) {
-            Result.failure(e)
+    try {
+        val allData = crawledAppDao.getAllApps()
+        println("CAN: 准备导出数据，数据库内共有 ${allData.size} 条记录")
+        
+        if (allData.isEmpty()) {
+            return@withContext Result.failure(Exception("数据库中没有数据，请先开始抓取"))
         }
+
+        val jsonString = json.encodeToString(allData)
+        val fileName = "wys_market_dump_${System.currentTimeMillis()}.json"
+        val file = File(context.getExternalFilesDir(null), fileName)
+        file.writeText(jsonString)
+        
+        println("CAN: 文件已写入 ${file.absolutePath}")
+        Result.success(file)
+    } catch (e: Exception) {
+        println("CAN: 导出异常: ${e.message}")
+        Result.failure(e)
     }
+}
 }
