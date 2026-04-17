@@ -17,8 +17,14 @@ import androidx.sqlite.db.SupportSQLiteDatabase
 import com.texas.pyrolysis.ui.community.BrowseHistory
 
 @Database(
-    entities = [LogEntry::class, BrowseHistory::class, NetworkCacheEntry::class, PostDraft::class],
-    version = 7, // 升级到版本7，移除下载表
+    entities = [
+        LogEntry::class, 
+        BrowseHistory::class, 
+        NetworkCacheEntry::class, 
+        PostDraft::class,
+        CrawledAppEntity::class // 新增
+    ],
+    version = 8, // 升级版本号
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -26,6 +32,7 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun browseHistoryDao(): BrowseHistoryDao
     abstract fun networkCacheDao(): NetworkCacheDao
     abstract fun postDraftDao(): PostDraftDao
+    abstract fun crawledAppDao(): CrawledAppDao // 新增    
 
     companion object {
         @Volatile
