@@ -457,6 +457,12 @@ composable(route = AccountProfile.route, arguments = AccountProfileArgs.argument
     )
 }
 
+composable(route = Crawler.route) {
+    CrawlerScreen(
+        onBack = { navController.popBackStack() }
+    )
+}
+
         // --- 资源广场 ---
 composable(route = ResourcePlaza(false).route, arguments = ResourcePlaza.arguments) { backStackEntry ->
             val isMyResource = backStackEntry.arguments?.getBoolean(AppDestination.ARG_IS_MY_RESOURCE) ?: false

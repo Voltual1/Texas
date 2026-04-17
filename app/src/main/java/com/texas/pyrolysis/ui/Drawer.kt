@@ -67,25 +67,28 @@ fun NavigationDrawerItems(
 ) {
     val context = LocalContext.current
 
-    val allDrawerItems = remember {
-        mutableListOf( // 修改为 mutableListOf
-            DrawerItem("home", "首页", R.drawable.ic_menu_home, Home.route),
-            DrawerItem("resources", "资源广场", R.drawable.ic_menu_apps, ResourcePlaza(isMyResource = false).createRoute()),
-            DrawerItem("community", "交流社区", R.drawable.ic_menu_community, Community.route),
-            DrawerItem("messages", "消息中心", R.drawable.ic_menu_message, MessageCenter.route),
-            DrawerItem("ranking_list", "天梯竞赛", R.drawable.ic_menu_ranking, RankingList.route),
-            DrawerItem("release_app", "发布应用", R.drawable.bg, CreateAppRelease.route),
-            DrawerItem("bot_logs", "日志", R.drawable.work_log, LogViewer.route),
-            DrawerItem("store_manager", "存储管理", R.drawable.appbackuprestore, StoreManager.route),
-            // 新增：下载管理菜单项
-            DrawerItem("download", "下载管理", R.drawable.dsdownload, Download.route),
-            DrawerItem("update_settings", "更新设置", R.drawable.asusupdate, UpdateSettings.route),
-            DrawerItem("settings", "主题设置", R.drawable.ic_menu_settings, ThemeCustomize.route),
-            DrawerItem("signin_settings", "签到设置", R.drawable.sign_in,SignInSettings.route),
-            DrawerItem("login", "登录账号", R.drawable.ic_menu_login, "login"), 
-            DrawerItem("logout", "退出登录", R.drawable.ic_menu_logout, "logout") // 特殊处理
-        )
-    }
+    // 在 allDrawerItems 定义中，找到 "store_manager" 或 "download" 附近，添加爬虫菜单项
+
+val allDrawerItems = remember {
+    mutableListOf(
+        DrawerItem("home", "首页", R.drawable.ic_menu_home, Home.route),
+        DrawerItem("resources", "资源广场", R.drawable.ic_menu_apps, ResourcePlaza(isMyResource = false).createRoute()),
+        DrawerItem("community", "交流社区", R.drawable.ic_menu_community, Community.route),
+        DrawerItem("messages", "消息中心", R.drawable.ic_menu_message, MessageCenter.route),
+        DrawerItem("ranking_list", "天梯竞赛", R.drawable.ic_menu_ranking, RankingList.route),
+        DrawerItem("release_app", "发布应用", R.drawable.bg, CreateAppRelease.route),
+        DrawerItem("bot_logs", "日志", R.drawable.work_log, LogViewer.route),
+        DrawerItem("store_manager", "存储管理", R.drawable.appbackuprestore, StoreManager.route),
+        // 新增：爬虫控制台菜单项
+        DrawerItem("crawler", "微思爬虫", R.drawable.swarm, Crawler.route), // 需要选择合适的图标
+        DrawerItem("download", "下载管理", R.drawable.dsdownload, Download.route),
+        DrawerItem("update_settings", "更新设置", R.drawable.asusupdate, UpdateSettings.route),
+        DrawerItem("settings", "主题设置", R.drawable.ic_menu_settings, ThemeCustomize.route),
+        DrawerItem("signin_settings", "签到设置", R.drawable.sign_in, SignInSettings.route),
+        DrawerItem("login", "登录账号", R.drawable.ic_menu_login, "login"),
+        DrawerItem("logout", "退出登录", R.drawable.ic_menu_logout, "logout")
+    )
+}
     val allItemsMap = remember { allDrawerItems.associateBy { it.id } }
 
     var orderedItems by remember { mutableStateOf<List<DrawerItem>>(emptyList()) }

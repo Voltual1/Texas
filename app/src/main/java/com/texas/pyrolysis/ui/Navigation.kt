@@ -376,6 +376,12 @@ data class Player(val bvid: String): AppDestination {
     }
 }
 
+// 在 Navigation.kt 文件末尾，RankingList 对象之后添加
+
+object Crawler : AppDestination {
+    override val route = "crawler"
+}
+
 // --- 辅助函数 ---
 private fun encode(input: String): String {
     return URLEncoder.encode(input, StandardCharsets.UTF_8.toString())
