@@ -42,7 +42,7 @@ jobs:
             ${{ runner.os }}-gradle-  
 
       - name: Build with Gradle
-        run: ./gradlew assembleRelease
+        run: ./gradlew assembleDebug
 
       - name: Get version info
         id: version
