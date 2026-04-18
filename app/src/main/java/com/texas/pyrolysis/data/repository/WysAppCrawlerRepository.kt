@@ -83,8 +83,7 @@ class WysAppCrawlerRepository(
                 return false
             }
 
-            // 2. 获取下载源 (关键修正：必须传入详情里的 verid)
-            // 你之前的代码传的是 0，这是不对的。
+            // 2. 获取下载源
             val sourcesResult = marketRepository.getAppDownloadSources(
                 appId = appId.toString(), 
                 versionId = 0
