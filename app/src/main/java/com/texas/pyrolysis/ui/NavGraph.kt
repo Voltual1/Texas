@@ -459,7 +459,8 @@ composable(route = AccountProfile.route, arguments = AccountProfileArgs.argument
 
 composable(route = Crawler.route) {
     CrawlerScreen(
-        onBack = { navController.popBackStack() }
+        onBack = { navController.popBackStack() },
+        snackbarHostState = snackbarHostState
     )
 }
 

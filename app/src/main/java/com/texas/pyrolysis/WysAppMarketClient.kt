@@ -47,7 +47,7 @@ object WysAppMarketClient {
     private const val SOCKET_TIMEOUT = 30000L
     internal const val WYSAPPMARKET_ICON_BASE_URL = "https://image.apk.wysteam.cn/"
 
-    private const val DEFAULT_BUILD_NUMBER = "3400"
+    private const val DEFAULT_BUILD_NUMBER = "3501"
     private const val USER_AGENT_VALUE = "WysAppMarket/3.0 (Android; WearOS)"
     
     // Ktor HttpClient 实例

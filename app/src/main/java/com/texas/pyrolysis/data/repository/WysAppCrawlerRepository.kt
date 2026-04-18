@@ -49,54 +49,47 @@ class WysAppCrawlerRepository(
      * 开始批量爬取
      */
     suspend fun startCrawling(
-        startId: Int? = null,
-        endId: Int,
-        concurrency: Int = 3,
-        onProgress: (current: Int, total: Int) -> Unit
-    ) = withContext(Dispatchers.IO) {
-        val actualStart = startId ?: ((crawledAppDao.getMaxCrawledId() ?: 0) + 1)
-        if (actualStart > endId) return@withContext
-        
-        val totalToCrawl = endId - actualStart + 1
-        var completed = 0
-        val semaphore = Semaphore(concurrency)
-        
-        // 使用 supervisorScope 确保单个任务失败不会导致整个爬取停止
-        supervisorScope {
-            for (id in actualStart..endId) {
-                launch {
-                    semaphore.withPermit {
-                        try {
-                            crawlSingleApp(id)
-                        } catch (e: Exception) {
-                            println("CAN: 爬取 ID $id 失败: ${e.message}")
-                        } finally {
-                            synchronized(this@WysAppCrawlerRepository) {
-                                completed++
-                                onProgress(completed, totalToCrawl)
-                            }
+    startId: Int? = null,
+    endId: Int,
+    concurrency: Int = 3,
+    onProgress: (current: Int, total: Int, isSuccess: Boolean) -> Unit // 增加 isSuccess
+) = withContext(Dispatchers.IO) {
+    val actualStart = startId ?: ((crawledAppDao.getMaxCrawledId() ?: 0) + 1)
+    if (actualStart > endId) return@withContext
+    
+    val totalToCrawl = endId - actualStart + 1
+    var completed = 0
+    val semaphore = Semaphore(concurrency)
+    
+    supervisorScope {
+        for (id in actualStart..endId) {
+            launch {
+                semaphore.withPermit {
+                    var success = false
+                    try {
+                        success = crawlSingleApp(id) // 修改为返回 Boolean
+                    } catch (e: Exception) {
+                        println("CAN: 爬取 ID $id 失败: ${e.message}")
+                    } finally {
+                        synchronized(this@WysAppCrawlerRepository) {
+                            completed++
+                            onProgress(completed, totalToCrawl, success)
                         }
                     }
                 }
             }
         }
     }
+}
 
-    private suspend fun crawlSingleApp(appId: Int) {
-    try {
-        // 1. 获取详情
+private suspend fun crawlSingleApp(appId: Int): Boolean { // 返回是否成功
+    return try {
         val detailResult = WysAppMarketClient.getAppInfo(appId)
-        val detail = detailResult.getOrNull()
-        if (detail == null) {
-            println("CAN: ID $appId 不存在或请求失败: ${detailResult.exceptionOrNull()?.message}")
-            return
-        }
+        val detail = detailResult.getOrNull() ?: return false
 
-        // 2. 获取下载源
         val sourcesResult = marketRepository.getAppDownloadSources(appId.toString(), 0)
         val sources = sourcesResult.getOrNull() ?: emptyList()
 
-        // 3. 存入数据库
         val entity = CrawledAppEntity(
             appId = appId,
             name = detail.name,
@@ -106,13 +99,9 @@ class WysAppCrawlerRepository(
         )
         
         crawledAppDao.insertApp(entity)
-        println("CAN: 成功保存 ID $appId - ${detail.name}")
-        
+        true // 成功
     } catch (e: Exception) {
-        // 如果这里报错，通常是数据库表不存在
-        println("CAN: 写入数据库失败 ID $appId: ${e.message}")
-        e.printStackTrace()
-        throw e // 抛出异常让外层的 try-catch 捕获
+        false // 失败
     }
 }
 

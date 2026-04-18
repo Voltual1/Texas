@@ -4,8 +4,10 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.texas.pyrolysis.data.repository.WysAppCrawlerRepository
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.io.File
@@ -19,10 +21,8 @@ data class CrawlerUiState(
     val currentProgress: Int = 0,
     val totalToCrawl: Int = 0,
     val successCount: Int = 0,
-    val errorCount: Int = 0,
     val lastLog: String = "就绪",
-    val exportedFile: File? = null,
-    val errorMessage: String? = null
+    val exportedFile: File? = null
 )
 
 class CrawlerViewModel(
@@ -32,112 +32,74 @@ class CrawlerViewModel(
     private val _uiState = MutableStateFlow(CrawlerUiState())
     val uiState = _uiState.asStateFlow()
 
+    // 使用 Channel 发送一次性 Snackbar 事件
+    private val _snackbarChannel = Channel<String>(Channel.BUFFERED)
+    val snackbarEvents = _snackbarChannel.receiveAsFlow()
+
     private var crawlJob: Job? = null
 
-    /**
-     * 第一步：探测最大 ID
-     */
     fun detectMaxId() {
         viewModelScope.launch {
-            _uiState.update { it.copy(isDetectingMaxId = true, lastLog = "正在通过二分法探测最大可用 ID...") }
+            _uiState.update { it.copy(isDetectingMaxId = true, lastLog = "正在探测...") }
             try {
                 val maxId = crawlerRepository.findMaxAppId()
-                _uiState.update { 
-                    it.copy(
-                        isDetectingMaxId = false, 
-                        endId = maxId, 
-                        lastLog = "探测完成，当前商店最大 ID 约为: $maxId"
-                    ) 
-                }
+                _uiState.update { it.copy(isDetectingMaxId = false, endId = maxId, lastLog = "探测完成: $maxId") }
             } catch (e: Exception) {
-                _uiState.update { it.copy(isDetectingMaxId = false, errorMessage = "探测失败: ${e.message}") }
+                _uiState.update { it.copy(isDetectingMaxId = false) }
+                _snackbarChannel.send("探测失败: ${e.message}")
             }
         }
     }
 
-    /**
-     * 设置起始 ID
-     */
-    fun updateStartId(id: Int) {
-        _uiState.update { it.copy(startId = id) }
-    }
+    fun updateStartId(id: Int) { _uiState.update { it.copy(startId = id) } }
+    fun updateEndId(id: Int) { _uiState.update { it.copy(endId = id) } }
 
-    /**
-     * 设置结束 ID
-     */
-    fun updateEndId(id: Int) {
-        _uiState.update { it.copy(endId = id) }
-    }
-
-    /**
-     * 第二步：开始批量爬取
-     */
     fun startCrawling() {
         if (_uiState.value.isCrawling) return
-
         crawlJob = viewModelScope.launch {
-            _uiState.update { 
-                it.copy(
-                    isCrawling = true, 
-                    successCount = 0, 
-                    errorCount = 0,
-                    currentProgress = 0,
-                    errorMessage = null,
-                    lastLog = "爬虫启动..."
-                ) 
-            }
-
+            _uiState.update { it.copy(isCrawling = true, successCount = 0, currentProgress = 0, lastLog = "启动爬虫...") }
             try {
                 crawlerRepository.startCrawling(
                     startId = _uiState.value.startId,
-                    endId = _uiState.value.endId,
-                    concurrency = 3 // 默认 3 并发
-                ) { current, total ->
-                    // 进度回调
+                    endId = _uiState.value.endId
+                ) { current, total, isSuccess ->
                     _uiState.update { 
                         it.copy(
                             currentProgress = current,
                             totalToCrawl = total,
-                            successCount = current, // 这里简单处理，实际可根据 repo 返回细化
-                            lastLog = "正在爬取进度: $current / $total"
+                            successCount = if (isSuccess) it.successCount + 1 else it.successCount,
+                            lastLog = "进度: $current/$total | 成功: ${if (isSuccess) it.successCount + 1 else it.successCount}"
                         )
                     }
                 }
-                _uiState.update { it.copy(isCrawling = false, lastLog = "爬取任务全部完成！") }
+                _uiState.update { it.copy(isCrawling = false, lastLog = "任务结束") }
+                _snackbarChannel.send("抓取任务已完成，共保存 ${uiState.value.successCount} 条数据")
             } catch (e: Exception) {
-                _uiState.update { it.copy(isCrawling = false, errorMessage = "爬取中断: ${e.message}") }
+                _uiState.update { it.copy(isCrawling = false) }
+                _snackbarChannel.send("抓取中断: ${e.message}")
             }
         }
     }
 
-    /**
-     * 停止爬取
-     */
     fun stopCrawling() {
         crawlJob?.cancel()
-        _uiState.update { it.copy(isCrawling = false, lastLog = "用户手动停止了任务") }
+        _uiState.update { it.copy(isCrawling = false, lastLog = "已手动停止") }
     }
 
-    /**
-     * 第三步：导出 JSON
-     */
     fun exportData() {
         viewModelScope.launch {
-            _uiState.update { it.copy(isExporting = true, lastLog = "正在导出数据库...") }
+            _uiState.update { it.copy(isExporting = true) }
             crawlerRepository.exportToJson()
                 .onSuccess { file ->
-                    _uiState.update { it.copy(isExporting = false, exportedFile = file, lastLog = "导出成功: ${file.absolutePath}") }
+                    _uiState.update { it.copy(isExporting = false, exportedFile = file) }
+                    _snackbarChannel.send("导出成功！")
                 }
                 .onFailure { e ->
-                    _uiState.update { it.copy(isExporting = false, errorMessage = "导出失败: ${e.message}") }
+                    _uiState.update { it.copy(isExporting = false) }
+                    _snackbarChannel.send("导出失败: ${e.message}")
                 }
         }
     }
 
-    /**
-     * 清除错误信息
-     */
-    fun clearError() {
-        _uiState.update { it.copy(errorMessage = null) }
-    }
+    fun clearExportedFile() { _uiState.update { it.copy(exportedFile = null) } }
 }
