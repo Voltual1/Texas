@@ -61,7 +61,7 @@ class WysAppCrawlerRepository(
         val total = endId - startId + 1
         if (total <= 0) return@withContext
         
-        val semaphore = Semaphore(4) 
+        val semaphore = Semaphore(10) 
         var completed = 0
 
         supervisorScope {
