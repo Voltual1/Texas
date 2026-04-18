@@ -108,7 +108,7 @@ val appModule = module {
     
 single { UserAgreementDataStore(androidContext()) }
 single { get<AppDatabase>().crawlerDataDao() }
-single { WysAppCrawlerRepository(get(), get(), androidContext()) }
+single { WysAppCrawlerRepository(get(), androidContext()) }
     
     // 数据库相关 - 添加 DownloadTaskDao 定义
     single { BBQApplication.instance.database }
