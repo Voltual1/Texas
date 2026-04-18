@@ -24,13 +24,13 @@ class WysAppCrawlerRepository(
     }
 
     /**
-     * 使用二分法探测最大可用 App ID
+     * 自动探测最大 ID
+     * 注意：微思的 ID 现在可能已经到了 10000 以上，建议 high 给大一点
      */
     suspend fun findMaxAppId(low: Int = 1, high: Int = 2000): Int = withContext(Dispatchers.IO) {
         var l = low
         var r = high
         var maxId = low
-
         while (l <= r) {
             val mid = (l + r) / 2
             val result = WysAppMarketClient.getAppInfo(mid)
@@ -40,37 +40,29 @@ class WysAppCrawlerRepository(
             } else {
                 r = mid - 1
             }
-            delay(200) // 礼貌爬取，避免被封
+            delay(100) 
         }
         maxId
     }
 
-    /**
-     * 开始批量爬取
-     */
     suspend fun startCrawling(
-    startId: Int? = null,
-    endId: Int,
-    concurrency: Int = 3,
-    onProgress: (current: Int, total: Int, isSuccess: Boolean) -> Unit // 增加 isSuccess
-) = withContext(Dispatchers.IO) {
-    val actualStart = startId ?: ((crawledAppDao.getMaxCrawledId() ?: 0) + 1)
-    if (actualStart > endId) return@withContext
-    
-    val totalToCrawl = endId - actualStart + 1
-    var completed = 0
-    val semaphore = Semaphore(concurrency)
-    
-    supervisorScope {
-        for (id in actualStart..endId) {
-            launch {
-                semaphore.withPermit {
-                    var success = false
-                    try {
-                        success = crawlSingleApp(id) // 修改为返回 Boolean
-                    } catch (e: Exception) {
-                        println("CAN: 爬取 ID $id 失败: ${e.message}")
-                    } finally {
+        startId: Int? = null,
+        endId: Int,
+        concurrency: Int = 2, // 爬取下载链接较重，建议并发改小一点，避免触发高频校验
+        onProgress: (current: Int, total: Int, isSuccess: Boolean) -> Unit
+    ) = withContext(Dispatchers.IO) {
+        val actualStart = startId ?: ((crawledAppDao.getMaxCrawledId() ?: 0) + 1)
+        if (actualStart > endId) return@withContext
+        
+        val totalToCrawl = endId - actualStart + 1
+        var completed = 0
+        val semaphore = Semaphore(concurrency)
+        
+        supervisorScope {
+            for (id in actualStart..endId) {
+                launch {
+                    semaphore.withPermit {
+                        val success = crawlSingleApp(id)
                         synchronized(this@WysAppCrawlerRepository) {
                             completed++
                             onProgress(completed, totalToCrawl, success)
@@ -80,53 +72,59 @@ class WysAppCrawlerRepository(
             }
         }
     }
-}
 
-private suspend fun crawlSingleApp(appId: Int): Boolean { // 返回是否成功
-    return try {
-        val detailResult = WysAppMarketClient.getAppInfo(appId)
-        val detail = detailResult.getOrNull() ?: return false
+    private suspend fun crawlSingleApp(appId: Int): Boolean {
+        return try {
+            // 1. 获取应用详情
+            val detailResult = WysAppMarketClient.getAppInfo(appId)
+            val detail = detailResult.getOrNull()
+            if (detail == null) {
+                println("CAN: [跳过] ID $appId 不存在 (API 返回 null)")
+                return false
+            }
 
-        val sourcesResult = marketRepository.getAppDownloadSources(appId.toString(), 0)
-        val sources = sourcesResult.getOrNull() ?: emptyList()
+            // 2. 获取下载源 (关键修正：必须传入详情里的 verid)
+            // 你之前的代码传的是 0，这是不对的。
+            val sourcesResult = marketRepository.getAppDownloadSources(
+                appId = appId.toString(), 
+                versionId = 0
+            )
+            
+            val sources = sourcesResult.getOrNull()
+            if (sources == null) {
+                println("CAN: [失败] ID $appId (${detail.name}) 获取下载源失败: ${sourcesResult.exceptionOrNull()?.message}")
+                return false
+            }
 
-        val entity = CrawledAppEntity(
-            appId = appId,
-            name = detail.name,
-            packageName = detail.pack,
-            version = detail.version,
-            downloadUrlsJson = json.encodeToString(sources)
-        )
-        
-        crawledAppDao.insertApp(entity)
-        true // 成功
-    } catch (e: Exception) {
-        false // 失败
-    }
-}
-
-    /**
-     * 导出数据库为 JSON 文件
-     */
-    suspend fun exportToJson(): Result<File> = withContext(Dispatchers.IO) {
-    try {
-        val allData = crawledAppDao.getAllApps()
-        println("CAN: 准备导出数据，数据库内共有 ${allData.size} 条记录")
-        
-        if (allData.isEmpty()) {
-            return@withContext Result.failure(Exception("数据库中没有数据，请先开始抓取"))
+            // 3. 构造并存入数据库
+            val entity = CrawledAppEntity(
+                appId = appId,
+                name = detail.name,
+                packageName = detail.pack,
+                version = detail.version,
+                downloadUrlsJson = json.encodeToString(sources)
+            )
+            
+            crawledAppDao.insertApp(entity)
+            println("CAN: [成功] 已入库 ID $appId - ${detail.name} (下载源: ${sources.size}个)")
+            true
+        } catch (e: Exception) {
+            println("CAN: [异常] ID $appId 发生崩溃: ${e.message}")
+            false
         }
-
-        val jsonString = json.encodeToString(allData)
-        val fileName = "wys_market_dump_${System.currentTimeMillis()}.json"
-        val file = File(context.getExternalFilesDir(null), fileName)
-        file.writeText(jsonString)
-        
-        println("CAN: 文件已写入 ${file.absolutePath}")
-        Result.success(file)
-    } catch (e: Exception) {
-        println("CAN: 导出异常: ${e.message}")
-        Result.failure(e)
     }
-}
+
+    suspend fun exportToJson(): Result<File> = withContext(Dispatchers.IO) {
+        try {
+            val allData = crawledAppDao.getAllApps()
+            if (allData.isEmpty()) return@withContext Result.failure(Exception("数据库中没有数据！"))
+
+            val jsonString = json.encodeToString(allData)
+            val file = File(context.getExternalFilesDir(null), "wys_dump_${System.currentTimeMillis()}.json")
+            file.writeText(jsonString)
+            Result.success(file)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
 }
