@@ -19,28 +19,25 @@ import kotlinx.coroutines.flow.Flow
 @Dao
 interface LogDao {
 
-    /**
-     * 插入一条新的日志记录。
-     * 如果发生冲突，则替换旧记录（虽然在这里因为主键自增，基本不会发生）。
-     */
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(log: LogEntry)
 
-    /**
-     * 获取所有的日志记录，并按时间戳降序排列（最新的在最前面）。
-     * 返回一个 Flow，当数据库内容变化时，它会自动发射新的列表。
-     */
     @Query("SELECT * FROM bot_logs ORDER BY timestamp DESC")
     fun getAllLogs(): Flow<List<LogEntry>>
 
-    /**
-     * 清空所有的日志记录。
-     */
-     // 新增：按 ID 列表删除日志
+    // 新增：专门用于爬虫数据导出的同步查询
+    @Query("SELECT * FROM bot_logs WHERE type = :type ORDER BY timestamp ASC")
+    suspend fun getLogsByType(type: String): List<LogEntry>
+
+    @Query("SELECT MAX(id) FROM bot_logs") // 这里的 ID 是自增的，探测逻辑需微调
+    suspend fun getMaxLogId(): Int?
+
     @Query("DELETE FROM bot_logs WHERE id IN (:logIds)")
     suspend fun deleteLogsByIds(logIds: List<Int>)
+
     @Query("DELETE FROM bot_logs")
     suspend fun clearAll()
+
     @Query("SELECT * FROM bot_logs WHERE requestBody LIKE :query OR responseBody LIKE :query ORDER BY timestamp DESC")
     fun searchLogs(query: String): Flow<List<LogEntry>>
 }

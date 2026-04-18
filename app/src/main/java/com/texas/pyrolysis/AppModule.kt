@@ -8,7 +8,7 @@
 // 如果没有，请查阅 <http://www.gnu.org/licenses/>.
 package com.texas.pyrolysis
 
-import com.texas.pyrolysis.data.db.AppDatabase
+import com.texas.pyrolysis.data.db.*
 import com.texas.pyrolysis.data.repository.IAppStoreRepository
 import com.texas.pyrolysis.data.repository.SineShopRepository
 import com.texas.pyrolysis.data.repository.WysAppCrawlerRepository
@@ -112,6 +112,7 @@ single { WysAppCrawlerRepository(get(), get(), androidContext()) }
     
     // 数据库相关 - 添加 DownloadTaskDao 定义
     single { BBQApplication.instance.database }
+    single { LogRepository() }
     single { get<AppDatabase>().logDao() }  // 如果需要的话
     single { get<AppDatabase>().browseHistoryDao() }  // 如果需要的话
     single { get<AppDatabase>().networkCacheDao() }  // 如果需要的话
