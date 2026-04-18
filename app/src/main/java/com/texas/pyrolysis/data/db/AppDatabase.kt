@@ -32,7 +32,7 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun browseHistoryDao(): BrowseHistoryDao
     abstract fun networkCacheDao(): NetworkCacheDao
     abstract fun postDraftDao(): PostDraftDao
-    abstract fun crawledAppDao(): CrawledAppDao // 新增    
+    abstract fun crawlerDataDao(): CrawlerDataDao
 
     companion object {
         @Volatile
