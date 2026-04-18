@@ -22,9 +22,9 @@ import com.texas.pyrolysis.ui.community.BrowseHistory
         BrowseHistory::class, 
         NetworkCacheEntry::class, 
         PostDraft::class,
-        CrawledAppEntity::class // 新增
+        CrawlerDataEntry::class // 使用新实体
     ],
-    version = 8, // 升级版本号
+    version = 9, // 升级到 9
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -124,6 +124,24 @@ abstract class AppDatabase : RoomDatabase() {
                 )
             }
         }
+        
+        private val MIGRATION_8_9 = object : Migration(8, 9) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL(
+                    """
+                    CREATE TABLE IF NOT EXISTS `crawler_data` (
+                        `appId` INTEGER NOT NULL, 
+                        `name` TEXT NOT NULL, 
+                        `packageName` TEXT NOT NULL, 
+                        `version` TEXT NOT NULL, 
+                        `downloadUrlsJson` TEXT NOT NULL, 
+                        `timestamp` INTEGER NOT NULL, 
+                        PRIMARY KEY(`appId`)
+                    )
+                    """.trimIndent()
+                )
+            }
+        }
 
         fun getDatabase(context: Context): AppDatabase {
             return INSTANCE ?: synchronized(this) {
@@ -142,7 +160,8 @@ abstract class AppDatabase : RoomDatabase() {
                         MIGRATION_6_7,
                         MIGRATION_4_7,
                         MIGRATION_5_7,
-                        MIGRATION_7_8
+                        MIGRATION_7_8,
+                        MIGRATION_8_9
                     )
 //                    .fallbackToDestructiveMigration() // 如果迁移失败，重建数据库（数据会丢失，但避免崩溃）
                     .build()

@@ -107,6 +107,8 @@ val appModule = module {
     single { UserFilterDataStore(get()) }
     
 single { UserAgreementDataStore(androidContext()) }
+single { get<AppDatabase>().crawlerDataDao() }
+single { WysAppCrawlerRepository(get(), get(), androidContext()) }
     
     // 数据库相关 - 添加 DownloadTaskDao 定义
     single { BBQApplication.instance.database }
@@ -114,8 +116,6 @@ single { UserAgreementDataStore(androidContext()) }
     single { get<AppDatabase>().browseHistoryDao() }  // 如果需要的话
     single { get<AppDatabase>().networkCacheDao() }  // 如果需要的话
     single { get<AppDatabase>().postDraftDao() }  
-    single { get<AppDatabase>().crawledAppDao() }
-single { WysAppCrawlerRepository(get(), get(), androidContext()) }
 //    single { get<AppDatabase>().downloadTaskDao() }  // 关键：添加 DownloadTaskDao 的定义
     
     single { SearchHistoryDataStore(androidApplication()) }
